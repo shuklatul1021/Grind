@@ -7,19 +7,79 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User{
-  id            String            @id @default(uuid())
-  username      String?           @unique
-  fullname      String?
-  email         String            @unique
-  createdAt     DateTime          @default(now())
-  updatedAt     DateTime          @updatedAt()
+model User {
+  id                          String            @id @default(uuid())
+  username                    String?           @unique
+  fullname                    String?
+  email                       String            @unique
+  createdAt                   DateTime          @default(now())
+  updatedAt                   DateTime          @updatedAt()
+  leaderboard                 LeaderBoard[]
+  submittion                  Submittion[]
+  contextsubmittion           ContextSubmittion[] 
 }
 
-model Admin{
-  id            String            @id @default(uuid())
-  email         String            @unique
-  password      String          
+model Admin {
+  id                          String            @id @default(uuid())
+  email                       String            @unique
+  password                    String          
 }
 
+model Contest {
+  id                          String            @id @default(uuid())
+  title                       String            
+  description                 String?   
+  startTime                   DateTime
+  leaderBoard                 LeaderBoard[]
+  contestTochallegemapping    ContentToChallegesMapping[]
+}
 
+model LeaderBoard {
+  id                          String            @id @default(uuid())
+  contestId                   String
+  userId                      String
+  rank                        Int
+  contest                     Contest           @relation(fields: [contestId], references : [id])      
+  user                        User              @relation(fields: [userId], references : [id]) 
+}
+
+model Challenges {
+  id                          String            @id @default(uuid())
+  title                       String
+  description                 String
+  maxpoint                    Int
+  contestTochallegemapping    ContentToChallegesMapping[]
+  submittions                 Submittion[]
+}
+
+model ContentToChallegesMapping {
+  id                          String             @id @default(uuid())
+  contestId                   String
+  challengeId                 String
+  index                       Int
+  contestsubmission           ContextSubmittion[]       
+  contest                     Contest            @relation(fields: [contestId], references : [id])
+  challenge                   Challenges         @relation(fields: [challengeId], references : [id])
+}
+
+model Submittion {
+  id                          String             @id @default(uuid())
+  submittion                  String
+  challengeId                 String
+  userId                      String
+  points                      Int
+  challenge                   Challenges         @relation(fields: [challengeId], references : [id])
+  user                        User               @relation(fields: [userId], references : [id]) 
+  createdAt                   DateTime           @default(now())
+}
+
+model ContextSubmittion {
+  id                          String                          @id @default(uuid())
+  submission                  String
+  contestTochallegemappingid  String
+  points                      Int
+  userId                      String
+  user                        User                            @relation(fields: [userId], references : [id]) 
+  contestTochallegemapping    ContentToChallegesMapping       @relation(fields: [contestTochallegemappingid], references : [id]) 
+  createdAt                   DateTime           @default(now())
+}

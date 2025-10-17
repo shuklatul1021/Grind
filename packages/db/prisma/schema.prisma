@@ -8,69 +8,96 @@ datasource db {
 }
 
 model User {
-  id                          String            @id @default(uuid())
-  username                    String?           @unique
+  id                          String                      @id @default(uuid())
+  username                    String?                     @unique
   fullname                    String?
-  email                       String            @unique
-  createdAt                   DateTime          @default(now())
-  updatedAt                   DateTime          @updatedAt()
+  email                       String                      @unique
   leaderboard                 LeaderBoard[]
   submittion                  Submittion[]
   contextsubmittion           ContextSubmittion[] 
+  createdAt                   DateTime                    @default(now())
+  updatedAt                   DateTime                    @updatedAt()
 }
 
 model Admin {
-  id                          String            @id @default(uuid())
-  email                       String            @unique
+  id                          String                      @id @default(uuid())
+  email                       String                      @unique
   password                    String          
 }
 
 model Contest {
-  id                          String            @id @default(uuid())
+  id                          String                       @id @default(uuid())
   title                       String            
   description                 String?   
   startTime                   DateTime
+  endTime                     DateTime
+  type                        ContestType                   @default(WEEKLY)
+  status                      ContestStatus                 @default(UPCOMING)
   leaderBoard                 LeaderBoard[]
   contestTochallegemapping    ContentToChallegesMapping[]
 }
 
 model LeaderBoard {
-  id                          String            @id @default(uuid())
+  id                          String                        @id @default(uuid())
   contestId                   String
   userId                      String
   rank                        Int
-  contest                     Contest           @relation(fields: [contestId], references : [id])      
-  user                        User              @relation(fields: [userId], references : [id]) 
+  contest                     Contest                       @relation(fields: [contestId], references : [id])      
+  user                        User                          @relation(fields: [userId], references : [id]) 
 }
 
 model Challenges {
-  id                          String            @id @default(uuid())
+  id                          String                        @id @default(uuid())
   title                       String
   description                 String
+  difficulty                  DifficultyLevel               @default(EASY)
+  tags                        String[]
   maxpoint                    Int
+  starterCode                 String
   contestTochallegemapping    ContentToChallegesMapping[]
   submittions                 Submittion[]
+  examples                    Example[]
+  testcase                    TestCase[]
+  createdAt                   DateTime                      @default(now())
+  updatedAt                   DateTime                      @updatedAt()
+}
+
+model Example {
+  id                          String                        @id @default(uuid())
+  input                       String
+  output                      String
+  explanation                 String?
+  challengeId                 String
+  challenges                  Challenges                    @relation(fields: [challengeId], references : [id]) 
+}
+
+model TestCase {
+  id                          String                        @id @default(uuid())
+  input                       String
+  expectedOutput              String
+  challengeId                 String
+  challenges                  Challenges                    @relation(fields: [challengeId], references : [id]) 
 }
 
 model ContentToChallegesMapping {
-  id                          String             @id @default(uuid())
+  id                          String                         @id @default(uuid())
   contestId                   String
   challengeId                 String
   index                       Int
   contestsubmission           ContextSubmittion[]       
-  contest                     Contest            @relation(fields: [contestId], references : [id])
-  challenge                   Challenges         @relation(fields: [challengeId], references : [id])
+  contest                     Contest                        @relation(fields: [contestId], references : [id])
+  challenge                   Challenges                     @relation(fields: [challengeId], references : [id])
 }
 
 model Submittion {
-  id                          String             @id @default(uuid())
+  id                          String                         @id @default(uuid())
   submittion                  String
   challengeId                 String
   userId                      String
   points                      Int
-  challenge                   Challenges         @relation(fields: [challengeId], references : [id])
-  user                        User               @relation(fields: [userId], references : [id]) 
-  createdAt                   DateTime           @default(now())
+  challenge                   Challenges                      @relation(fields: [challengeId], references : [id])
+  user                        User                            @relation(fields: [userId], references : [id]) 
+  createdAt                   DateTime                        @default(now())
 }
 
 model ContextSubmittion {
@@ -81,5 +108,23 @@ model ContextSubmittion {
   userId                      String
   user                        User                            @relation(fields: [userId], references : [id]) 
   contestTochallegemapping    ContentToChallegesMapping       @relation(fields: [contestTochallegemappingid], references : [id]) 
-  createdAt                   DateTime           @default(now())
+  createdAt                   DateTime                        @default(now())
+}
+
+
+enum DifficultyLevel {
+  HARD
+  EASY
+  MEDIUM
+}
+
+enum ContestType{
+  WEEKLY
+  MONTHLY
+}
+
+enum ContestStatus {
+  UPCOMING
+  ONGOING
+  COMPLETED
 }

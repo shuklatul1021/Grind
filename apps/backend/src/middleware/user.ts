@@ -15,7 +15,7 @@ export async function UserAuthMiddleware(req : Request, res : Response, next : N
         if(VerifySignedToken){
             //@ts-ignore
             req.userId = VerifySignedToken.id;
-            next();
+            return next();
         }
         return res.status(403).json({ 
             message : "Wrong Token",

@@ -1,17 +1,17 @@
 export interface Problem {
   id: string;
   title: string;
-  slug: string;
+  slug?: string;
   description: string;
   difficulty: 'easy' | 'medium' | 'hard';
   tags: string[];
   examples: Example[];
-  constraints: string;
-  starter_code: string;
-  test_cases: TestCase[];
-  acceptance_rate: number;
-  created_at: string;
-  updated_at: string;
+  constraints?: string;
+  starterCode: string;
+  testCases: TestCase[];
+  acceptanceRate?: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Example {
@@ -22,7 +22,7 @@ export interface Example {
 
 export interface TestCase {
   input: string;
-  expected_output: string;
+  expectedOutput: string;
 }
 
 export interface UserProgress {

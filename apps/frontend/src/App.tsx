@@ -9,6 +9,10 @@ import { Toaster } from '@repo/ui/toaster';
 import { VerifyOtp } from './pages/VerifyOtp';
 import CompilerPage from './pages/CompilerPage';
 import ContestPage from './pages/ContestPage';
+import AdminLoginPage from './pages/AdminAuth';
+import AdminDashboard from './pages/AdminDashboard';
+import AdminCreateContest from './pages/AdminCreateContest';
+import AdminCreateProblem from './pages/AdminCreateProblem';
 
 function App() {
 
@@ -24,6 +28,10 @@ function App() {
               <Route path="/problem/:slug" element={<ProblemPage />} />
               <Route path="/compiler" element={<CompilerPage />} />
               <Route path="/contest" element={<ContestPage />} />
+              <Route path="/admin/auth" element={<AdminLoginPage />} />
+              <Route path="/admin/dashboard" element={<AdminDashboard />} />
+              <Route path="/admin/dashboard/createcontest" element={<AdminCreateContest />} />
+              <Route path="/admin/dashboard/createproblem" element={<AdminCreateProblem />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </BrowserRouter>

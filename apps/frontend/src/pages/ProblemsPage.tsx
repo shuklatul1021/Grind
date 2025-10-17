@@ -188,7 +188,7 @@ export default function ProblemsPage() {
                         ))}
                       </div>
                       <div className="text-sm text-muted-foreground">
-                        Acceptance Rate: {problem.acceptance_rate}%
+                        Acceptance Rate: {problem.acceptanceRate}%
                       </div>
                     </div>
                   </div>

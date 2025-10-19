@@ -14,7 +14,7 @@ model User {
   email                       String                      @unique
   leaderboard                 LeaderBoard[]
   submittion                  Submittion[]
-  contextsubmittion           ContextSubmittion[] 
+  contextsubmittion           ContestSubmittion[] 
   createdAt                   DateTime                    @default(now())
   updatedAt                   DateTime                    @updatedAt()
 }
@@ -28,11 +28,13 @@ model Admin {
 model Contest {
   id                          String                       @id @default(uuid())
   title                       String            
-  description                 String?   
+  description                 String? 
+  participants                Int   
   startTime                   DateTime
   endTime                     DateTime
   type                        ContestType                   @default(WEEKLY)
   status                      ContestStatus                 @default(UPCOMING)
+  difficulty                  DifficultyLevel?              @default(EASY)
   leaderBoard                 LeaderBoard[]
   contestTochallegemapping    ContentToChallegesMapping[]
 }
@@ -51,6 +53,8 @@ model Challenges {
   title                       String
   description                 String
   difficulty                  DifficultyLevel               @default(EASY)
+  slug                        String                        @unique
+  images                      String?
   tags                        String[]
   maxpoint                    Int
   starterCode                 String
@@ -84,7 +88,7 @@ model ContentToChallegesMapping {
   contestId                   String
   challengeId                 String
   index                       Int
-  contestsubmission           ContextSubmittion[]       
+  contestsubmission           ContestSubmittion[]       
   contest                     Contest                        @relation(fields: [contestId], references : [id])
   challenge                   Challenges                     @relation(fields: [challengeId], references : [id])
 }
@@ -100,7 +104,7 @@ model Submittion {
   createdAt                   DateTime                        @default(now())
 }
 
-model ContextSubmittion {
+model ContestSubmittion {
   id                          String                          @id @default(uuid())
   submission                  String
   contestTochallegemappingid  String

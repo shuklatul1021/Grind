@@ -33,6 +33,7 @@ CREATE TABLE "Contest" (
     "id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "description" TEXT,
+    "participants" INTEGER NOT NULL,
     "startTime" TIMESTAMP(3) NOT NULL,
     "endTime" TIMESTAMP(3) NOT NULL,
     "type" "ContestType" NOT NULL DEFAULT 'WEEKLY',
@@ -57,6 +58,7 @@ CREATE TABLE "Challenges" (
     "title" TEXT NOT NULL,
     "description" TEXT NOT NULL,
     "difficulty" "DifficultyLevel" NOT NULL DEFAULT 'EASY',
+    "slug" TEXT NOT NULL,
     "tags" TEXT[],
     "maxpoint" INTEGER NOT NULL,
     "starterCode" TEXT NOT NULL,
@@ -110,7 +112,7 @@ CREATE TABLE "Submittion" (
 );
 
 -- CreateTable
-CREATE TABLE "ContextSubmittion" (
+CREATE TABLE "ContestSubmittion" (
     "id" TEXT NOT NULL,
     "submission" TEXT NOT NULL,
     "contestTochallegemappingid" TEXT NOT NULL,
@@ -118,7 +120,7 @@ CREATE TABLE "ContextSubmittion" (
     "userId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "ContextSubmittion_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "ContestSubmittion_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -129,6 +131,9 @@ CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Admin_email_key" ON "Admin"("email");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Challenges_slug_key" ON "Challenges"("slug");
 
 -- AddForeignKey
 ALTER TABLE "LeaderBoard" ADD CONSTRAINT "LeaderBoard_contestId_fkey" FOREIGN KEY ("contestId") REFERENCES "Contest"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -155,7 +160,7 @@ ALTER TABLE "Submittion" ADD CONSTRAINT "Submittion_challengeId_fkey" FOREIGN KE
 ALTER TABLE "Submittion" ADD CONSTRAINT "Submittion_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "ContextSubmittion" ADD CONSTRAINT "ContextSubmittion_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "ContestSubmittion" ADD CONSTRAINT "ContestSubmittion_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "ContextSubmittion" ADD CONSTRAINT "ContextSubmittion_contestTochallegemappingid_fkey" FOREIGN KEY ("contestTochallegemappingid") REFERENCES "ContentToChallegesMapping"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "ContestSubmittion" ADD CONSTRAINT "ContestSubmittion_contestTochallegemappingid_fkey" FOREIGN KEY ("contestTochallegemappingid") REFERENCES "ContentToChallegesMapping"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

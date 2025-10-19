@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@repo/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/card';
 import { Badge } from '@repo/ui/badge';
@@ -25,6 +25,7 @@ import {
   ResizablePanelGroup,
 } from '@repo/ui/resizable';
 import type { Example, Problem } from '../types/problem';
+import { BACKENDURL } from '../utils/urls';
 
 export default function ProblemPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -40,6 +41,7 @@ export default function ProblemPage() {
     message: string;
   } | null>(null);
 
+
   useEffect(() => {
     // if (!user) {
     //   navigate('/auth');
@@ -47,11 +49,28 @@ export default function ProblemPage() {
     // }
 
     fetchProblem();
-  }, [ slug, navigate]);
+  }, [ slug ]);
 
   const fetchProblem = async () => {
     setLoading(true);
-
+    const response = await fetch(`${BACKENDURL}/problems/getproblem/${slug}`,{
+      method : "GET",
+      headers : {
+        "Content-Type" : "application/json",
+        token : localStorage.getItem("token") || ""
+      }
+    });
+    if(response.ok){
+      const json = await response.json();
+      setProblem(json.problem);
+    }else{
+      toast({
+        title: "Error",
+        description: "Failed to fetch problem",
+        variant: "destructive",
+        action: <button onClick={fetchProblem}>Retry</button>
+      });
+    }
     setLoading(false);
   };
 
@@ -67,6 +86,8 @@ export default function ProblemPage() {
 
     setSubmitting(false);
   };
+
+  console.log(slug);
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {

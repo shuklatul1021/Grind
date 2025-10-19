@@ -4,9 +4,10 @@ import { Button } from '@repo/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@repo/ui/card';
 import { Input } from '@repo/ui/input';
 import { Label } from '@repo/ui/label';
-import { Code2, Moon, Sun, Loader2 } from 'lucide-react';
+import { Code2, Moon, Sun, Loader2, Shield } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { useToast } from '../../../../packages/ui/src/hooks/use-toast';
+import { BACKENDURL } from '../utils/urls';
 
 
 export default function AuthPage() {
@@ -20,9 +21,39 @@ export default function AuthPage() {
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
+    const response = await fetch(`${BACKENDURL}/user/sign-up`, {
+      method : "POST",
+      headers : {
+        "Content-Type" : "application/json"
+      },
+      body : JSON.stringify({
+        email : signInData.email
+      })
+    })
+    if(response.ok){
+      const json = await response.json();
+      toast({
+        title : "Success",
+        description : "Check your email for the verification link",
+        variant : "default"
+      })
+      setLoading(false);
+      navigate('/verify', { 
+        state: { 
+          email: signInData.email, 
+          challengeId: json.challengeId 
+        } 
+      });
+    }else if(!response.ok){
+      toast({
+        title : "Error",
+        description : "Something went wrong",
+        variant : "destructive"
+      })
+      setLoading(false);
+      return;
+    }
     navigate('/verify')
-
     setLoading(false);
   };
 
@@ -84,10 +115,13 @@ export default function AuthPage() {
                   {loading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Signing In...
+                      Sending Verification Code...
                     </>
                   ) : (
-                    'Sign In'
+                    <>
+                      <Shield className="mr-2 h-4 w-4" />
+                      Send Verification Code
+                    </>
                   )}
                 </Button>
               </form>

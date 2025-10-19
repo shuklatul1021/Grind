@@ -7,14 +7,52 @@ import {
   InputOTPGroup,
   InputOTPSlot,
 } from "@repo/ui/input-otp";
+import { useState } from "react";
+import { BACKENDURL } from "../utils/urls";
+import { useToast } from "../../../../packages/ui/src/hooks/use-toast";
 
 export function VerifyOtp() {
   const navigate = useNavigate();
-  const { theme, toggleTheme } = useTheme();
 
-  function HandelVerifyOtp(){
-    navigate("/problems");
+  const { theme, toggleTheme } = useTheme();
+  const [ otp , setOpt ] = useState("");
+  const { toast } = useToast();
+
+
+  async function HandelVerifyOtp(){
+    if(!otp || otp.length < 6){
+      toast({
+        title: "Error",
+        description: "Please enter a valid OTP",
+        variant: "destructive",
+      })
+      return;
+    }
+    const response = await fetch(`${BACKENDURL}/user/verify-otp`, {
+      method : "POST",
+      headers : {
+        "Content-Type" : "application/json"
+      },
+      body : JSON.stringify({
+        otp : otp,
+        email : "",
+        challengeId : ""
+      })
+    })
+    if(response.ok){
+      const json = await response.json();
+      localStorage.setItem("token" , json.token);
+      navigate("/problems");
+    }else{
+      toast({
+        title: "Error",
+        description: "Wrong OTP verification failed. Please try again.",
+        variant: "destructive",
+      })
+    }
   }
+
+  console.log("The Otp  Is ", otp);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-background/80">
@@ -51,7 +89,7 @@ export function VerifyOtp() {
             </p>
           </div>
           <div className="flex items-center justify-center">
-            <InputOTP maxLength={6}>
+            <InputOTP maxLength={6} onChange={(value) => setOpt(value)}>
                 <InputOTPGroup>
                 <InputOTPSlot index={0} className="h-20 w-20 text-2xl" />
                 <InputOTPSlot index={1} className="h-20 w-20 text-2xl" />

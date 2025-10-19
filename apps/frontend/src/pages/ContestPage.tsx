@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@repo/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/card';
+import { Card, CardContent, CardHeader, } from '@repo/ui/card';
 import { Badge } from '@repo/ui/badge';
 import { 
   Code2, 
@@ -16,6 +16,8 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
+import { toast } from '../../../../packages/ui/src/hooks/use-toast';
+import { BACKENDURL } from '../utils/urls';
 
 interface Contest {
   id: string;
@@ -28,7 +30,7 @@ interface Contest {
   problems: number;
   prize: string;
   status: 'upcoming' | 'ongoing' | 'completed';
-  difficulty: 'beginner' | 'intermediate' | 'advanced';
+  difficulty: 'easy' | 'medium' | 'hard';
 }
 
 export default function ContestPage() {
@@ -42,68 +44,30 @@ export default function ContestPage() {
     fetchContests();
   }, []);
 
-  const fetchContests = async () => {
+   const fetchContests = async () => {
     setLoading(true);
-    
-    // Simulate API call - replace with actual data fetching
-    setTimeout(() => {
-      const mockContests: Contest[] = [
-        {
-          id: '1',
-          title: 'Weekly Challenge #42',
-          type: 'weekly',
-          startDate: '2025-10-20T10:00:00Z',
-          endDate: '2025-10-27T10:00:00Z',
-          duration: '7 days',
-          participants: 1234,
-          problems: 5,
-          prize: '$500',
-          status: 'upcoming',
-          difficulty: 'intermediate',
-        },
-        {
-          id: '2',
-          title: 'October Monthly Contest',
-          type: 'monthly',
-          startDate: '2025-10-01T00:00:00Z',
-          endDate: '2025-10-31T23:59:59Z',
-          duration: '1 month',
-          participants: 5678,
-          problems: 15,
-          prize: '$2000',
-          status: 'ongoing',
-          difficulty: 'advanced',
-        },
-        {
-          id: '3',
-          title: 'Weekly Challenge #41',
-          type: 'weekly',
-          startDate: '2025-10-13T10:00:00Z',
-          endDate: '2025-10-20T10:00:00Z',
-          duration: '7 days',
-          participants: 987,
-          problems: 5,
-          prize: '$500',
-          status: 'ongoing',
-          difficulty: 'beginner',
-        },
-        {
-          id: '4',
-          title: 'September Monthly Contest',
-          type: 'monthly',
-          startDate: '2025-09-01T00:00:00Z',
-          endDate: '2025-09-30T23:59:59Z',
-          duration: '1 month',
-          participants: 4321,
-          problems: 15,
-          prize: '$2000',
-          status: 'completed',
-          difficulty: 'advanced',
-        },
-      ];
-      setContests(mockContests);
-      setLoading(false);
-    }, 1000);
+
+    const response = await fetch(`${BACKENDURL}/contest/getcontests`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        token : localStorage.getItem('token') || '',
+      },
+    });
+
+    if (response.ok) {
+      const json = await response.json();
+      setContests(json.contests);
+    } else {
+      toast({
+        title: 'Error',
+        description: 'Failed to fetch contests',
+        variant: 'destructive',
+        action: <button onClick={fetchContests}>Retry</button>,
+      });
+    }
+    setLoading(false);
+
   };
 
   const handleSignOut = () => {
@@ -112,7 +76,7 @@ export default function ContestPage() {
 
   const filteredContests = contests.filter((contest) => {
     if (activeTab === 'all') return true;
-    return contest.type === activeTab;
+    return contest.type.toLowerCase() === activeTab;
   });
 
   const getStatusBadge = (status: Contest['status']) => {
@@ -140,11 +104,11 @@ export default function ContestPage() {
 
   const getDifficultyColor = (difficulty: Contest['difficulty']) => {
     switch (difficulty) {
-      case 'beginner':
+      case 'easy':
         return 'bg-green-500/10 text-green-500 border-green-500/20';
-      case 'intermediate':
+      case 'medium':
         return 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20';
-      case 'advanced':
+      case 'hard':
         return 'bg-red-500/10 text-red-500 border-red-500/20';
     }
   };
@@ -299,12 +263,12 @@ export default function ContestPage() {
                     <div className="flex-1">
                       <div className="mb-3 flex flex-wrap items-center gap-2">
                         <h3 className="text-xl font-semibold">{contest.title}</h3>
-                        {getStatusBadge(contest.status)}
+                          {getStatusBadge(contest.status.toLocaleLowerCase() as "upcoming" | "ongoing" | "completed")}
                         <Badge
                           variant="outline"
-                          className={getDifficultyColor(contest.difficulty)}
+                          className={getDifficultyColor(contest.difficulty.toLocaleLowerCase() as "easy" | "medium" | "hard")}
                         >
-                          {contest.difficulty}
+                          {contest.difficulty.toLocaleLowerCase()}
                         </Badge>
                       </div>
 

@@ -6,6 +6,7 @@ import { Input } from '@repo/ui/input';
 import { Label } from '@repo/ui/label';
 import { Code2, Moon, Sun, Lock, Mail } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
+import { BACKENDURL } from '../utils/urls';
 
 export default function AdminLoginPage() {
   const navigate = useNavigate();
@@ -19,24 +20,36 @@ export default function AdminLoginPage() {
     e.preventDefault();
     setError('');
     setLoading(true);
-
     try {
-      navigate('/admin/dashboard');
+      const response = await fetch(`${BACKENDURL}/admin/auth`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+      if(response.ok){
+        const data = await response.json();
+        localStorage.setItem('adminToken' , data.token);
+        navigate('/admin/dashboard');
+      }
+      if (!response.ok) {
+        throw new Error('Login failed');
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed');
     } finally {
       setLoading(false);
     }
   };
-
+ 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-background/80">
       <header className="border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center justify-between px-4">
           <div
             className="flex cursor-pointer items-center gap-2"
-            onClick={() => navigate('/')}
-          >
+            onClick={() => navigate('/')}>
             <Code2 className="h-6 w-6" />
             <span className="text-xl font-bold">Grind</span>
           </div>

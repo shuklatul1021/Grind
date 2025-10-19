@@ -19,6 +19,9 @@ import {
   Eye
 } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
+import { BACKENDURL } from '../utils/urls';
+import { useSetRecoilState } from 'recoil';
+import { ContestState, ProblemState } from '../state/RecoilStateProvider';
 
 interface Problem {
   id: string;
@@ -28,7 +31,7 @@ interface Problem {
   submissions: number;
 }
 
-interface Contest {
+export interface Contest {
   id: string;
   title: string;
   type: 'weekly' | 'monthly';
@@ -43,10 +46,11 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('overview');
   const [problems, setProblems] = useState<Problem[]>([]);
   const [contests, setContests] = useState<Contest[]>([]);
-  const [loading, setLoading] = useState(true);
-
+  const [loading, setLoading] = useState(true);   
+ 
+  const setRecoilProblems = useSetRecoilState(ProblemState);
+  const setRecoilContests = useSetRecoilState(ContestState);
   useEffect(() => {
-    // Check if admin is authenticated
     const adminToken = localStorage.getItem('adminToken');
     if (!adminToken) {
       navigate('/admin/login');
@@ -54,58 +58,49 @@ export default function AdminDashboard() {
     }
 
     fetchDashboardData();
-  }, [navigate]);
+  }, []);
+
+  const fetchProblems = async () => {
+    try{
+      const response = await fetch(`${BACKENDURL}/problems/getproblems`, {
+        method : "GET",
+        headers : {
+          'token' : localStorage.getItem('adminToken') || ''
+        }
+      });
+      const data = await response.json();
+      setProblems(data.problems);
+      setRecoilProblems(data.problems);
+    }catch(err){
+      console.error(err);
+    }
+  }
+
+  const fetchContests = async () => {
+    try{
+      const response = await fetch(`${BACKENDURL}/contest/getcontests`, {
+        method : "GET",
+        headers : {
+          'token' : localStorage.getItem('adminToken') || ''
+        }
+      });
+      const data = await response.json();
+      setContests(data.contests);
+      setRecoilContests(data.contests);
+    }catch(err){
+      console.error(err);
+    }
+  }
 
   const fetchDashboardData = async () => {
     setLoading(true);
-    
-    // Simulate API calls - replace with actual endpoints
-    setTimeout(() => {
-      setProblems([
-        {
-          id: '1',
-          title: 'Two Sum',
-          difficulty: 'easy',
-          status: 'published',
-          submissions: 1234
-        },
-        {
-          id: '2',
-          title: 'Binary Tree Traversal',
-          difficulty: 'medium',
-          status: 'published',
-          submissions: 567
-        },
-        {
-          id: '3',
-          title: 'Dynamic Programming Challenge',
-          difficulty: 'hard',
-          status: 'draft',
-          submissions: 0
-        }
-      ]);
-
-      setContests([
-        {
-          id: '1',
-          title: 'Weekly Challenge #42',
-          type: 'weekly',
-          status: 'upcoming',
-          participants: 0,
-          problems: 5
-        },
-        {
-          id: '2',
-          title: 'October Monthly Contest',
-          type: 'monthly',
-          status: 'ongoing',
-          participants: 5678,
-          problems: 15
-        }
-      ]);
-
-      setLoading(false);
-    }, 1000);
+    try{
+      fetchProblems();
+      fetchContests();
+    }catch(err){
+      console.error(err);
+    }
+    setLoading(false);
   };
 
   const handleSignOut = () => {
@@ -351,7 +346,7 @@ export default function AdminDashboard() {
           <TabsContent value="problems" className="space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-bold">Problems Management</h2>
-              <Button onClick={() => navigate('/admin/create-problem')}>
+              <Button onClick={() => navigate('/admin/dashboard/createproblem')}>
                 <Plus className="mr-2 h-4 w-4" />
                 Create Problem
               </Button>
@@ -372,28 +367,28 @@ export default function AdminDashboard() {
                             <h3 className="text-lg font-semibold">{problem.title}</h3>
                             <Badge
                               variant="outline"
-                              className={getDifficultyColor(problem.difficulty)}
+                              className={getDifficultyColor(problem.difficulty.toLowerCase())}
                             >
-                              {problem.difficulty}
+                              {problem.difficulty.toLocaleLowerCase()}
                             </Badge>
-                            {getStatusBadge(problem.status)}
+                            {getStatusBadge(problem.status || "published")}
                           </div>
                           <p className="text-sm text-muted-foreground">
-                            {problem.submissions} submissions
+                            {problem.submissions || "0"} submissions
                           </p>
                         </div>
                         <div className="flex gap-2">
                           <Button 
                             variant="outline" 
                             size="sm"
-                            onClick={() => navigate(`/admin/edit-problem/${problem.id}`)}
+                            onClick={() => navigate(`/admin/editproblem/${problem.id}`)}
                           >
                             <Edit className="h-4 w-4" />
                           </Button>
                           <Button 
                             variant="outline" 
                             size="sm"
-                            onClick={() => navigate(`/problem/${problem.id}`)}
+                            onClick={() => navigate(`problem/${problem.id}`)}
                           >
                             <Eye className="h-4 w-4" />
                           </Button>
@@ -413,7 +408,7 @@ export default function AdminDashboard() {
           <TabsContent value="contests" className="space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-bold">Contests Management</h2>
-              <Button onClick={() => navigate('/admin/create-contest')}>
+              <Button onClick={() => navigate('/admin/dashboard/createcontest')}>
                 <Plus className="mr-2 h-4 w-4" />
                 Create Contest
               </Button>
@@ -432,11 +427,11 @@ export default function AdminDashboard() {
                         <div className="flex-1">
                           <div className="mb-2 flex items-center gap-2">
                             <h3 className="text-lg font-semibold">{contest.title}</h3>
-                            <Badge variant="secondary">{contest.type}</Badge>
-                            {getStatusBadge(contest.status)}
+                            <Badge variant="secondary">{contest.type.toLocaleLowerCase()}</Badge>
+                            {getStatusBadge(contest.status.toLocaleLowerCase())}
                           </div>
                           <p className="text-sm text-muted-foreground">
-                            {contest.participants} participants • {contest.problems} problems
+                            {contest.participants || "0"} participants • {contest.problems || "0"} problems
                           </p>
                         </div>
                         <div className="flex gap-2">
@@ -450,7 +445,7 @@ export default function AdminDashboard() {
                           <Button 
                             variant="outline" 
                             size="sm"
-                            onClick={() => navigate(`/contest/${contest.id}`)}
+                            onClick={() => navigate(`contest/${contest.id}`)}
                           >
                             <Eye className="h-4 w-4" />
                           </Button>

@@ -14,6 +14,8 @@ import {
 import { Code2, Moon, Sun, LogOut, Search, CheckCircle2, Circle } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import type { Problem, UserProgress } from '../types/problem';
+import { BACKENDURL } from '../utils/urls';
+import { toast } from '../../../../packages/ui/src/hooks/use-toast';
 
 
 export default function ProblemsPage() {
@@ -36,8 +38,24 @@ export default function ProblemsPage() {
 
   const fetchProblems = async () => {
     setLoading(true);
-
-
+    const response = await fetch(`${BACKENDURL}/problems/getproblems`,{
+      method : "GET",
+      headers : {
+        "Content-Type" : "application/json",
+        "token" : localStorage.getItem("token") || ""
+      }
+    });
+    if(response.ok){
+      const json = await response.json();
+      setProblems(json.problems);
+    }else{
+      toast({
+        title: "Error",
+        description: "Failed to fetch problems. Please try again.",
+        variant: "destructive",
+        action: <button onClick={fetchProblems}>Retry</button>,
+      });
+    }
     setLoading(false);
   };
 
@@ -50,7 +68,7 @@ export default function ProblemsPage() {
       problem.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       problem.tags.some((tag) => tag.toLowerCase().includes(searchQuery.toLowerCase()));
     const matchesDifficulty =
-      difficultyFilter === 'all' || problem.difficulty === difficultyFilter;
+      difficultyFilter === 'all' || problem.difficulty.toLowerCase() === difficultyFilter;
     return matchesSearch && matchesDifficulty;
   });
 

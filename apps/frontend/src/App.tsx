@@ -13,6 +13,8 @@ import AdminLoginPage from './pages/AdminAuth';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminCreateContest from './pages/AdminCreateContest';
 import AdminCreateProblem from './pages/AdminCreateProblem';
+import AdminProblemDetail from './pages/AdminProblemDetail';
+import AdminContestDetail from './pages/AdminContestDetail';
 
 function App() {
 
@@ -32,6 +34,8 @@ function App() {
               <Route path="/admin/dashboard" element={<AdminDashboard />} />
               <Route path="/admin/dashboard/createcontest" element={<AdminCreateContest />} />
               <Route path="/admin/dashboard/createproblem" element={<AdminCreateProblem />} />
+              <Route path="/admin/dashboard/contest/:id" element={<AdminContestDetail />} />
+              <Route path="/admin/dashboard/problem/:id" element={<AdminProblemDetail />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </BrowserRouter>

@@ -20,8 +20,6 @@ import {
 } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { BACKENDURL } from '../utils/urls';
-import { useSetRecoilState } from 'recoil';
-import { ContestState, ProblemState } from '../state/RecoilStateProvider';
 
 interface Problem {
   id: string;
@@ -47,9 +45,7 @@ export default function AdminDashboard() {
   const [problems, setProblems] = useState<Problem[]>([]);
   const [contests, setContests] = useState<Contest[]>([]);
   const [loading, setLoading] = useState(true);   
- 
-  const setRecoilProblems = useSetRecoilState(ProblemState);
-  const setRecoilContests = useSetRecoilState(ContestState);
+
   useEffect(() => {
     const adminToken = localStorage.getItem('adminToken');
     if (!adminToken) {
@@ -70,7 +66,6 @@ export default function AdminDashboard() {
       });
       const data = await response.json();
       setProblems(data.problems);
-      setRecoilProblems(data.problems);
     }catch(err){
       console.error(err);
     }
@@ -86,7 +81,6 @@ export default function AdminDashboard() {
       });
       const data = await response.json();
       setContests(data.contests);
-      setRecoilContests(data.contests);
     }catch(err){
       console.error(err);
     }

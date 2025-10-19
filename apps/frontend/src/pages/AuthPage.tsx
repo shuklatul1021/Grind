@@ -8,6 +8,8 @@ import { Code2, Moon, Sun, Loader2, Shield } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { useToast } from '../../../../packages/ui/src/hooks/use-toast';
 import { BACKENDURL } from '../utils/urls';
+import { useDispatch } from "react-redux";
+import { setAuthData } from '../state/ReduxStateProvider';
 
 
 export default function AuthPage() {
@@ -15,6 +17,7 @@ export default function AuthPage() {
   const { theme, toggleTheme } = useTheme();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const setAuthanticationData = useDispatch();
 
   const [signInData, setSignInData] = useState({ email: ''});;
 
@@ -38,12 +41,11 @@ export default function AuthPage() {
         variant : "default"
       })
       setLoading(false);
-      navigate('/verify', { 
-        state: { 
-          email: signInData.email, 
-          challengeId: json.challengeId 
-        } 
-      });
+      setAuthanticationData(setAuthData({
+        email : signInData.email,
+        challengeId : json.challengeId
+      }))
+      navigate('/verify');
     }else if(!response.ok){
       toast({
         title : "Error",

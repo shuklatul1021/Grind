@@ -75,6 +75,7 @@ export default function ProblemPage() {
   };
 
   const handleSignOut = async () => {
+    localStorage.removeItem("token");
     navigate('/');
   };
 

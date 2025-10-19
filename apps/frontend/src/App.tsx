@@ -15,9 +15,10 @@ import AdminCreateContest from './pages/AdminCreateContest';
 import AdminCreateProblem from './pages/AdminCreateProblem';
 import AdminProblemDetail from './pages/AdminProblemDetail';
 import AdminContestDetail from './pages/AdminContestDetail';
+import { useAuthentication } from './hooks/useAuthentication';
 
 function App() {
-
+  const { isAuthenticated } = useAuthentication();
   return (
     <>
       <ThemeProvider>

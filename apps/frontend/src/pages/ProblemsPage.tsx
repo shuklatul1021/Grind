@@ -60,6 +60,7 @@ export default function ProblemsPage() {
   };
 
   const handleSignOut = async () => {
+    localStorage.removeItem("token");
     navigate('/');
   };
 

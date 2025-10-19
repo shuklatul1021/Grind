@@ -10,6 +10,8 @@ import {
 import { useState } from "react";
 import { BACKENDURL } from "../utils/urls";
 import { useToast } from "../../../../packages/ui/src/hooks/use-toast";
+import type { RootState } from "../state/ReduxStateProvider";
+import { useSelector} from 'react-redux';
 
 export function VerifyOtp() {
   const navigate = useNavigate();
@@ -17,7 +19,7 @@ export function VerifyOtp() {
   const { theme, toggleTheme } = useTheme();
   const [ otp , setOpt ] = useState("");
   const { toast } = useToast();
-
+  const user2FAAuthantication = useSelector((state: RootState) => state.user2FAAuthantication);
 
   async function HandelVerifyOtp(){
     if(!otp || otp.length < 6){
@@ -35,8 +37,8 @@ export function VerifyOtp() {
       },
       body : JSON.stringify({
         otp : otp,
-        email : "",
-        challengeId : ""
+        email : user2FAAuthantication.email,
+        challengeId : user2FAAuthantication.challengeId
       })
     })
     if(response.ok){
@@ -51,9 +53,6 @@ export function VerifyOtp() {
       })
     }
   }
-
-  console.log("The Otp  Is ", otp);
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-background/80">
       <header className="border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">

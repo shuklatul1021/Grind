@@ -71,6 +71,7 @@ export default function ContestPage() {
   };
 
   const handleSignOut = () => {
+    localStorage.removeItem("token");
     navigate('/');
   };
 

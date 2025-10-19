@@ -1,135 +1,94 @@
-# Grind
+# Grind - Online Coding Platform
 
-The Grind is The Platform Where devploers Can 
+**Grind** is a full-stack competitive programming platform where developers can solve DSA problems, participate in coding contests, and practice their skills with a built-in multi-language compiler.
 
-## Using this example
+##  Features
 
-Run the following command:
+###  Problem Solving
+- **Extensive Problem Library**: Browse and solve Data Structures & Algorithms (DSA) problems
+- **Multiple Difficulty Levels**: Problems categorized as Easy, Medium, and Hard
+- **Tags & Filtering**: Filter problems by topics like arrays, trees, dynamic programming, etc.
+- **Test Cases**: Public and hidden test cases for each problem
+- **Submission History**: Track your progress and view past submissions
 
-```sh
-npx create-turbo@latest
-```
+### Contests
+- **Weekly & Monthly Contests**: Participate in regularly scheduled coding competitions
+- **Live Leaderboards**: Real-time ranking system during contests
+- **Prize Pools**: Win rewards for top performances
+- **Contest History**: View past contests and results
 
-## What's inside?
+###  Built-in Compiler
+- **Multi-Language Support**: Write and execute code in 8+ programming languages
+  - Python
+  - JavaScript
+  - TypeScript
+  - Java
+  - C++
+  - C
+  - Go
+  - Rust
+- **Real-time Execution**: Run your code instantly with custom inputs
+- **Code Editor**: Syntax-friendly textarea with download and copy features
+- **Output Display**: Separate panels for input, output, and error messages
 
-This Turborepo includes the following packages/apps:
+### Admin Dashboard
+- **Problem Management**: Create, edit, and delete problems with rich descriptions
+- **Contest Management**: Schedule and manage contests with multiple problems
+- **Analytics**: View submission statistics, acceptance rates, and user metrics
+- **User Management**: Monitor platform activity and user progress
 
-### Apps and Packages
+### Modern UI/UX
+- **Dark/Light Theme**: Toggle between themes for comfortable coding
+- **Responsive Design**: Optimized for desktop, tablet, and mobile devices
+- **shadcn/ui Components**: Beautiful, accessible UI components
+- **Smooth Navigation**: Intuitive user interface with React Router
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+## Tech Stack
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+### Frontend
+- **React 19** - UI library
+- **TypeScript** - Type safety
+- **Vite** - Build tool & dev server
+- **React Router** - Client-side routing
+- **Recoil** - State management
+- **Tailwind CSS** - Styling
+- **shadcn/ui** - Component library
 
-### Utilities
+### Backend
+- **Node.js** - Runtime environment
+- **Express** - Web framework
+- **TypeScript** - Type safety
+- **Prisma** - ORM for database
+- **PostgreSQL** - Database
+- **E2B Sandbox** - Secure code execution
 
-This Turborepo has some additional tools already setup for you:
+### Architecture
+- **Turborepo** - Monorepo management
+- **pnpm** - Package manager
+- **Shared Packages**: UI components, database client, configs
 
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
 
-### Build
+## 🚀 Getting Started
 
-To build all apps and packages, run the following command:
+### Prerequisites
+- Node.js 18+ and pnpm 8+
+- PostgreSQL database
+- E2B API key (sign up at [e2b.dev](https://e2b.dev))
 
-```
-cd my-turborepo
+### Quick Setup
 
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo build
+```bash
+# 1. Clone and install
+git clone https://github.com/shuklatul1021/Grind.git
+cd Grind
+npm install
 
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo build
-yarn dlx turbo build
-pnpm exec turbo build
-```
+# 2. Setup database
+cd packages/db
+npm prisma migrate dev
+npm prisma generate
+cd ../..
 
-You can build a specific package by using a [filter](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters):
-
-```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo build --filter=docs
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo build --filter=docs
-yarn exec turbo build --filter=docs
-pnpm exec turbo build --filter=docs
-```
-
-### Develop
-
-To develop all apps and packages, run the following command:
-
-```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo dev
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo dev
-yarn exec turbo dev
-pnpm exec turbo dev
-```
-
-You can develop a specific package by using a [filter](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters):
-
-```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo dev --filter=web
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo dev --filter=web
-yarn exec turbo dev --filter=web
-pnpm exec turbo dev --filter=web
-```
-
-### Remote Caching
-
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo login
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo login
-yarn exec turbo login
-pnpm exec turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo link
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo link
-yarn exec turbo link
-pnpm exec turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turborepo.com/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.com/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.com/docs/reference/configuration)
-- [CLI Usage](https://turborepo.com/docs/reference/command-line-reference)
+# 4. Start development servers
+npm install 
+npm dev

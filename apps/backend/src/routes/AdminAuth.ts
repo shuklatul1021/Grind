@@ -4,7 +4,6 @@ import { prisma } from "@repo/db/DatabaseClient";
 import jwt from "jsonwebtoken"
 import bcrypt from "bcrypt"
 import { AdminAuthMiddleware } from "../middleware/admin.js";
-import { UserAuthMiddleware } from "../middleware/user.js";
 
 const adminAuthRouter = Router();
 
@@ -17,17 +16,17 @@ const adminAuthRouter = Router();
 if(process.env.DEVELOPMENT_MODE==="development"){
     adminAuthRouter.post("/create-admin" , async(req, res)=>{
         try{
-            const { email , password } = req.body;
-            if(!email || !password){
+            const { success , data } =  AdminAuthSchema.safeParse(req.body);
+            if(!success){
                 return res.status(411).json({
-                    message : "Please Provide All Fields",
+                    message : "Please Provide Write Credential Format",
                     success : false
                 })
             }
-            const HashPassword = await bcrypt.hash(password , 5);
+            const HashPassword = await bcrypt.hash(data.password , 5);
             const CreateAdmin = await prisma.admin.create({
                 data : {
-                    email : email,
+                    email : data.email,
                     password : HashPassword
                 }
             });
@@ -52,8 +51,8 @@ if(process.env.DEVELOPMENT_MODE==="development"){
  * It expects the admin credentials in the request body and returns a JWT token upon successful authentication.
  */
 
-adminAuthRouter.post("/auth" , AdminAuthMiddleware , async (req, res)=>{
-    try{
+adminAuthRouter.post("/auth" , async (req, res)=>{
+    try{ 
         const { success , data } =  AdminAuthSchema.safeParse(req.body);
         if(!success){
             return res.status(411).json({
@@ -102,9 +101,9 @@ adminAuthRouter.post("/auth" , AdminAuthMiddleware , async (req, res)=>{
  * The route is protected by the UserAuthMiddleware to ensure only authenticated users can create challenges.
  */
 
-adminAuthRouter.post("/set-challenges" , UserAuthMiddleware , async(req, res)=>{
+adminAuthRouter.post("/set-challenges" , AdminAuthMiddleware , async(req, res)=>{
     try{
-        const { title , description , difficulty , tags , maxpoint , startercode , exampleinput , exampleoutput , explanation , testcaseinput , testcaseexpectedoutput } = req.body;
+        const { title , description , slug  ,difficulty , tags , maxpoint , startercode , exampleinput , exampleoutput , explanation , testcaseinput , testcaseexpectedoutput } = req.body;
         if(!title || !description || !difficulty || !tags || !maxpoint || !startercode || !exampleinput || !exampleoutput){
             return res.status(411).json({
                 message : "Please Provide All Fields",
@@ -115,6 +114,7 @@ adminAuthRouter.post("/set-challenges" , UserAuthMiddleware , async(req, res)=>{
             data : {
                 title: title,
                 description: description,
+                slug : slug,
                 difficulty: difficulty,
                 tags: tags,
                 maxpoint: maxpoint,
@@ -159,7 +159,7 @@ adminAuthRouter.post("/set-challenges" , UserAuthMiddleware , async(req, res)=>{
     }
 })
 
-adminAuthRouter.put("/update-challenge/:id" , UserAuthMiddleware , async(req, res)=>{
+adminAuthRouter.put("/update-challenge/:id" , AdminAuthMiddleware , async(req, res)=>{
     try{
         const challengeId = req.params.id;
         const { exampleId , testCaseId } = req.query;
@@ -225,7 +225,7 @@ adminAuthRouter.put("/update-challenge/:id" , UserAuthMiddleware , async(req, re
     }
 })
 
-adminAuthRouter.delete("/delete-challenge/:id" , UserAuthMiddleware , async(req, res)=>{
+adminAuthRouter.delete("/delete-challenge/:id" , AdminAuthMiddleware , async(req, res)=>{
     try{
         const challengeId = req.params.id;
         const DeleteChallenge = await prisma.challenges.delete({
@@ -258,12 +258,12 @@ adminAuthRouter.delete("/delete-challenge/:id" , UserAuthMiddleware , async(req,
 /**@ADMIN_CONTEST_ROUTE
  * The route to create a new contest with associated challenges.
  * It expects the contest details and an array of challenge IDs in the request body, params and query and stores them in the database.
- * The route is protected by the UserAuthMiddleware to ensure only authenticated users can create contests.
+ * The route is protected by the AdminAuthMiddleware to ensure only authenticated users can create contests.
  */
 
-adminAuthRouter.post("/set-contest" , UserAuthMiddleware , async(req, res)=>{
+adminAuthRouter.post("/set-contest" , AdminAuthMiddleware , async(req, res)=>{
     try{
-        const { title , description , starttime , endtime , challengeids , type , status } = req.body;
+        const { title , description , starttime , endtime , challengeids , type , status , difficulty  } = req.body;
         if(!title || !description || !starttime || !endtime || !challengeids || !type || !status){
             return res.status(411).json({
                 message : "Please Provide All Fields",
@@ -275,10 +275,12 @@ adminAuthRouter.post("/set-contest" , UserAuthMiddleware , async(req, res)=>{
             data : {
                 title : title,
                 description : description,
-                startTime : new Date(starttime),
-                endTime : new Date(endtime),
+                startTime : starttime,
+                endTime : endtime,
+                participants : 0,
                 type : type,
-                status : status
+                status : status,
+                difficulty : difficulty
             }
         });
 
@@ -313,7 +315,7 @@ adminAuthRouter.post("/set-contest" , UserAuthMiddleware , async(req, res)=>{
     }
 })
 
-adminAuthRouter.put("/update-contest/:id" , UserAuthMiddleware , async(req, res)=>{
+adminAuthRouter.put("/update-contest/:id" , AdminAuthMiddleware , async(req, res)=>{
     try{
         const contestId = req.params.id;
         const { title , description , starttime , endtime , newChallengeIds , contestToChallegesMappingId } = req.body;
@@ -374,7 +376,7 @@ adminAuthRouter.put("/update-contest/:id" , UserAuthMiddleware , async(req, res)
     }
 })
 
-adminAuthRouter.delete("/delete-contest/:id" , UserAuthMiddleware , async(req, res)=>{
+adminAuthRouter.delete("/delete-contest/:id" , AdminAuthMiddleware , async(req, res)=>{
     try{
         const contestId = req.params.id;
 

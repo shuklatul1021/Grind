@@ -5,6 +5,8 @@ import { prisma } from "@repo/db/DatabaseClient";
 import { Authsignal } from "@authsignal/node";
 import jwt from "jsonwebtoken"
 import dotenv from 'dotenv'
+import { UserAuthMiddleware } from "../middleware/user.js";
+
 const userAuthRouter = Router();
 dotenv.config()
 
@@ -97,6 +99,31 @@ userAuthRouter.post("/verify-otp" , OtpRateLimiter , async(req, res)=>{
     }catch(e){
         console.log(e);
         return res.status(500).json({
+            message : "Internal Server Error",
+            success : false
+        })
+    }
+});
+
+
+userAuthRouter.get("/verify" , UserAuthMiddleware , async(req, res)=>{
+    try{
+        const userId = req.userId;
+        const userDetails = await prisma.user.findFirst({ where : { id : userId} , select : { email : true , username : true , fullname : true}});
+        if(userDetails){
+            return res.status(200).json({
+                user : userDetails,
+                success : true
+            })
+        }
+        res.status(403).json({
+            message : "Error While Authentication",
+            success : false
+        })
+
+    }catch(e){
+        console.log(e);
+        res.status(500).json({
             message : "Internal Server Error",
             success : false
         })

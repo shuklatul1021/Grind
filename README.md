@@ -68,7 +68,7 @@
 - **Shared Packages**: UI components, database client, configs
 
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 - Node.js 18+ and pnpm 8+

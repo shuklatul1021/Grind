@@ -7,6 +7,7 @@ import { Label } from '@repo/ui/label';
 import { Code2, Moon, Sun, Lock, Mail } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { BACKENDURL } from '../utils/urls';
+import { useAdminAuthentication } from '../hooks/useAuthentication';
 
 export default function AdminLoginPage() {
   const navigate = useNavigate();
@@ -15,6 +16,7 @@ export default function AdminLoginPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const { setadminAuthState } = useAdminAuthentication();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,6 +33,7 @@ export default function AdminLoginPage() {
       if(response.ok){
         const data = await response.json();
         localStorage.setItem('adminToken' , data.token);
+        setadminAuthState({isAuthenticated: true, loading: false});
         navigate('/admin/dashboard');
       }
       if (!response.ok) {

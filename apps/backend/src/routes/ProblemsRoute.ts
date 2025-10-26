@@ -12,7 +12,7 @@ problemsRouter.get("/getproblems" , async (req, res)=>{
                 description : true,
                 difficulty : true,
                 tags : true,
-                slug : true
+                slug : true,
             }
         });
         if(!GetProblems){
@@ -49,7 +49,8 @@ problemsRouter.get("/getproblem/:slug"  , async (req, res)=>{
                 difficulty: true,
                 tags: true,
                 examples: true,
-                testcase: true
+                testcase: true,
+                starterCode : true
             }
         });
         if (!problem) {
@@ -71,5 +72,8 @@ problemsRouter.get("/getproblem/:slug"  , async (req, res)=>{
         });
     }
 })
+
+
+
 
 export default problemsRouter;

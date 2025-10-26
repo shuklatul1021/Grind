@@ -14,6 +14,7 @@ model User {
   email                       String                      @unique
   leaderboard                 LeaderBoard[]
   submittion                  Submittion[]
+  rank                        Int?                      
   contextsubmittion           ContestSubmittion[] 
   createdAt                   DateTime                    @default(now())
   updatedAt                   DateTime                    @updatedAt()

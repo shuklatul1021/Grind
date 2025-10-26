@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@repo/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/card';
@@ -14,31 +14,70 @@ import {
 } from '@repo/ui/select';
 import { Code2, Moon, Sun, ArrowLeft, Save, Plus, X } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
+import { BACKENDURL } from '../utils/urls';
 
 export default function AdminCreateContest() {
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
   const [loading, setLoading] = useState(false);
+
+  const [problemsList, setProblemsList] = useState<{ id: string; title: string }[]>([]);
+  const [problemsLoading, setProblemsLoading] = useState(false);
+  const [problemsError, setProblemsError] = useState<string | null>(null);
+
+  const [problemsPopupOpen, setProblemsPopupOpen] = useState(false);
+  const [popupQuery, setPopupQuery] = useState("");
+  const [tempSelected, setTempSelected] = useState<Record<string, boolean>>({});
   const [selectedProblems, setSelectedProblems] = useState<string[]>([]);
+
   const [formData, setFormData] = useState({
     title: '',
     type: 'weekly',
-    difficulty: 'intermediate',
+    difficulty: 'medium',
     description: '',
     startDate: '',
     endDate: '',
-    prize: '',
-    maxParticipants: '',
-    rules: ''
+    status : 'upcoming'
   });
+
+  function toIsoUtc(datetimeLocal: string): string {
+    return new Date(datetimeLocal).toISOString();
+  }
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-
-      navigate('/admin/dashboard');
+      const difficulty = formData.difficulty.toUpperCase();
+      const type = formData.type.toUpperCase()
+      const status = formData.status.toUpperCase();
+      const starttime = toIsoUtc(formData.startDate);
+      const endtime = toIsoUtc(formData.endDate);
+      const response = await fetch(`${BACKENDURL}/admin/set-contest`, {
+        method : "POST",
+        headers : {
+          "Content-Type" : "application/json",
+          token : localStorage.getItem("adminToken") || ""
+        },
+        body: JSON.stringify({
+          title : formData.title,
+          description : formData.description,
+          difficulty : difficulty,
+          starttime : starttime,
+          endtime : endtime,
+          type : type,
+          status : status,
+          challengeids : selectedProblems
+        })
+      })
+      if(response.ok){
+        alert("Contest Created Successfully");
+        navigate('/admin/dashboard');
+      }else{
+        alert("Error While Creating Contest")
+      }
     } catch (err) {
       console.error(err);
       alert('Failed to create contest');
@@ -50,6 +89,62 @@ export default function AdminCreateContest() {
   const handleChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
+
+  useEffect(() => {
+  if (!problemsPopupOpen) return;
+  if (problemsList.length > 0) return;
+
+  (async () => {
+    try {
+      setProblemsLoading(true);
+      setProblemsError(null);
+      const res = await fetch(`${BACKENDURL}/problems/getproblems`);
+      if (!res.ok) throw new Error("Failed to fetch problems");
+      const data = await res.json();
+      const normalized = data.problems.map((d: any) => ({ id: d.id ?? d._id ?? String(d.id), title: d.title ?? d.name ?? d.slug ?? "Untitled" }));
+      setProblemsList(normalized);
+    } catch (err: any) {
+      console.error(err);
+      setProblemsError(err.message || "Error loading problems");
+    } finally {
+      setProblemsLoading(false);
+    }
+  })();
+}, [problemsPopupOpen, problemsList.length]);
+
+useEffect(() => {
+  if (!problemsPopupOpen) return;
+  setTempSelected(Object.fromEntries((selectedProblems ?? []).map((id) => [id, true])));
+}, [problemsPopupOpen, selectedProblems]);
+
+const filteredProblems = useMemo(() => {
+  const q = popupQuery.trim().toLowerCase();
+  if (!q) return problemsList;
+  return problemsList.filter((p) => p.title.toLowerCase().includes(q));
+}, [problemsList, popupQuery]);
+
+function toggleTempSelect(id: string) {
+  setTempSelected((s) => ({ ...s, [id]: !s[id] }));
+}
+
+function selectAllVisible() {
+  setTempSelected((s) => {
+    const next = { ...s };
+    filteredProblems.forEach((p) => (next[p.id] = true));
+    return next;
+  });
+}
+
+function clearTempSelection() {
+  setTempSelected({});
+}
+
+function applyPopupSelection() {
+  const ids = Object.keys(tempSelected).filter((k) => tempSelected[k]);
+  setSelectedProblems(ids);
+  setProblemsPopupOpen(false);
+}
+console.log("Selected Problems: ", selectedProblems);
 
   return (
     <div className="min-h-screen bg-background">
@@ -117,9 +212,22 @@ export default function AdminCreateContest() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="beginner">Beginner</SelectItem>
-                      <SelectItem value="intermediate">Intermediate</SelectItem>
-                      <SelectItem value="advanced">Advanced</SelectItem>
+                      <SelectItem value="easy">Easy</SelectItem>
+                      <SelectItem value="medium">Medium</SelectItem>
+                      <SelectItem value="hard">Hard</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="status">Status *</Label>
+                  <Select value={formData.status} onValueChange={(value) => handleChange('status', value)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="upcoming">Upcoming</SelectItem>
+                      <SelectItem value="ongoing">Ongoing</SelectItem>
+                      <SelectItem value="completed">Completed</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -148,28 +256,6 @@ export default function AdminCreateContest() {
                 </div>
               </div>
 
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="prize">Prize Amount</Label>
-                  <Input
-                    id="prize"
-                    placeholder="e.g., $500"
-                    value={formData.prize}
-                    onChange={(e) => handleChange('prize', e.target.value)}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="maxParticipants">Max Participants</Label>
-                  <Input
-                    id="maxParticipants"
-                    type="number"
-                    placeholder="Leave empty for unlimited"
-                    value={formData.maxParticipants}
-                    onChange={(e) => handleChange('maxParticipants', e.target.value)}
-                  />
-                </div>
-              </div>
-
               <div className="space-y-2">
                 <Label htmlFor="description">Description</Label>
                 <Textarea
@@ -181,16 +267,6 @@ export default function AdminCreateContest() {
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="rules">Contest Rules</Label>
-                <Textarea
-                  id="rules"
-                  placeholder="Enter contest rules and guidelines..."
-                  className="min-h-[150px]"
-                  value={formData.rules}
-                  onChange={(e) => handleChange('rules', e.target.value)}
-                />
-              </div>
             </CardContent>
           </Card>
 
@@ -198,12 +274,18 @@ export default function AdminCreateContest() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle>Contest Problems</CardTitle>
-                <Button type="button" variant="outline" size="sm">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setProblemsPopupOpen(true)}
+                >
                   <Plus className="mr-2 h-4 w-4" />
                   Add Problems
                 </Button>
               </div>
             </CardHeader>
+
             <CardContent>
               {selectedProblems.length === 0 ? (
                 <p className="text-center text-sm text-muted-foreground py-8">
@@ -211,23 +293,126 @@ export default function AdminCreateContest() {
                 </p>
               ) : (
                 <div className="space-y-2">
-                  {selectedProblems.map((problemId, index) => (
-                    <div key={problemId} className="flex items-center justify-between rounded-md border border-border/40 p-3">
-                      <span className="text-sm font-medium">Problem #{index + 1}</span>
-                      <Button 
-                        type="button" 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={() => setSelectedProblems(prev => prev.filter(id => id !== problemId))}
+                  {selectedProblems.map((problemId, index) => {
+                    const problem = problemsList.find((p) => p.id === problemId);
+                    return (
+                      <div
+                        key={problemId}
+                        className="flex items-center justify-between rounded-md border border-border/40 p-3"
                       >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ))}
+                        <div className="flex items-center gap-3">
+                          <span className="text-sm font-medium">
+                            {problem ? problem.title : `Problem #${index + 1}`}
+                          </span>
+                          <span className="text-xs text-muted-foreground">#{problemId}</span>
+                        </div>
+
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setSelectedProblems((prev) => prev.filter((id) => id !== problemId))}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </CardContent>
           </Card>
+
+          {problemsPopupOpen && (
+            <div className="fixed inset-0 z-50 flex items-start justify-center p-4">
+              <div className="absolute inset-0 bg-black/40" onClick={() => setProblemsPopupOpen(false)} />
+              <div className="relative z-10 w-full max-w-2xl overflow-hidden rounded bg-black shadow-lg">
+                <div className="flex items-center justify-between border-b px-4 py-3">
+                  <h3 className="text-sm font-medium">Select Problems</h3>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        clearTempSelection();
+                      }}
+                      className="text-xs text-gray-600 hover:text-gray-800"
+                    >
+                      Clear
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setProblemsPopupOpen(false)}
+                      className="text-xs text-gray-600 hover:text-gray-800"
+                    >
+                      Close
+                    </button>
+                  </div>
+                </div>
+
+                <div className="p-4">
+                  <input
+                    type="search"
+                    placeholder="Search problems..."
+                    value={popupQuery}
+                    onChange={(e) => setPopupQuery(e.target.value)}
+                    className="mb-3 w-full rounded border px-3 py-2 text-sm"
+                  />
+
+                  <div className="max-h-64 overflow-auto">
+                    {problemsLoading ? (
+                      <div className="py-8 text-center text-sm text-gray-500">Loading problems...</div>
+                    ) : problemsError ? (
+                      <div className="py-8 text-center text-sm text-red-500">{problemsError}</div>
+                    ) : filteredProblems.length === 0 ? (
+                      <div className="py-8 text-center text-sm text-gray-500">No problems found</div>
+                    ) : (
+                      filteredProblems.map((p) => (
+                        <label
+                          key={p.id}
+                          className="flex cursor-pointer items-center justify-between rounded px-2 py-2 hover:bg-gray-50 hover:text-black"
+                        >
+                          <div className="flex items-center gap-3">
+                            <input
+                              type="checkbox"
+                              checked={!!tempSelected[p.id]}
+                              onChange={() => toggleTempSelect(p.id)}
+                              className="h-4 w-4"
+                            />
+                            <span className="text-sm">{p.title}</span>
+                          </div>
+                          <span className="text-xs text-muted-foreground">{p.id}</span>
+                        </label>
+                      ))
+                    )}
+                  </div>
+
+                  <div className="mt-4 flex items-center justify-between border-t pt-3">
+                    <div className="text-xs text-gray-600">
+                      {Object.keys(tempSelected).filter((k) => tempSelected[k]).length} selected
+                    </div>
+
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={selectAllVisible}
+                        className="rounded bg-gray-100 px-3 py-1 text-sm text-black"
+                      >
+                        Select Visible
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={applyPopupSelection}
+                        className="rounded bg-primary px-3 py-1 text-sm text-black"
+                      >
+                        Apply
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="flex gap-4">
             <Button

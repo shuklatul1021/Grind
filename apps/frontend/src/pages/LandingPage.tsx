@@ -1,21 +1,22 @@
-import { data, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@repo/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@repo/ui/card';
 import { Code2, Zap, Trophy, Users, Moon, Sun } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
-import { useEffect } from 'react';
 import { useAuthentication } from '../hooks/useAuthentication';
+import { useEffect } from 'react';
 
 export default function LandingPage() {
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
-  const { isAuthenticated, user, loading } = useAuthentication();
+  const { authState } = useAuthentication();
+  const user = authState.user;
 
   useEffect(() => {
-    if (!loading && isAuthenticated) {
+    if (authState.isAuthenticated) {
       navigate('/problems');
     }
-  }, [loading, isAuthenticated, navigate]);
+  }, [authState, navigate]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-background/80">

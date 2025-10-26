@@ -12,10 +12,11 @@ import { BACKENDURL } from "../utils/urls";
 import { useToast } from "../../../../packages/ui/src/hooks/use-toast";
 import type { RootState } from "../state/ReduxStateProvider";
 import { useSelector} from 'react-redux';
+import { useAuthentication } from "../hooks/useAuthentication";
 
 export function VerifyOtp() {
   const navigate = useNavigate();
-
+  const { setAuthState } = useAuthentication();
   const { theme, toggleTheme } = useTheme();
   const [ otp , setOpt ] = useState("");
   const { toast } = useToast();
@@ -44,6 +45,7 @@ export function VerifyOtp() {
     if(response.ok){
       const json = await response.json();
       localStorage.setItem("token" , json.token);
+      setAuthState({isAuthenticated : true , user : json.user , loading : false});
       navigate("/problems");
     }else{
       toast({
@@ -51,6 +53,8 @@ export function VerifyOtp() {
         description: "Wrong OTP verification failed. Please try again.",
         variant: "destructive",
       })
+      setAuthState({isAuthenticated : false , user : null , loading : false});
+      
     }
   }
   return (

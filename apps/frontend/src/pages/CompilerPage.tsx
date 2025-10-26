@@ -23,6 +23,8 @@ import {
   Check
 } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
+import { BACKENDURL } from '../utils/urls';
+import CodeEditor from './CodeEditor';
 
 const LANGUAGES = [
   { value: 'javascript', label: 'JavaScript', version: 'Node.js 18.x' },
@@ -138,12 +140,28 @@ export default function CompilerPage() {
   const handleRunCode = async () => {
     setIsRunning(true);
     setOutput('Running code...\n');
-    
-    // Simulate code execution (replace with actual API call)
-    setTimeout(() => {
-      setOutput(`Output for ${selectedLanguage}:\nHello, World!\n8\n\nExecution completed successfully.`);
-      setIsRunning(false);
-    }, 1500);
+    try {
+      const response = await fetch(`${BACKENDURL}/compiler/run`, {
+        method : "POST",
+        headers : {
+          "Content-Type" : "application/json",
+          "token" : localStorage.getItem("token") || ""
+        },
+        body : JSON.stringify({
+          code,
+          language : selectedLanguage
+        })
+      });
+      const json  = await response.json();
+      if(response.ok){
+        setOutput(json.output || json.error || 'No output');
+      }else{
+        setOutput(json.error || 'Error executing code');
+      }
+    }catch(e){
+      alert("Internal Server Error ")
+    }
+    setIsRunning(false);
   };
 
   const handleReset = () => {
@@ -313,12 +331,7 @@ export default function CompilerPage() {
               </div>
 
               <div className="rounded-md border border-border/40 bg-muted/30">
-                <Textarea
-                  value={code}
-                  onChange={(e) => setCode(e.target.value)}
-                  className="min-h-[400px] font-mono text-sm resize-none border-0 bg-transparent focus-visible:ring-0"
-                  placeholder="Write your code here..."
-                />
+                <CodeEditor code={code} setCode={setCode}/>
               </div>
             </div>
           </CardContent>

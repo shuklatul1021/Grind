@@ -14,6 +14,7 @@ import {
 } from '@repo/ui/select';
 import { Code2, Moon, Sun, ArrowLeft, Save, Plus, X } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
+import { BACKENDURL } from '../utils/urls';
 
 interface TestCase {
   id: string;
@@ -34,13 +35,11 @@ export default function AdminCreateProblem() {
     slug: '',
     difficulty: 'medium',
     description: '',
+    startercode: '',
     inputFormat: '',
     outputFormat: '',
-    constraints: '',
+    explanation: '',
     tags: '',
-    timeLimit: '2',
-    memoryLimit: '256',
-    status: 'draft',
     points: '100',
     acceptanceRate: '0'
   });
@@ -50,8 +49,34 @@ export default function AdminCreateProblem() {
     setLoading(true);
 
     try {
-      
-      navigate('/admin/dashboard');
+      const uppercasedifficulty = formData.difficulty.toUpperCase();
+      const newTagsArray = formData.tags.split(",");
+      const resposne = await fetch(`${BACKENDURL}/admin/set-challenges` , {
+        method : "POST",
+        headers : {
+          "Content-Type" : "application/json",
+          token : localStorage.getItem("adminToken") || ""
+        },
+        body : JSON.stringify({
+          title : formData.title,
+          slug : formData.slug,
+          description : formData.description,
+          difficulty : uppercasedifficulty,
+          maxpoint : formData.points,
+          tags : newTagsArray,
+          startercode : formData.startercode,
+          exampleinput : formData.inputFormat,
+          exampleoutput : formData.outputFormat,
+          explanation : formData.explanation,
+          testcaseinput : testCases
+        })
+      })
+      if(resposne.ok){
+        alert("Added Successfully");
+        navigate('/admin/dashboard');
+      }else{
+        alert("Error While Creating Problems")
+      }
     } catch (err) {
       console.error(err);
       alert('Failed to create problem');
@@ -174,42 +199,6 @@ export default function AdminCreateProblem() {
                     onChange={(e) => handleChange('points', e.target.value)}
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="status">Status *</Label>
-                  <Select value={formData.status} onValueChange={(value) => handleChange('status', value)}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="draft">Draft</SelectItem>
-                      <SelectItem value="published">Published</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="timeLimit">Time Limit (seconds)</Label>
-                  <Input
-                    id="timeLimit"
-                    type="number"
-                    step="0.1"
-                    placeholder="2.0"
-                    value={formData.timeLimit}
-                    onChange={(e) => handleChange('timeLimit', e.target.value)}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="memoryLimit">Memory Limit (MB)</Label>
-                  <Input
-                    id="memoryLimit"
-                    type="number"
-                    placeholder="256"
-                    value={formData.memoryLimit}
-                    onChange={(e) => handleChange('memoryLimit', e.target.value)}
-                  />
-                </div>
               </div>
 
               <div className="space-y-2">
@@ -229,6 +218,17 @@ export default function AdminCreateProblem() {
               <CardTitle>Problem Description</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="startercode">Starter Code *</Label>
+                <Textarea
+                  id="startercode"
+                  placeholder="Describe the problem in detail..."
+                  className="min-h-[150px] font-mono text-sm"
+                  value={formData.startercode}
+                  onChange={(e) => handleChange('startercode', e.target.value)}
+                  required
+                />
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="description">Description *</Label>
                 <Textarea
@@ -264,13 +264,13 @@ export default function AdminCreateProblem() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="constraints">Constraints</Label>
+                <Label htmlFor="explanation">Explanation</Label>
                 <Textarea
-                  id="constraints"
+                  id="explanation"
                   placeholder="e.g., 1 <= nums.length <= 10^4"
                   className="min-h-[100px] font-mono text-sm"
-                  value={formData.constraints}
-                  onChange={(e) => handleChange('constraints', e.target.value)}
+                  value={formData.explanation}
+                  onChange={(e) => handleChange('explanation', e.target.value)}
                 />
               </div>
             </CardContent>

@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@repo/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/card';
 import { Badge } from '@repo/ui/badge';
-import { Textarea } from '@repo/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@repo/ui/tabs';
 import {
   Code2,
@@ -26,6 +25,7 @@ import {
 } from '@repo/ui/resizable';
 import type { Example, Problem } from '../types/problem';
 import { BACKENDURL } from '../utils/urls';
+import CodeEditor from './CodeEditor';
 
 export default function ProblemPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -43,11 +43,6 @@ export default function ProblemPage() {
 
 
   useEffect(() => {
-    // if (!user) {
-    //   navigate('/auth');
-    //   return;
-    // }
-
     fetchProblem();
   }, [ slug ]);
 
@@ -63,6 +58,7 @@ export default function ProblemPage() {
     if(response.ok){
       const json = await response.json();
       setProblem(json.problem);
+      setCode(json.problem.starterCode || '');
     }else{
       toast({
         title: "Error",
@@ -81,9 +77,22 @@ export default function ProblemPage() {
 
   const handleRunCode = async () => {
     if (!problem) return;
-
     setSubmitting(true);
-    setTestResult(null);
+    const response = await fetch(`${BACKENDURL}/submit/submitcode` , {
+      method : "POST",
+      headers : {
+        "Content-Type" : "application/json"
+      },
+      body : JSON.stringify({
+        code,
+        language : "python"
+      })
+    });
+    if(response.ok){
+      setTestResult({status : "accepted" , message : "Successfully Runs"})
+    }else{
+      setTestResult({status : "wrong_answer" , message : "Invalid Result"})
+    }
 
     setSubmitting(false);
   };
@@ -236,7 +245,7 @@ export default function ProblemPage() {
         <ResizablePanel defaultSize={55} minSize={30}>
           <div className="flex h-full flex-col">
             <div className="flex items-center justify-between border-b border-border/40 bg-muted/50 px-4 py-2">
-              <span className="text-sm font-medium">JavaScript</span>
+              <span className="text-sm font-medium">Python</span>
               <Button
                 onClick={handleRunCode}
                 disabled={submitting}
@@ -258,12 +267,7 @@ export default function ProblemPage() {
             </div>
 
             <div className="flex-1 p-4">
-              <Textarea
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-                className="h-full resize-none font-mono text-sm"
-                placeholder="Write your solution here..."
-              />
+              <CodeEditor code={code} setCode={setCode} language={"python"}/>
             </div>
 
             {testResult && (

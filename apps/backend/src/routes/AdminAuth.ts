@@ -4,9 +4,13 @@ import { prisma } from "@repo/db/DatabaseClient";
 import jwt from "jsonwebtoken"
 import bcrypt from "bcrypt"
 import { AdminAuthMiddleware } from "../middleware/admin.js";
-
+import { success } from "zod";
 const adminAuthRouter = Router();
 
+interface TestCase{
+    input : string 
+    output : string
+}
 
 /**
  * SEEDING ADMIN ROUTE
@@ -95,15 +99,44 @@ adminAuthRouter.post("/auth" , async (req, res)=>{
     }
 })
 
+adminAuthRouter.get("/verify-admin" , AdminAuthMiddleware , async(req, res)=>{
+    try{
+        const adminId = req.adminuserId;
+        const VerifyAdmin = await prisma.admin.findUnique({
+            where : {
+                id : adminId
+            }
+        });
+        if(!VerifyAdmin){
+            return res.status(403).json({
+                message : "You Are Not An Admin Plese Do not Try to Access it",
+                success : false
+            })
+        }
+        return res.status(200).json({
+            message : "You are Verified",
+            success : true,
+        })
+
+
+    }catch(e){
+        console.log(e);
+        return res.status(500).json({
+            message : "Error While Creating",
+
+        })
+    }
+})
+ 
 /**@ADMIN_CHALLENGE_ROUTE
  * The route to create a new challenge.
  * It expects the challenge details in the request body, parse and example/test case data and stores them in the database.
  * The route is protected by the UserAuthMiddleware to ensure only authenticated users can create challenges.
  */
 
-adminAuthRouter.post("/set-challenges" , AdminAuthMiddleware , async(req, res)=>{
+adminAuthRouter.post("/set-challenges" , AdminAuthMiddleware ,  async(req, res)=>{
     try{
-        const { title , description , slug  ,difficulty , tags , maxpoint , startercode , exampleinput , exampleoutput , explanation , testcaseinput , testcaseexpectedoutput } = req.body;
+        const { title , description , slug  ,difficulty , tags , maxpoint , startercode , exampleinput , exampleoutput , explanation , testcaseinput } = req.body;
         if(!title || !description || !difficulty || !tags || !maxpoint || !startercode || !exampleinput || !exampleoutput){
             return res.status(411).json({
                 message : "Please Provide All Fields",
@@ -117,7 +150,7 @@ adminAuthRouter.post("/set-challenges" , AdminAuthMiddleware , async(req, res)=>
                 slug : slug,
                 difficulty: difficulty,
                 tags: tags,
-                maxpoint: maxpoint,
+                maxpoint: Number(maxpoint),
                 starterCode : startercode
             }
         });
@@ -131,15 +164,18 @@ adminAuthRouter.post("/set-challenges" , AdminAuthMiddleware , async(req, res)=>
             }
         });
 
-        const CreateTestCase = await prisma.testCase.create({
-            data : {
-                input : testcaseinput,
-                expectedOutput : testcaseexpectedoutput,
-                challengeId : CreateChallenge.id
-            }
-        });
 
-        if(CreateChallenge && CreateExample && CreateTestCase){
+        const StoringtestCase = testcaseinput.map(async(test: TestCase) =>{
+            await prisma.testCase.create({
+                data : {
+                    input : test.input,
+                    expectedOutput : test.output,
+                    challengeId : CreateChallenge.id
+                }
+            });
+        })
+
+        if(CreateChallenge && CreateExample && StoringtestCase){
             return res.status(200).json({
                 message : "Challenge Created Successfully",
                 success : true
@@ -405,6 +441,9 @@ adminAuthRouter.delete("/delete-contest/:id" , AdminAuthMiddleware , async(req, 
         })
     }
 })
+
+
+
 
 
 

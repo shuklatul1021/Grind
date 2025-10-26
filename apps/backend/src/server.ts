@@ -13,7 +13,7 @@ export const app = express();
 app.use(express.json())
 app.use(cors());
 app.use(routeratelimiter)
- 
+  
 app.use("/v1/api/user" , userAuthRouter);
 app.use("/v1/api/admin" , adminAuthRouter);
 app.use("/v1/api/problems" , problemsRouter);

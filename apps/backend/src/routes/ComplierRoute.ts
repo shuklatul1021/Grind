@@ -1,8 +1,10 @@
 import { Router } from "express";
 import { Sandbox } from '@e2b/code-interpreter';
+import { ComilerRateLimiter } from "../limiter/RateLimiter.js";
+import { UserAuthMiddleware } from "../middleware/user.js";
 const compilerRouter = Router();
 
-compilerRouter.post("/run", async (req, res) => {
+compilerRouter.post("/run", ComilerRateLimiter , UserAuthMiddleware , async (req, res) => {
     try {
         const { code, language, input } = req.body;
         
@@ -41,6 +43,7 @@ compilerRouter.post("/run", async (req, res) => {
 
                 case 'javascript':
                     const jsResult = await runJavaScript(sandbox, code, input);
+                    console.log('JavaScript execution result:', jsResult);
                     output = jsResult.output;
                     error = jsResult.error;
                     executionTime = jsResult.executionTime;
@@ -98,8 +101,8 @@ compilerRouter.post("/run", async (req, res) => {
             });
 
         } finally {
-            const closeFn = (sandbox as any).close ?? (sandbox as any).destroy ?? (sandbox as any).shutdown;
-            if (typeof closeFn === "function") {
+            const closeFn = (sandbox as any).close?? (sandbox as any).destroy ??(sandbox as any).shutdown;
+            if (typeof closeFn ==="function") {
                 await closeFn.call(sandbox);
             }
         }
@@ -134,6 +137,7 @@ async function runJavaScript(sandbox: any, code: string, input?: string) {
     const execution = await sandbox.commands.run(
         input ? `echo "${input}" | node /tmp/main.js` : 'node /tmp/main.js'
     );
+    console.log('JavaScript execution result:', execution);
     return {
         output: execution.stdout,
         error: execution.stderr,

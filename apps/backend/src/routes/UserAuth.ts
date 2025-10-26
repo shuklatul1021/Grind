@@ -87,6 +87,7 @@ userAuthRouter.post("/verify-otp" , OtpRateLimiter , async(req, res)=>{
                 return res.status(200).json({
                     message : "Authantication Successfully",
                     token : SignedToken,
+                    user : StoreUserInfo,
                     success : true
                 });
             };

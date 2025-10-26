@@ -1,324 +1,264 @@
-import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Button } from '@repo/ui/button';
-import { Card, CardContent, CardHeader, } from '@repo/ui/card';
-import { Badge } from '@repo/ui/badge';
-import { 
-  Code2, 
-  Moon, 
-  Sun, 
-  LogOut, 
+import { useEffect, useState, type JSX } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { Button } from "@repo/ui/button";
+import { Card, CardContent, CardHeader } from "@repo/ui/card";
+import { Badge } from "@repo/ui/badge";
+import {
+  Code2,
   Calendar,
   Clock,
-  Users,
   Trophy,
-  TrendingUp,
-  ChevronRight
-} from 'lucide-react';
-import { useTheme } from '../contexts/ThemeContext';
-import { toast } from '../../../../packages/ui/src/hooks/use-toast';
-import { BACKENDURL } from '../utils/urls';
+  ArrowLeft, 
+} from "lucide-react";
+import { BACKENDURL } from "../utils/urls";
+import { toast } from "../../../../packages/ui/src/hooks/use-toast";
 
-interface Contest {
+type Problem = { id: string; title: string };
+
+interface ProblemAndContestMapping {
   id: string;
-  title: string;
-  type: 'weekly' | 'monthly';
-  startDate: string;
-  endDate: string;
-  duration: string;
-  participants: number;
-  problems: number;
-  prize: string;
-  status: 'upcoming' | 'ongoing' | 'completed';
-  difficulty: 'easy' | 'medium' | 'hard';
+  challengeId: string;
+  contestId: string;
+  challenge : {
+    id : string;
+    title : string;
+    description : string;
+    difficulty : string;
+    slug : string;
+    tags :  string[];
+    maxpoint : number;
+    starterCode : string;
+    createdAt : string;
+    updatedAt : string
+  }
 }
 
-export default function ContestPage() {
+type ContestAPI = {
+  id: string;
+  title: string;
+  description: string;
+  startTime: string; 
+  endTime: string; 
+  duration?: string;
+  participants: number;
+  problems?: Problem[];
+  prize?: string;
+  status: "upcoming" | "ongoing" | "completed";
+  difficulty: "easy" | "medium" | "hard";
+  type?: string;
+  contestTochallegemapping : ProblemAndContestMapping[];
+};
+
+
+
+function formatDate(iso?: string) {
+  if (!iso) return "-";
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return "-";
+  return d.toLocaleString();
+}
+
+function getDifficultyColor(diff: ContestAPI["difficulty"]) {
+  switch (diff) {
+    case "easy":
+      return "bg-green-500/10 text-green-500 border-green-500/20";
+    case "medium":
+      return "bg-yellow-500/10 text-yellow-500 border-yellow-500/20";
+    case "hard":
+      return "bg-red-500/10 text-red-500 border-red-500/20";
+  }
+}
+function getStatusBadge(status: ContestAPI["status"]) {
+  switch (status) {
+    case "upcoming":
+      return (
+        <Badge className="bg-blue-500/10 text-blue-500 border-blue-500/20">
+          Upcoming
+        </Badge>
+      );
+    case "ongoing":
+      return (
+        <Badge className="bg-green-500/10 text-green-500 border-green-500/20">
+          Live Now
+        </Badge>
+      );
+    case "completed":
+      return (
+        <Badge className="bg-gray-500/10 text-gray-500 border-gray-500/20">
+          Completed
+        </Badge>
+      );
+  }
+}
+
+export default function ContestPage(): JSX.Element {
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { theme, toggleTheme } = useTheme();
-  const [contests, setContests] = useState<Contest[]>([]);
+
+  const [contest, setContest] = useState<ContestAPI | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'all' | 'weekly' | 'monthly'>('all');
+
+  console.log(contest?.contestTochallegemapping[0]);
 
   useEffect(() => {
-    fetchContests();
-  }, []);
-
-   const fetchContests = async () => {
-    setLoading(true);
-
-    const response = await fetch(`${BACKENDURL}/contest/getcontests`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        token : localStorage.getItem('token') || '',
-      },
-    });
-
-    if (response.ok) {
-      const json = await response.json();
-      setContests(json.contests);
-    } else {
-      toast({
-        title: 'Error',
-        description: 'Failed to fetch contests',
-        variant: 'destructive',
-        action: <button onClick={fetchContests}>Retry</button>,
-      });
-    }
-    setLoading(false);
-
-  };
-
-  const handleSignOut = () => {
-    localStorage.removeItem("token");
-    navigate('/');
-  };
-
-  const filteredContests = contests.filter((contest) => {
-    if (activeTab === 'all') return true;
-    return contest.type.toLowerCase() === activeTab;
-  });
-
-  const getStatusBadge = (status: Contest['status']) => {
-    switch (status) {
-      case 'upcoming':
-        return (
-          <Badge variant="outline" className="bg-blue-500/10 text-blue-500 border-blue-500/20">
-            Upcoming
-          </Badge>
-        );
-      case 'ongoing':
-        return (
-          <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/20">
-            Live Now
-          </Badge>
-        );
-      case 'completed':
-        return (
-          <Badge variant="outline" className="bg-gray-500/10 text-gray-500 border-gray-500/20">
-            Completed
-          </Badge>
-        );
-    }
-  };
-
-  const getDifficultyColor = (difficulty: Contest['difficulty']) => {
-    switch (difficulty) {
-      case 'easy':
-        return 'bg-green-500/10 text-green-500 border-green-500/20';
-      case 'medium':
-        return 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20';
-      case 'hard':
-        return 'bg-red-500/10 text-red-500 border-red-500/20';
-    }
-  };
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      month: 'short', 
-      day: 'numeric', 
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
+    if (!id) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        setLoading(true);
+        const res = await fetch(`${BACKENDURL}/contest/getcontest/${id}`, {
+          headers: { "Content-Type": "application/json", token: localStorage.getItem("token") || "" },
+        });
+        if (!res.ok) {
+          const txt = await res.text();
+          throw new Error(txt || `HTTP ${res.status}`);
+        }
+        const json = await res.json();
+        if (!cancelled) setContest(json.contest ?? json);
+      } catch (err: any) {
+        console.error(err);
+        toast({ title: "Error", description: err?.message || "Failed to load contest", variant: "destructive" });
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [id]);
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-50 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-16 items-center justify-between px-4">
-          <div
-            className="flex cursor-pointer items-center gap-2"
-            onClick={() => navigate('/')}
-          >
-            <Code2 className="h-6 w-6" />
-            <span className="text-xl font-bold">Grind</span>
-          </div>
-          <div className='flex space-x-4'>
-            <div>
-              <Link to="/problems">Problems</Link> 
-            </div>
-            <div className='underline'>
-              <Link to="/contest">Contest</Link> 
-            </div>
-            <div>
-              <Link to="/compiler">Compiler</Link>
-            </div>
-          </div>
-          <div className="flex items-center gap-4">
-            <Button
+      <header className="sticky top-0 z-50 border-b border-border/40 bg-background/95">
+        <div className="container flex h-16 items-center gap-4 px-4">
+          <Button
               variant="ghost"
               size="icon"
-              onClick={toggleTheme}
-              className="rounded-full"
+              onClick={() => navigate(-1)}
             >
-              {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+              <ArrowLeft className="h-5 w-5" />
             </Button>
-            <Button variant="ghost" onClick={handleSignOut}>
-              <LogOut className="mr-2 h-4 w-4" />
-              Sign Out
-            </Button>
+          <div className="flex items-center gap-2">
+            <Code2 className="h-6 w-6" />
+            <h2 className="text-lg font-semibold">{contest?.title ?? "Contest"}</h2>
           </div>
         </div>
       </header>
 
       <main className="container px-4 py-8">
-        <div className="mb-8">
-          <h1 className="mb-2 text-3xl font-bold">Contests</h1>
-          <p className="text-muted-foreground">
-            Compete in weekly and monthly coding challenges to win prizes
-          </p>
-        </div>
-
-        {/* Stats Cards */}
-        <div className="grid gap-4 md:grid-cols-3 mb-6">
-          <Card className="border-border/40">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className="rounded-full bg-primary/10 p-3">
-                  <Trophy className="h-6 w-6 text-primary" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Active Contests</p>
-                  <p className="text-2xl font-bold">2</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-border/40">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className="rounded-full bg-green-500/10 p-3">
-                  <Users className="h-6 w-6 text-green-500" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Participants</p>
-                  <p className="text-2xl font-bold">7,899</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-border/40">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className="rounded-full bg-yellow-500/10 p-3">
-                  <TrendingUp className="h-6 w-6 text-yellow-500" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Your Rank</p>
-                  <p className="text-2xl font-bold">#156</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Filter Tabs */}
-        <Card className="mb-6 border-border/40">
-          <CardHeader>
-            <div className="flex gap-2">
-              <Button
-                variant={activeTab === 'all' ? 'default' : 'outline'}
-                onClick={() => setActiveTab('all')}
-                className="flex-1 sm:flex-none"
-              >
-                All Contests
-              </Button>
-              <Button
-                variant={activeTab === 'weekly' ? 'default' : 'outline'}
-                onClick={() => setActiveTab('weekly')}
-                className="flex-1 sm:flex-none"
-              >
-                Weekly
-              </Button>
-              <Button
-                variant={activeTab === 'monthly' ? 'default' : 'outline'}
-                onClick={() => setActiveTab('monthly')}
-                className="flex-1 sm:flex-none"
-              >
-                Monthly
-              </Button>
-            </div>
-          </CardHeader>
-        </Card>
-
-        {/* Contests List */}
-        {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {filteredContests.map((contest) => (
-              <Card
-                key={contest.id}
-                className="cursor-pointer border-border/40 transition-colors hover:bg-muted/50"
-                onClick={() => navigate(`/contest/${contest.id}`)}
-              >
-                <CardContent className="p-6">
-                  <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                    <div className="flex-1">
-                      <div className="mb-3 flex flex-wrap items-center gap-2">
-                        <h3 className="text-xl font-semibold">{contest.title}</h3>
-                          {getStatusBadge(contest.status.toLocaleLowerCase() as "upcoming" | "ongoing" | "completed")}
-                        <Badge
-                          variant="outline"
-                          className={getDifficultyColor(contest.difficulty.toLocaleLowerCase() as "easy" | "medium" | "hard")}
-                        >
-                          {contest.difficulty.toLocaleLowerCase()}
-                        </Badge>
-                      </div>
-
-                      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <Calendar className="h-4 w-4" />
-                          <span>Start: {formatDate(contest.startDate)}</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <Clock className="h-4 w-4" />
-                          <span>Duration: {contest.duration}</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <Users className="h-4 w-4" />
-                          <span>{contest.participants.toLocaleString()} participants</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <Trophy className="h-4 w-4" />
-                          <span>Prize: {contest.prize}</span>
-                        </div>
-                      </div>
-
-                      <div className="mt-3">
-                        <Badge variant="secondary" className="text-xs">
-                          {contest.problems} Problems
-                        </Badge>
-                      </div>
-                    </div>
-
-                    <Button
-                      variant={contest.status === 'ongoing' ? 'default' : 'outline'}
-                      className="lg:ml-4"
-                    >
-                      {contest.status === 'upcoming' && 'Register'}
-                      {contest.status === 'ongoing' && 'Join Now'}
-                      {contest.status === 'completed' && 'View Results'}
-                      <ChevronRight className="ml-2 h-4 w-4" />
-                    </Button>
+        <div className="grid gap-6 md:grid-cols-3">
+          <div className="md:col-span-2 space-y-4">
+            <Card className="border-border/40">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    {getStatusBadge(contest?.status ?? "upcoming")}
+                    <Badge className={getDifficultyColor(contest?.difficulty ?? "medium")}>
+                      {contest?.difficulty ?? "—"}
+                    </Badge>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
-            {filteredContests.length === 0 && (
-              <div className="py-12 text-center text-muted-foreground">
-                No contests found
-              </div>
-            )}
+                  <div className="text-sm text-muted-foreground">{contest?.type ?? ""}</div>
+                </div>
+              </CardHeader>
+              <CardContent className="p-6">
+                <h3 className="text-xl font-semibold mb-2">{contest?.title ?? "Loading…"}</h3>
+                <p className="mb-4 text-sm text-muted-foreground whitespace-pre-line">
+                  {loading ? "Loading description…" : contest?.description ?? "No description"}
+                </p>
+
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                    <Calendar className="h-4 w-4" />
+                    <div>
+                      <div className="text-xs">Start</div>
+                      <div className="font-medium">{formatDate(contest?.startTime)}</div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                    <Clock className="h-4 w-4" />
+                    <div>
+                      <div className="text-xs">End</div>
+                      <div className="font-medium">{formatDate(contest?.endTime)}</div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-border/40">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-medium">Problems</h4>
+                  <div className="text-xs text-muted-foreground">{contest?.contestTochallegemapping?.length ?? 0} problems</div>
+                </div>
+              </CardHeader>
+
+              <CardContent>
+                {loading ? (
+                  <div className="py-8 text-center text-sm text-muted-foreground">Loading problems…</div>
+                ) : contest?.contestTochallegemapping?.length ? (
+                  <ul className="space-y-2">
+                    {contest!.contestTochallegemapping!.map((p, idx) => (
+                      <li key={p.id} className="flex items-center justify-between rounded px-3 py-2 hover:bg-gray-50">
+                        <div>
+                          <a href={`/problems/${p.id}`} className="text-sm font-medium text-blue-700 hover:underline">
+                            {idx + 1}. {p.challenge.title}
+                          </a>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <a href={`/problem/${p.challenge.slug}`} className="rounded border px-2 py-1 text-xs">Open</a>
+                          <a href={`/contest/${contest?.id}/submit/${p.id}`} className="rounded border px-2 py-1 text-xs">Submit</a>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <div className="py-8 text-center text-sm text-muted-foreground">No problems</div>
+                )}
+              </CardContent>
+            </Card>
           </div>
-        )}
+
+          <aside className="space-y-4">
+            <Card className="border-border/40">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="rounded-full bg-primary/10 p-3">
+                    <Trophy className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <div className="text-xs text-muted-foreground">Participants</div>
+                    <div className="text-lg font-semibold">{contest?.participants?.toLocaleString() ?? 0}</div>
+                  </div>
+                </div>
+
+                <div className="mt-4">
+                  <Button
+                    variant={contest?.status === "ongoing" ? "default" : "outline"}
+                    className="w-full"
+                    onClick={() => {
+                      if (contest?.status === "upcoming") {
+                        toast({ title: "Info", description: "Registration not implemented" });
+                      } else if (contest?.status === "ongoing") {
+                        window.location.href = `/contest/${contest?.id}/live`;
+                      } else {
+                        navigate(`/contest/${contest?.id}/results`);
+                      }
+                    }}
+                  >
+                    {(contest?.status)?.toLowerCase() === "upcoming" && "Register"}
+                    {contest?.status?.toLowerCase() === "ongoing" && "Join Now"}
+                    {contest?.status?.toLowerCase() === "completed" && "View Results"}
+                  </Button>
+                </div>
+
+                <div className="mt-3 text-xs text-muted-foreground">
+                  Type: {contest?.type?.toLowerCase() ?? "—"}
+                </div>
+
+              </CardContent>
+            </Card>
+          </aside>
+        </div>
       </main>
     </div>
   );

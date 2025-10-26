@@ -1,5 +1,5 @@
 import type { NextFunction , Response , Request } from "express";
-import jwt from "jsonwebtoken"
+import jwt, { type JwtPayload } from "jsonwebtoken"
 
 
 export async function AdminAuthMiddleware(req : Request, res : Response, next : NextFunction){
@@ -11,10 +11,9 @@ export async function AdminAuthMiddleware(req : Request, res : Response, next : 
                 success : false
             });
         };
-        const VerifySignedToken = await jwt.verify(token , process.env.ADMIN_SIGNED_JWT_TOKEN!);
+        const VerifySignedToken = await jwt.verify(token , process.env.ADMIN_SIGNED_JWT_TOKEN!) as JwtPayload;
         if(VerifySignedToken){
-            //@ts-ignore
-            req.userId = VerifySignedToken.id;
+            req.adminuserId = VerifySignedToken.id;
             return next();
         }
         return res.status(403).json({ 

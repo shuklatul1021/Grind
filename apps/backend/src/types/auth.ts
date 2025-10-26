@@ -6,5 +6,5 @@ export const SignUpSchema = z.object({
 
 export const AdminAuthSchema = z.object({
     email : z.email(),
-    password : z.string().min(8).max(16)
+    password : z.string().min(6).max(16)
 })

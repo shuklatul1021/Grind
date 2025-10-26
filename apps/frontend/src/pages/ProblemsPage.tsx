@@ -22,7 +22,7 @@ export default function ProblemsPage() {
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
   const [problems, setProblems] = useState<Problem[]>([]);
-  const [userProgress, setUserProgress] = useState<Map<string, UserProgress>>(new Map());
+  const [userProgress ] = useState<Map<string, UserProgress>>(new Map());
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [difficultyFilter, setDifficultyFilter] = useState<string>('all');

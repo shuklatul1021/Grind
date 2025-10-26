@@ -1,0 +1,25 @@
+name : Backend Deplyment CI/CD
+
+on:
+  push: 
+    branches:
+        - production
+    paths:
+        - 'app/backend/**'
+
+jobs:
+    deploy-backend:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name : Checkout Repository
+              uses: actions/checkout@v3
+            
+            - name : Setting Up SSH
+              uses: webfactory/ssh-agent@v0.5.4
+              with:
+                ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+            - name : Deploy to Server
+              run: |
+                ssh -o StrictHostKeyChecking=no ubuntu@13.48.78.12 "cd /home/ubuntu/Grind && git pull origin production && npm install && npm run build && pm2 restart all"

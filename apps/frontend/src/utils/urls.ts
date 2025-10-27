@@ -1,1 +1,1 @@
-export const BACKENDURL = "http://localhost:5000/v1/api";
+export const BACKENDURL = "https://grind-backend.codecollabhub.xyz/v1/api";

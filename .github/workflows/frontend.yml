@@ -27,18 +27,18 @@ jobs:
         run: npm run build
 
       - name: Deploy frontend to S3
-        uses: aws-actions/s3-sync@v2
+        uses: jakejarvis/s3-sync-action@master
         with:
-          source: app/frontend/dist   
-          destination: s3://grind-frontend 
-          region: ap-south-1          
-          delete: true                
+          args: --delete
         env:
+          AWS_S3_BUCKET: grind-frontend
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: eu-north-1
+          SOURCE_DIR: apps/frontend/dist
 
       - name: Invalidate CloudFront cache
-        uses: awact/cloudfront-action@v1.4.0
+        uses: chetan/invalidate-cloudfront-action@v2
         with:
           distribution-id: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
           paths: "/*"

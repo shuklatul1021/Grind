@@ -3,7 +3,7 @@ name : Backend Deplyment CI/CD
 on:
   push: 
     branches:
-        - production
+        - main
     paths:
         - 'app/backend/**'
 

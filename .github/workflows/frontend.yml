@@ -30,7 +30,7 @@ jobs:
         uses: aws-actions/s3-sync@v2
         with:
           source: app/frontend/dist   
-          destination: s3://your-bucket-name
+          destination: s3://grind-frontend 
           region: ap-south-1          
           delete: true                
         env:

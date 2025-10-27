@@ -91,7 +91,7 @@ export default function LandingPage() {
         <section className="container px-4 py-20">
           <div className="mx-auto max-w-6xl">
             <h2 className="mb-12 text-center text-3xl font-bold md:text-4xl">
-              Why Choose CodeMaster?
+              Why Choose Grind?
             </h2>
             <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
               <Card className="border-border/40 bg-card/50 backdrop-blur">
@@ -196,10 +196,10 @@ export default function LandingPage() {
           <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
             <div className="flex items-center gap-2">
               <Code2 className="h-5 w-5" />
-              <span className="font-semibold">CodeMaster</span>
+              <span className="font-semibold">Grind</span>
             </div>
             <p className="text-sm text-muted-foreground">
-              © 2025 CodeMaster. All rights reserved.
+              © 2025 Grind. All rights reserved.
             </p>
           </div>
         </div>

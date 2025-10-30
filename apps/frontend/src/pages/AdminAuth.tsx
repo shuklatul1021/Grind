@@ -35,8 +35,10 @@ export default function AdminLoginPage() {
         localStorage.setItem('adminToken' , data.token);
         setadminAuthState({isAuthenticated: true, loading: false});
         navigate('/admin/dashboard');
+        setLoading(false);
       }
       if (!response.ok) {
+        setLoading(false);
         throw new Error('Login failed');
       }
     } catch (err) {

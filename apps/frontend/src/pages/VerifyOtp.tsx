@@ -17,18 +17,21 @@ import { useAuthentication } from "../hooks/useAuthentication";
 export function VerifyOtp() {
   const navigate = useNavigate();
   const { setAuthState } = useAuthentication();
+  const [loading , setLoading ] = useState(false);
   const { theme, toggleTheme } = useTheme();
   const [ otp , setOpt ] = useState("");
   const { toast } = useToast();
   const user2FAAuthantication = useSelector((state: RootState) => state.user2FAAuthantication);
 
   async function HandelVerifyOtp(){
+    setLoading(true);
     if(!otp || otp.length < 6){
       toast({
         title: "Error",
         description: "Please enter a valid OTP",
         variant: "destructive",
       })
+      setLoading(false);
       return;
     }
     const response = await fetch(`${BACKENDURL}/user/verify-otp`, {
@@ -46,6 +49,7 @@ export function VerifyOtp() {
       const json = await response.json();
       localStorage.setItem("token" , json.token);
       setAuthState({isAuthenticated : true , user : json.user , loading : false});
+      setLoading(false);
       navigate("/problems");
     }else{
       toast({
@@ -54,7 +58,7 @@ export function VerifyOtp() {
         variant: "destructive",
       })
       setAuthState({isAuthenticated : false , user : null , loading : false});
-      
+      setLoading(false);
     }
   }
   return (
@@ -106,7 +110,7 @@ export function VerifyOtp() {
             </InputOTP>
           </div>
           <div className="mt-[50px]">
-            <Button className="h-12 w-[200px]" onClick={HandelVerifyOtp}>Verify</Button>
+            <Button className="h-12 w-[200px]" disabled={loading} onClick={HandelVerifyOtp}>{loading ? <><div className="h-4 w-4 animate-spin rounded-full border-4 border-primary border-t-transparent"></div> Verifying...</> : "Verify"}</Button>
           </div>
           <p className="mt-4 text-center text-sm text-muted-foreground">
             By continuing, you agree to our Terms of Service and Privacy Policy

@@ -8,7 +8,7 @@ export interface Problem {
   examples: Example[];
   constraints?: string;
   starterCode: string;
-  testCases: TestCase[];
+  testcase: TestCase[];
   acceptanceRate?: number;
   createdAt: string;
   updatedAt: string;

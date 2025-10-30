@@ -33,6 +33,7 @@ export default function ProblemPage() {
   const { theme, toggleTheme } = useTheme();
   const { toast } = useToast();
   const [problem, setProblem] = useState<Problem | null>(null);
+  const [activeTest, setActiveTest] = useState(0);
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -170,7 +171,7 @@ export default function ProblemPage() {
       </header>
 
       <ResizablePanelGroup direction="horizontal" className="flex-1">
-        <ResizablePanel defaultSize={45} minSize={30}>
+        <ResizablePanel defaultSize={25} minSize={30}>
           <div className="h-full overflow-y-auto p-6">
             <div className="mb-4 flex flex-wrap items-center gap-2">
               <h1 className="text-2xl font-bold">{problem.title}</h1>
@@ -266,9 +267,104 @@ export default function ProblemPage() {
               </Button>
             </div>
 
-            <div className="flex-1 p-4">
+            <div
+              className="flex-1 min-h-[50vh] max-h-[80vh] overflow-auto rounded-md border border-border/40 bg-muted/30"
+              role="region"
+              aria-label="Code editor"
+            >
               <CodeEditor code={code} setCode={setCode} language={"python"}/>
             </div>
+
+            {!testResult && (
+              <div className="border-t border-border/40 bg-muted/50">
+                <Card>
+                  <CardContent className="mt-1">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-sm font-semibold">Test Cases</h3>
+                      <div className="text-xs text-muted-foreground">{problem.testcase.length} total</div>
+                    </div>
+
+                    {/* Tabs */}
+                    <div className="mt-3 flex gap-2 overflow-x-auto">
+                      {problem.testcase.map((_, i) => (
+                        <button
+                          key={i}
+                          onClick={() => setActiveTest(i)}
+                          className={
+                            "inline-flex items-center justify-center min-w-[36px] h-8 px-2 rounded-md text-sm " +
+                            (i === activeTest
+                              ? "bg-primary text-black shadow"
+                              : "bg-transparent text-muted-foreground border border-border/20 hover:bg-muted/40")
+                          }
+                          aria-pressed={i === activeTest}
+                        >
+                          Test {i + 1}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Content panels */}
+                    <div className="mt-4 grid gap-4 md:grid-cols-2">
+                      <div className="rounded-md border border-border/40 bg-background/50 p-3">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <div className="text-xs font-medium">Input</div>
+                            <div className="text-2xs text-muted-foreground">Test #{activeTest + 1}</div>
+                          </div>
+                        </div>
+
+                        <pre
+                          className="mt-3 max-h-56 overflow-auto whitespace-pre-wrap text-sm bg-transparent p-2 rounded"
+                          style={{ fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, 'Roboto Mono', monospace" }}
+                        >
+                          {problem.testcase[activeTest]?.input ?? "-"}
+                        </pre>
+                      </div>
+
+                      <div className="rounded-md border border-border/40 bg-background/50 p-3">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <div className="text-xs font-medium">Expected Output</div>
+                            <div className="text-2xs text-muted-foreground">Test #{activeTest + 1}</div>
+                          </div>
+                        </div>
+
+                        <pre
+                          className="mt-3 max-h-56 overflow-auto whitespace-pre-wrap text-sm bg-transparent p-2 rounded"
+                          style={{ fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, 'Roboto Mono', monospace" }}
+                        >
+                          {problem.testcase[activeTest]?.expectedOutput ?? "-"}
+                        </pre>
+                      </div>
+                    </div>
+
+                    {/* Navigation */}
+                    <div className="mt-4 flex items-center justify-between">
+                      <div className="text-xs text-muted-foreground">
+                        Showing {activeTest + 1} of {problem.testcase.length}
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => setActiveTest((s) => Math.max(0, s - 1))}
+                          className="rounded border px-3 py-1 text-sm disabled:opacity-50"
+                          disabled={activeTest <= 0}
+                        >
+                          Prev
+                        </button>
+                        <button
+                          onClick={() => setActiveTest((s) => Math.min(problem.testcase.length - 1, s + 1))}
+                          className="rounded border px-3 py-1 text-sm disabled:opacity-50"
+                          disabled={activeTest >= problem.testcase.length - 1}
+                        >
+                          Next
+                        </button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
 
             {testResult && (
               <div className="border-t border-border/40 bg-muted/50 p-4">

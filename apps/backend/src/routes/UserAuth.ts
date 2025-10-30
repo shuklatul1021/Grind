@@ -73,30 +73,23 @@ userAuthRouter.post("/verify-otp" , OtpRateLimiter , async(req, res)=>{
             })
         }
 
-        const StoreUserInfo = await prisma.user.findFirst({
-            where : { email : email as string }
+        const StoreUserInfo = await prisma.user.create({
+            data : {
+                email : email
+            }
         });
 
-        let user = StoreUserInfo;
-
-        if(!user){
-            user = await prisma.user.create({
-                data : {
-                    email : email as string
-                }
+        if(!StoreUserInfo){
+            return res.status(402).json({
+                message : "Error While Storing User Info",
+                success : false
             });
-
-            if(!user){
-                return res.status(402).json({
-                    message : "Error While Creating User",
-                    success : false
-                })
-            }
         }
 
         const SignedToken = await jwt.sign({
-            id : user.id
+            id : StoreUserInfo.id
         }, process.env.USER_AUTH_JSON_WEB_TOKEN!);
+        
         if(SignedToken){
             return res.status(200).json({
                 message : "Authantication Successfully",

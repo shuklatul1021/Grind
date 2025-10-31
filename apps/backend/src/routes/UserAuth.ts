@@ -73,10 +73,10 @@ userAuthRouter.post("/verify-otp" , OtpRateLimiter , async(req, res)=>{
             })
         }
 
-        const StoreUserInfo = await prisma.user.create({
-            data : {
-                email : email
-            }
+        const StoreUserInfo = await prisma.user.upsert({
+            where: { email: email },
+            update: { },
+            create: { email: email,}
         });
 
         if(!StoreUserInfo){

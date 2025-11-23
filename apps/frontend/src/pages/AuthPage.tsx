@@ -4,7 +4,7 @@ import { Button } from '@repo/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@repo/ui/card';
 import { Input } from '@repo/ui/input';
 import { Label } from '@repo/ui/label';
-import { Code2, Moon, Sun, Loader2, Shield, SquareChevronRight } from 'lucide-react';
+import { Moon, Sun, Loader2, Shield, SquareChevronRight } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { useToast } from '../../../../packages/ui/src/hooks/use-toast';
 import { BACKENDURL } from '../utils/urls';

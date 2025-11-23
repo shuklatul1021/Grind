@@ -3,7 +3,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@repo/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/card';
 import { Badge } from '@repo/ui/badge';
-import { Textarea } from '@repo/ui/textarea';
 import {
   Select,
   SelectContent,
@@ -11,8 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@repo/ui/select';
-import { 
-  Code2, 
+import {  
   Moon, 
   Sun, 
   LogOut, 
@@ -20,7 +18,10 @@ import {
   RotateCcw, 
   Download,
   Copy,
-  Check
+  Check,
+  Columns,
+  Rows,
+  SquareChevronRight
 } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { BACKENDURL } from '../utils/urls';
@@ -103,7 +104,7 @@ package main
 import "fmt"
 
 func sum(a int, b int) int {
-    return a + b
+    return a + b;
 }
 
 func main() {
@@ -126,10 +127,10 @@ export default function CompilerPage() {
   const { theme, toggleTheme } = useTheme();
   const [selectedLanguage, setSelectedLanguage] = useState('javascript');
   const [code, setCode] = useState(DEFAULT_CODE.javascript);
-  const [input, setInput] = useState('');
   const [output, setOutput] = useState('');
   const [isRunning, setIsRunning] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [layout, setLayout] = useState<'bottom' | 'right'>('bottom');
 
   const handleLanguageChange = (language: string) => {
     setSelectedLanguage(language);
@@ -166,7 +167,6 @@ export default function CompilerPage() {
 
   const handleReset = () => {
     setCode(DEFAULT_CODE[selectedLanguage as keyof typeof DEFAULT_CODE] || '');
-    setInput('');
     setOutput('');
   };
 
@@ -201,17 +201,21 @@ export default function CompilerPage() {
     navigate('/');
   };
 
+  const toggleLayout = () => {
+    setLayout(prev => prev === 'bottom' ? 'right' : 'bottom');
+  };
+
   const currentLanguage = LANGUAGES.find((lang) => lang.value === selectedLanguage);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       <header className="sticky top-0 z-50 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center justify-between px-4">
           <div
             className="flex cursor-pointer items-center gap-2"
             onClick={() => navigate('/')}
           >
-            <Code2 className="h-6 w-6"/>
+            <SquareChevronRight className="h-6 w-6"/>
             <span className="text-xl font-bold">Grind</span>
           </div>
           <div className='flex space-x-4'>
@@ -242,128 +246,122 @@ export default function CompilerPage() {
         </div>
       </header>
 
-      <main className="container px-4 py-8">
-        <div className="mb-8">
-          <h1 className="mb-2 text-3xl font-bold">Online Compiler</h1>
-          <p className="text-muted-foreground">
+      <main className="container flex-1 px-4 py-6 flex flex-col h-[calc(100vh-4rem)]">
+        <div className="mb-6 flex-none">
+          <h1 className="mb-1 text-2xl font-bold">Online Compiler</h1>
+          <p className="text-sm text-muted-foreground">
             Write, run, and test your code in multiple programming languages
           </p>
         </div>
 
-        <Card className="mb-6 border-border/40">
-          <CardHeader>
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <CardTitle>Code Editor</CardTitle>
-              <div className="flex flex-wrap items-center gap-3">
-                <Select value={selectedLanguage} onValueChange={handleLanguageChange}>
-                  <SelectTrigger className="w-[200px]">
-                    <SelectValue placeholder="Select Language" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {LANGUAGES.map((lang) => (
-                      <SelectItem key={lang.value} value={lang.value}>
-                        {lang.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {currentLanguage && (
-                  <Badge variant="outline" className="text-xs">
-                    {currentLanguage.version}
-                  </Badge>
-                )}
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex gap-2">
-                <Button 
-                  onClick={handleRunCode} 
-                  disabled={isRunning}
-                  className="flex-1 sm:flex-none"
-                >
-                  {isRunning ? (
-                    <>
-                      <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                      Running...
-                    </>
-                  ) : (
-                    <>
-                      <Play className="mr-2 h-4 w-4" />
-                      Run Code
-                    </>
+        <div className={`flex-1 flex gap-4 min-h-0 ${layout === 'right' ? 'flex-row' : 'flex-col'}`}>
+          <Card className={`border-border/40 flex flex-col shadow-sm ${layout === 'right' ? 'w-1/2' : 'w-full flex-1'}`}>
+            <CardHeader className="py-3 px-4 border-b border-border/40">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex items-center gap-2">
+                  <CardTitle className="text-base">Code Editor</CardTitle>
+                  {currentLanguage && (
+                    <Badge variant="secondary" className="text-xs font-normal">
+                      {currentLanguage.version}
+                    </Badge>
                   )}
-                </Button>
-                <Button 
-                  variant="outline" 
-                  onClick={handleReset}
-                  className="flex-1 sm:flex-none"
-                >
-                  <RotateCcw className="mr-2 h-4 w-4" />
-                  Reset
-                </Button>
-                <Button 
-                  variant="outline" 
-                  onClick={handleCopyCode}
-                  className="flex-1 sm:flex-none"
-                >
-                  {copied ? (
-                    <>
-                      <Check className="mr-2 h-4 w-4" />
-                      Copied!
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="mr-2 h-4 w-4" />
-                      Copy
-                    </>
-                  )}
-                </Button>
-                <Button 
-                  variant="outline" 
-                  onClick={handleDownload}
-                  className="flex-1 sm:flex-none"
-                >
-                  <Download className="mr-2 h-4 w-4" />
-                  Download
-                </Button>
-              </div>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Select value={selectedLanguage} onValueChange={handleLanguageChange}>
+                    <SelectTrigger className="h-8 w-[140px] text-xs">
+                      <SelectValue placeholder="Select Language" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {LANGUAGES.map((lang) => (
+                        <SelectItem key={lang.value} value={lang.value} className="text-xs">
+                          {lang.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  
+                  <div className="h-4 w-px bg-border/60 mx-1" />
 
-              <div className="rounded-md border border-border/40 bg-muted/30">
-                <CodeEditor code={code} setCode={setCode}/>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+                  <Button 
+                    onClick={handleRunCode} 
+                    disabled={isRunning}
+                    size="sm"
+                    className="h-8 px-3"
+                  >
+                    {isRunning ? (
+                      <>
+                        <div className="mr-2 h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                        Running
+                      </>
+                    ) : (
+                      <>
+                        <Play className="mr-2 h-3 w-3" />
+                        Run
+                      </>
+                    )}
+                  </Button>
 
-        <div className="grid gap-6 lg:grid-cols-2">
-          <Card className="border-border/40">
-            <CardHeader>
-              <CardTitle>Input</CardTitle>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={toggleLayout}
+                    className="h-8 w-8"
+                    title={layout === 'bottom' ? "Switch to side-by-side view" : "Switch to stacked view"}
+                  >
+                    {layout === 'bottom' ? <Columns className="h-4 w-4" /> : <Rows className="h-4 w-4" />}
+                  </Button>
+                  
+                </div>
+              </div>
             </CardHeader>
-            <CardContent>
-              <Textarea
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                className="min-h-[200px] font-mono text-sm resize-none"
-                placeholder="Provide input for your program (optional)..."
-              />
+            <CardContent className="flex-1 p-0 flex flex-col relative h-full">
+               <div className="absolute top-2 right-4 z-10 flex gap-1">
+                  <Button 
+                    variant="secondary" 
+                    size="icon"
+                    onClick={handleReset}
+                    className="h-7 w-7 opacity-50 hover:opacity-100 transition-opacity"
+                    title="Reset Code"
+                  >
+                    <RotateCcw className="h-3 w-3" />
+                  </Button>
+                  <Button 
+                    variant="secondary" 
+                    size="icon"
+                    onClick={handleCopyCode}
+                    className="h-7 w-7 opacity-50 hover:opacity-100 transition-opacity"
+                    title="Copy Code"
+                  >
+                    {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                  </Button>
+                  <Button 
+                    variant="secondary" 
+                    size="icon"
+                    onClick={handleDownload}
+                    className="h-7 w-7 opacity-50 hover:opacity-100 transition-opacity"
+                    title="Download Code"
+                  >
+                    <Download className="h-3 w-3" />
+                  </Button>
+               </div>
+               <div className="flex-1 h-full [&_.cm-editor]:h-full [&_.cm-scroller]:h-full">
+                  <CodeEditor code={code} setCode={setCode} language={selectedLanguage} />
+               </div>
             </CardContent>
           </Card>
 
-          <Card className="border-border/40">
-            <CardHeader>
-              <CardTitle>Output</CardTitle>
+          <Card className={`border-border/40 flex flex-col shadow-sm ${layout === 'right' ? 'w-1/2' : 'w-full h-[300px]'}`}>
+            <CardHeader className="py-3 px-4 border-b border-border/40 bg-muted/20">
+              <CardTitle className="text-base">Output</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="min-h-[200px] rounded-md border border-border/40 bg-muted/30 p-4">
+            <CardContent className="flex-1 p-0 bg-[#1e1e1e]">
+              <div className="h-full w-full p-4 overflow-auto font-mono text-base text-gray-300">
                 {output ? (
-                  <pre className="font-mono text-sm whitespace-pre-wrap">{output}</pre>
+                  <pre className="whitespace-pre-wrap">{output}</pre>
                 ) : (
-                  <p className="text-sm text-muted-foreground">
-                    Output will appear here after running your code
-                  </p>
+                  <div className="h-full flex items-center justify-center text-muted-foreground/40 italic">
+                    Run your code to see output here
+                  </div>
                 )}
               </div>
             </CardContent>

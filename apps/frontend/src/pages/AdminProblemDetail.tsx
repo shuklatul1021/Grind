@@ -17,7 +17,8 @@ import {
   Users,
   CheckCircle2,
   XCircle,
-  Clock
+  Clock,
+  SquareChevronRight
 } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 
@@ -76,7 +77,6 @@ export default function AdminProblemDetail() {
   const fetchProblemDetail = async () => {
     setLoading(true);
     
-    // Simulate API call - replace with actual endpoint
     setTimeout(() => {
       setProblem({
         id: id || '1',
@@ -230,7 +230,7 @@ export default function AdminProblemDetail() {
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div className="flex items-center gap-2">
-              <Code2 className="h-6 w-6" />
+              <SquareChevronRight className="h-6 w-6" />
               <span className="text-xl font-bold">Problem Details</span>
             </div>
           </div>

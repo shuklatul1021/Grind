@@ -8,7 +8,8 @@ import {
   Calendar,
   Clock,
   Trophy,
-  ArrowLeft, 
+  ArrowLeft,
+  SquareChevronRight, 
 } from "lucide-react";
 import { BACKENDURL } from "../utils/urls";
 import { toast } from "../../../../packages/ui/src/hooks/use-toast";
@@ -137,7 +138,7 @@ export default function ContestPage(): JSX.Element {
               <ArrowLeft className="h-5 w-5" />
             </Button>
           <div className="flex items-center gap-2">
-            <Code2 className="h-6 w-6" />
+            <SquareChevronRight className="h-6 w-6" />
             <h2 className="text-lg font-semibold">{contest?.title ?? "Contest"}</h2>
           </div>
         </div>

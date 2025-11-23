@@ -3,8 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@repo/ui/button';
 import { Card, CardContent, CardHeader, } from '@repo/ui/card';
 import { Badge } from '@repo/ui/badge';
-import { 
-  Code2, 
+import {  
   Moon, 
   Sun, 
   LogOut, 
@@ -13,11 +12,14 @@ import {
   Users,
   Trophy,
   TrendingUp,
-  ChevronRight
+  ChevronRight,
+  SquareChevronRight
 } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { toast } from '../../../../packages/ui/src/hooks/use-toast';
 import { BACKENDURL } from '../utils/urls';
+// import { useDispatch, useSelector } from "react-redux";
+// import type { RootState } from '../state/ReduxStateProvider';
 
 interface Contest {
   id: string;
@@ -38,6 +40,13 @@ export default function ContestsPage() {
   const [contests, setContests] = useState<Contest[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'all' | 'weekly' | 'monthly'>('all');
+  // const setReduxContests = useDispatch();
+
+  // const getUserinfo = useSelector((state: RootState) => state.userDetails);
+  // const getContestinfo = useSelector((state: RootState) => state.contests);
+
+  // console.log("User Info in Contests Page: ", getUserinfo);
+  // console.log("Contest Info in Contests Page: ", getContestinfo);
 
   useEffect(() => {
     fetchContests();
@@ -57,6 +66,7 @@ export default function ContestsPage() {
     if (response.ok) {
       const json = await response.json();
       setContests(json.contests);
+      // setReduxContests(setReduxContests(json.contests));
     } else {
       toast({
         title: 'Error',
@@ -128,7 +138,7 @@ export default function ContestsPage() {
             className="flex cursor-pointer items-center gap-2"
             onClick={() => navigate('/')}
           >
-            <Code2 className="h-6 w-6" />
+            <SquareChevronRight className="h-6 w-6" />
             <span className="text-xl font-bold">Grind</span>
           </div>
           <div className='flex space-x-4'>
@@ -177,7 +187,7 @@ export default function ContestsPage() {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Active Contests</p>
-                  <p className="text-2xl font-bold">2</p>
+                  <p className="text-2xl font-bold">{contests.length}</p>
                 </div>
               </div>
             </CardContent>

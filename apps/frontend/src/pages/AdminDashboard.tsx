@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/card';
 import { Badge } from '@repo/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@repo/ui/tabs';
 import {
-  Code2,
   Moon,
   Sun,
   LogOut,
@@ -16,7 +15,8 @@ import {
   TrendingUp,
   Edit,
   Trash2,
-  Eye
+  Eye,
+  SquareChevronRight
 } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { BACKENDURL } from '../utils/urls';
@@ -160,7 +160,7 @@ export default function AdminDashboard() {
             className="flex cursor-pointer items-center gap-2"
             onClick={() => navigate('/')}
           >
-            <Code2 className="h-6 w-6" />
+            <SquareChevronRight className="h-6 w-6" />
             <span className="text-xl font-bold">Grind Admin</span>
           </div>
           <div className="flex items-center gap-4">

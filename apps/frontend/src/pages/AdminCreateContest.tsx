@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@repo/ui/select';
-import { Code2, Moon, Sun, ArrowLeft, Save, Plus, X } from 'lucide-react';
+import { Moon, Sun, ArrowLeft, Save, Plus, X, SquareChevronRight } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { BACKENDURL } from '../utils/urls';
 
@@ -159,7 +159,7 @@ console.log("Selected Problems: ", selectedProblems);
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div className="flex items-center gap-2">
-              <Code2 className="h-6 w-6" />
+              <SquareChevronRight className="h-6 w-6" />
               <span className="text-xl font-bold">Create Contest</span>
             </div>
           </div>

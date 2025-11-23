@@ -4,7 +4,7 @@ import { Button } from '@repo/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@repo/ui/card';
 import { Input } from '@repo/ui/input';
 import { Label } from '@repo/ui/label';
-import { Code2, Moon, Sun, Loader2, Shield } from 'lucide-react';
+import { Code2, Moon, Sun, Loader2, Shield, SquareChevronRight } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { useToast } from '../../../../packages/ui/src/hooks/use-toast';
 import { BACKENDURL } from '../utils/urls';
@@ -68,7 +68,7 @@ export default function AuthPage() {
             className="flex cursor-pointer items-center gap-2"
             onClick={() => navigate('/')}
           >
-            <Code2 className="h-6 w-6" />
+            <SquareChevronRight className="h-6 w-6" />
             <span className="text-xl font-bold">Grind</span>
           </div>
           <Button

@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@repo/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@repo/ui/card';
-import { Code2, Zap, Trophy, Users, Moon, Sun } from 'lucide-react';
+import { Code2, Zap, Trophy, Users, Moon, Sun, SquareTerminal } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuthentication } from '../hooks/useAuthentication';
 import { useEffect } from 'react';
@@ -23,7 +23,7 @@ export default function LandingPage() {
       <header className="border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center justify-between px-4">
           <div className="flex items-center gap-2">
-            <Code2 className="h-6 w-6" />
+            <SquareTerminal className="h-6 w-6" />
             <span className="text-xl font-bold">Grind</span>
           </div>
           <div className="flex items-center gap-4">

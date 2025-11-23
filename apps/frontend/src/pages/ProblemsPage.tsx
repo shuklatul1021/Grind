@@ -11,11 +11,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@repo/ui/select';
-import { Code2, Moon, Sun, LogOut, Search, CheckCircle2, Circle } from 'lucide-react';
+import { Moon, Sun, LogOut, Search, CheckCircle2, Circle, SquareChevronRight } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import type { Problem, UserProgress } from '../types/problem';
 import { BACKENDURL } from '../utils/urls';
 import { toast } from '../../../../packages/ui/src/hooks/use-toast';
+import { useDispatch } from "react-redux";
+import { setUserDetails } from '../state/ReduxStateProvider';
 
 
 export default function ProblemsPage() {
@@ -27,14 +29,37 @@ export default function ProblemsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [difficultyFilter, setDifficultyFilter] = useState<string>('all');
 
+  // const setReduxProblems = useDispatch();
+  const setReduxUserDetails = useDispatch();
+
   useEffect(() => {
     // if (!user) {
     //   navigate('/auth');
     //   return;
     // }
-
+    getuserDetails();
     fetchProblems();
   }, [navigate]);
+
+  const getuserDetails = async () => {
+    const response = await fetch(`${BACKENDURL}/user/details`,{
+      method : "GET",
+      headers : {
+        "Content-Type" : "application/json",
+        "token" : localStorage.getItem("token") || ""
+      }
+    });
+    if(response.ok){
+      const json = await response.json();
+      setReduxUserDetails(setUserDetails(json.user));
+    }else{
+      toast({
+        title: "Error",
+        description: "Failed to fetch user details. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const fetchProblems = async () => {
     setLoading(true);
@@ -48,6 +73,7 @@ export default function ProblemsPage() {
     if(response.ok){
       const json = await response.json();
       setProblems(json.problems);
+      // setReduxProblems(setReduxProblems(json.problems));
     }else{
       toast({
         title: "Error",
@@ -105,7 +131,7 @@ export default function ProblemsPage() {
             className="flex cursor-pointer items-center gap-2"
             onClick={() => navigate('/')}
           >
-            <Code2 className="h-6 w-6" />
+            <SquareChevronRight className="h-6 w-6" />
             <span className="text-xl font-bold">Grind</span>
           </div>
           <div className='flex space-x-4'>
@@ -205,9 +231,6 @@ export default function ProblemsPage() {
                             {tag}
                           </Badge>
                         ))}
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        Acceptance Rate: {problem.acceptanceRate}%
                       </div>
                     </div>
                   </div>

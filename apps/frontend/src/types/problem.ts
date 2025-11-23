@@ -1,3 +1,8 @@
+export interface StarterCode {
+  language: string;
+  code: string;
+} 
+
 export interface Problem {
   id: string;
   title: string;
@@ -7,7 +12,7 @@ export interface Problem {
   tags: string[];
   examples: Example[];
   constraints?: string;
-  starterCode: string;
+  starterCode: StarterCode[];
   testcase: TestCase[];
   acceptanceRate?: number;
   createdAt: string;

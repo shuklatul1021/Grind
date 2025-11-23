@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/card';
 import { Badge } from '@repo/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@repo/ui/tabs';
 import {
-  Code2,
   Moon,
   Sun,
   LogOut,
@@ -14,6 +13,7 @@ import {
   XCircle,
   ArrowLeft,
   Loader2,
+  SquareChevronRight,
 } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 
@@ -23,9 +23,10 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from '@repo/ui/resizable';
-import type { Example, Problem } from '../types/problem';
+import type { Example, Problem, StarterCode } from '../types/problem';
 import { BACKENDURL } from '../utils/urls';
 import CodeEditor from './CodeEditor';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@repo/ui/select';
 
 export default function ProblemPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -33,7 +34,9 @@ export default function ProblemPage() {
   const { theme, toggleTheme } = useTheme();
   const { toast } = useToast();
   const [problem, setProblem] = useState<Problem | null>(null);
+  const [starterCodes, setStarterCodes] = useState<StarterCode[]>([]);
   const [activeTest, setActiveTest] = useState(0);
+  const [selectedLanguage, setSelectedLanguage] = useState('python');
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -41,6 +44,13 @@ export default function ProblemPage() {
     status: 'accepted' | 'wrong_answer' | 'runtime_error';
     message: string;
   } | null>(null);
+
+  const handleLanguageChange = (language: string) => {
+    setSelectedLanguage(language);
+    const selectedCode = starterCodes.find((sc) => sc.language === language);
+    setCode(selectedCode ? selectedCode.code : '');
+  };
+
 
 
   useEffect(() => {
@@ -59,7 +69,9 @@ export default function ProblemPage() {
     if(response.ok){
       const json = await response.json();
       setProblem(json.problem);
-      setCode(json.problem.starterCode || '');
+      setStarterCodes(JSON.parse(json.problem.starterCode));
+      const selectedCode = JSON.parse(json.problem.starterCode).find((sc: StarterCode) => sc.language === selectedLanguage);
+      setCode(selectedCode ? selectedCode.code : '');
     }else{
       toast({
         title: "Error",
@@ -138,7 +150,7 @@ export default function ProblemPage() {
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div className="flex cursor-pointer items-center gap-2" onClick={() => navigate('/')}>
-              <Code2 className="h-6 w-6" />
+              <SquareChevronRight className="h-6 w-6" />
               <span className="text-xl font-bold">Grind</span>
             </div>
           </div>
@@ -246,7 +258,18 @@ export default function ProblemPage() {
         <ResizablePanel defaultSize={55} minSize={30}>
           <div className="flex h-full flex-col">
             <div className="flex items-center justify-between border-b border-border/40 bg-muted/50 px-4 py-2">
-              <span className="text-sm font-medium">Python</span>
+              <Select value={selectedLanguage} onValueChange={handleLanguageChange}>
+                <SelectTrigger className="w-[200px]">
+                  <SelectValue placeholder="Select Language" />
+                </SelectTrigger>
+                <SelectContent>
+                  {starterCodes.map((lang) => (
+                    <SelectItem key={lang.language} value={lang.language}>
+                      {lang.language}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <Button
                 onClick={handleRunCode}
                 disabled={submitting}
@@ -272,7 +295,7 @@ export default function ProblemPage() {
               role="region"
               aria-label="Code editor"
             >
-              <CodeEditor code={code} setCode={setCode} language={"python"}/>
+              <CodeEditor code={code} setCode={setCode} language={selectedLanguage}/>
             </div>
 
             {!testResult && (

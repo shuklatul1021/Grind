@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/card';
 import { Badge } from '@repo/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@repo/ui/tabs';
 import {
-  Code2,
   Moon,
   Sun,
   ArrowLeft,
@@ -16,7 +15,8 @@ import {
   Users,
   Trophy,
   TrendingUp,
-  FileText
+  FileText,
+  SquareChevronRight
 } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 
@@ -268,7 +268,7 @@ export default function AdminContestDetail() {
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div className="flex items-center gap-2">
-              <Code2 className="h-6 w-6" />
+              <SquareChevronRight className="h-6 w-6" />
               <span className="text-xl font-bold">Contest Details</span>
             </div>
           </div>

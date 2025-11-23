@@ -4,7 +4,7 @@ import { Button } from '@repo/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/card';
 import { Input } from '@repo/ui/input';
 import { Label } from '@repo/ui/label';
-import { Code2, Moon, Sun, Lock, Mail } from 'lucide-react';
+import { Code2, Moon, Sun, Lock, Mail, SquareChevronRight } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { BACKENDURL } from '../utils/urls';
 import { useAdminAuthentication } from '../hooks/useAuthentication';
@@ -55,7 +55,7 @@ export default function AdminLoginPage() {
           <div
             className="flex cursor-pointer items-center gap-2"
             onClick={() => navigate('/')}>
-            <Code2 className="h-6 w-6" />
+            <SquareChevronRight className="h-6 w-6" />
             <span className="text-xl font-bold">Grind</span>
           </div>
           <Button

@@ -13,12 +13,12 @@ import "prismjs/components/prism-go";
 import "prismjs/components/prism-rust";
 import "prismjs/themes/prism-tomorrow.css";
 
-export type SupportedLang = "c" | "cpp" | "python" | "java" | "javascript" | "typescript" | "jsx" | "go" | "rust";
+// export type SupportedLang = "c" | "cpp" | "python" | "java" | "javascript" | "typescript" | "jsx" | "go" | "rust";
 
 type CodeEditorProps = {
   code: string;
   setCode: (value: string) => void;
-  language?: SupportedLang;
+  language?: string;
   placeholder?: string;
   minHeight?: number | string;
 };
@@ -26,7 +26,7 @@ type CodeEditorProps = {
 export default function CodeEditor({
   code,
   setCode,
-  language = "python",
+  language,
   placeholder = "Write your code here...",
   minHeight = 400,
 }: CodeEditorProps) {
@@ -83,7 +83,7 @@ export default function CodeEditor({
   }, []);
 
   return (
-    <div className="relative rounded-md border border-border/40 bg-muted/30">
+    <div className="relative rounded-md border border-border/40 bg-muted/30 h-full">
       <div className="flex">
         <pre
           ref={gutterRef}
@@ -122,7 +122,7 @@ export default function CodeEditor({
             placeholder={placeholder}
             style={{
               fontFamily: "inherit",
-              fontSize: 13,
+              fontSize: 14,
               outline: "none",
               background: "transparent",
               minHeight,
@@ -134,7 +134,7 @@ export default function CodeEditor({
       </div>
       <div className="flex items-center justify-between border-t border-border/40 px-3 py-2 text-xs text-muted-foreground">
         <div>{lines.length} {lines.length === 1 ? "line" : "lines"}</div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <div className="text-xs">Language: {language}</div>
         </div>
       </div>

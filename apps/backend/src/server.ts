@@ -9,14 +9,12 @@ import contestRouter from "./routes/ContestRouter.js";
 import cors from "cors";
 import { MatricsesMiddleware } from "./middleware/prometheus.js";
 import client from "prom-client";
+import { testRouter } from "./routes/test.js";
 export const app = express();
 
 
 app.use(express.json())
-app.use(cors({
-    credentials : true,
-    origin : "https://grind.codecollabhub.xyz"
-}));
+app.use(cors());
 app.use(MatricsesMiddleware)
 app.use(routeratelimiter);
   
@@ -26,6 +24,7 @@ app.use("/v1/api/problems" , problemsRouter);
 app.use("/v1/api/contest" , contestRouter);
 app.use("/v1/api/submit" , poblemsubmitRouter);
 app.use("/v1/api/compiler" , compilerRouter);
+app.use("/v1/api/test" , testRouter);
 
 app.get('/metrics', async (req, res) => {
     try{

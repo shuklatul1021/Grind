@@ -138,4 +138,29 @@ userAuthRouter.get("/verify" , UserAuthMiddleware , async(req, res)=>{
 })
 
 
+userAuthRouter.get("/details" , UserAuthMiddleware , async(req, res)=>{
+    try{
+        const userId = req.userId;
+        const userDetails = await prisma.user.findFirst({ where : { id : userId}});
+        if(userDetails){
+            return res.status(200).json({
+                user : userDetails,
+                success : true
+            })
+        }
+        res.status(403).json({
+            message : "Error While Authentication",
+            success : false
+        })
+
+    }catch(e){
+        console.log(e);
+        res.status(500).json({
+            message : "Internal Server Error",
+            success : false
+        })
+    }
+});
+
+
 export default userAuthRouter;

@@ -65,13 +65,14 @@ compilerRouter.post("/run", ComilerRateLimiter , UserAuthMiddleware , async (req
 
                 case 'cpp':
                     const cppResult = await runCpp(sandbox, code, input);
+                    console.log('C++ execution result:', cppResult);
                     output = cppResult.output;
                     error = cppResult.error;
                     executionTime = cppResult.executionTime;
                     break;
-
+ 
                 case 'c':
-                    const cResult = await runC(sandbox, code, input);
+                    const cResult = await runC(sandbox, code, input); 
                     output = cResult.output;
                     error = cResult.error;
                     executionTime = cResult.executionTime;
@@ -101,8 +102,8 @@ compilerRouter.post("/run", ComilerRateLimiter , UserAuthMiddleware , async (req
             });
 
         } finally {
-            const closeFn = (sandbox as any).close?? (sandbox as any).destroy ??(sandbox as any).shutdown;
-            if (typeof closeFn ==="function") {
+            const closeFn = (sandbox as any).close ?? (sandbox as any).destroy ?? (sandbox as any).shutdown;
+            if (typeof closeFn === "function") {
                 await closeFn.call(sandbox);
             }
         }
@@ -120,148 +121,284 @@ compilerRouter.post("/run", ComilerRateLimiter , UserAuthMiddleware , async (req
 
 async function runPython(sandbox: any, code: string, input?: string) {
     const startTime = Date.now();
-    await sandbox.files.write('/tmp/main.py', code);
-    const execution = await sandbox.commands.run(
-        input ? `echo "${input}" | python3 /tmp/main.py` : 'python3 /tmp/main.py'
-    );
-    return {
-        output: execution.stdout,
-        error: execution.stderr,
-        executionTime: Date.now() - startTime
-    };
+    try {
+        await sandbox.files.write('/tmp/main.py', code);
+        const execution = await sandbox.commands.run(
+            input ? `echo "${input}" | python3 /tmp/main.py` : 'python3 /tmp/main.py'
+        );
+        return {
+            output: execution.stdout,
+            error: execution.stderr,
+            executionTime: Date.now() - startTime
+        };
+    } catch (error: any) {
+        return {
+            output: error.result?.stdout || '',
+            error: error.result?.stderr || error.message || 'Execution failed',
+            executionTime: Date.now() - startTime
+        };
+    }
 }
 
 async function runJavaScript(sandbox: any, code: string, input?: string) {
     const startTime = Date.now();
-    await sandbox.files.write('/tmp/main.js', code);
-    const execution = await sandbox.commands.run(
-        input ? `echo "${input}" | node /tmp/main.js` : 'node /tmp/main.js'
-    );
-    console.log('JavaScript execution result:', execution);
-    return {
-        output: execution.stdout,
-        error: execution.stderr,
-        executionTime: Date.now() - startTime
-    };
+    try {
+        await sandbox.files.write('/tmp/main.js', code);
+        const execution = await sandbox.commands.run(
+            input ? `echo "${input}" | node /tmp/main.js` : 'node /tmp/main.js'
+        );
+        console.log('JavaScript execution result:', execution);
+        return {
+            output: execution.stdout,
+            error: execution.stderr,
+            executionTime: Date.now() - startTime
+        };
+    } catch (error: any) {
+        return {
+            output: error.result?.stdout || '',
+            error: error.result?.stderr || error.message || 'Execution failed',
+            executionTime: Date.now() - startTime
+        };
+    }
 }
 
 async function runTypeScript(sandbox: any, code: string, input?: string) {
     const startTime = Date.now();
-    await sandbox.files.write('/tmp/main.ts', code);
-    await sandbox.commands.run('npm install -g typescript ts-node 2>/dev/null || true');
-    const execution = await sandbox.commands.run(
-        input ? `echo "${input}" | ts-node /tmp/main.ts` : 'ts-node /tmp/main.ts'
-    );
-    return {
-        output: execution.stdout,
-        error: execution.stderr,
-        executionTime: Date.now() - startTime
-    };
+    try {
+        await sandbox.files.write('/tmp/main.ts', code);
+        await sandbox.commands.run('npm install -g typescript ts-node 2>/dev/null || true');
+        const execution = await sandbox.commands.run(
+            input ? `echo "${input}" | ts-node /tmp/main.ts` : 'ts-node /tmp/main.ts'
+        );
+        return {
+            output: execution.stdout,
+            error: execution.stderr,
+            executionTime: Date.now() - startTime
+        };
+    } catch (error: any) {
+        return {
+            output: error.result?.stdout || '',
+            error: error.result?.stderr || error.message || 'Execution failed',
+            executionTime: Date.now() - startTime
+        };
+    }
 }
 
 async function runJava(sandbox: any, code: string, input?: string) {
     const startTime = Date.now();
-    const classNameMatch = code.match(/public\s+class\s+(\w+)/);
-    const className = classNameMatch ? classNameMatch[1] : 'Main';
-    await sandbox.files.write(`/tmp/${className}.java`, code);
-    const compile = await sandbox.commands.run(`javac /tmp/${className}.java`);
-    if (compile.stderr) {
+    try {
+        const classNameMatch = code.match(/public\s+class\s+(\w+)/);
+        const className = classNameMatch ? classNameMatch[1] : 'Main';
+        await sandbox.files.write(`/tmp/${className}.java`, code);
+        
+        try {
+            const compile = await sandbox.commands.run(`javac /tmp/${className}.java`);
+            if (compile.stderr && compile.exitCode !== 0) {
+                return {
+                    output: '',
+                    error: compile.stderr,
+                    executionTime: Date.now() - startTime
+                };
+            }
+        } catch (compileError: any) {
+            return {
+                output: '',
+                error: compileError.result?.stderr || compileError.message || 'Compilation failed',
+                executionTime: Date.now() - startTime
+            };
+        }
+        
+        try {
+            const execution = await sandbox.commands.run(
+                input 
+                    ? `cd /tmp && echo "${input}" | java ${className}`
+                    : `cd /tmp && java ${className}`
+            );
+            return {
+                output: execution.stdout,
+                error: execution.stderr,
+                executionTime: Date.now() - startTime
+            };
+        } catch (execError: any) {
+            return {
+                output: execError.result?.stdout || '',
+                error: execError.result?.stderr || execError.message || 'Execution failed',
+                executionTime: Date.now() - startTime
+            };
+        }
+    } catch (error: any) {
         return {
             output: '',
-            error: compile.stderr,
+            error: error.message || 'Java execution failed',
             executionTime: Date.now() - startTime
         };
     }
-    const execution = await sandbox.commands.run(
-        input 
-            ? `cd /tmp && echo "${input}" | java ${className}`
-            : `cd /tmp && java ${className}`
-    );
-    return {
-        output: execution.stdout,
-        error: execution.stderr,
-        executionTime: Date.now() - startTime
-    };
 }
 
 async function runCpp(sandbox: any, code: string, input?: string) {
     const startTime = Date.now();
-    await sandbox.files.write('/tmp/main.cpp', code);
-    const compile = await sandbox.commands.run('g++ /tmp/main.cpp -o /tmp/main');
-    if (compile.stderr && compile.exitCode !== 0) {
+    try {
+        await sandbox.files.write('/tmp/main.cpp', code);
+        
+        try {
+            const compile = await sandbox.commands.run('g++ /tmp/main.cpp -o /tmp/main');
+            if (compile.stderr && compile.exitCode !== 0) {
+                return {
+                    output: '',
+                    error: compile.stderr,
+                    executionTime: Date.now() - startTime
+                };
+            }
+        } catch (compileError: any) {
+            console.log('C++ compilation error:', compileError);
+            return {
+                output: '',
+                error: compileError.result?.stderr || compileError.message || 'Compilation failed',
+                executionTime: Date.now() - startTime
+            };
+        }
+        
+        try {
+            const execution = await sandbox.commands.run(
+                input ? `echo "${input}" | /tmp/main` : '/tmp/main'
+            );
+            console.log('C++ execution result:', execution);
+            return {
+                output: execution.stdout,
+                error: execution.stderr,
+                executionTime: Date.now() - startTime
+            };
+        } catch (execError: any) {
+            return {
+                output: execError.result?.stdout || '',
+                error: execError.result?.stderr || execError.message || 'Execution failed',
+                executionTime: Date.now() - startTime
+            };
+        }
+    } catch (error: any) {
         return {
             output: '',
-            error: compile.stderr,
+            error: error.message || 'C++ execution failed',
             executionTime: Date.now() - startTime
         };
     }
-    const execution = await sandbox.commands.run(
-        input ? `echo "${input}" | /tmp/main` : '/tmp/main'
-    );
-    return {
-        output: execution.stdout,
-        error: execution.stderr,
-        executionTime: Date.now() - startTime
-    };
 }
 
 async function runC(sandbox: any, code: string, input?: string) {
     const startTime = Date.now();
-    
-    await sandbox.files.write('/tmp/main.c', code);
-    const compile = await sandbox.commands.run('gcc /tmp/main.c -o /tmp/main');
-    if (compile.stderr && compile.exitCode !== 0) {
+    try {
+        await sandbox.files.write('/tmp/main.c', code);
+        
+        try {
+            const compile = await sandbox.commands.run('gcc /tmp/main.c -o /tmp/main');
+            if (compile.stderr && compile.exitCode !== 0) {
+                return {
+                    output: '',
+                    error: compile.stderr,
+                    executionTime: Date.now() - startTime
+                };
+            }
+        } catch (compileError: any) {
+            return {
+                output: '',
+                error: compileError.result?.stderr || compileError.message || 'Compilation failed',
+                executionTime: Date.now() - startTime
+            };
+        }
+        
+        try {
+            const execution = await sandbox.commands.run(
+                input ? `echo "${input}" | /tmp/main` : '/tmp/main'
+            );
+            return {
+                output: execution.stdout,
+                error: execution.stderr,
+                executionTime: Date.now() - startTime
+            };
+        } catch (execError: any) {
+            return {
+                output: execError.result?.stdout || '',
+                error: execError.result?.stderr || execError.message || 'Execution failed',
+                executionTime: Date.now() - startTime
+            };
+        }
+    } catch (error: any) {
         return {
             output: '',
-            error: compile.stderr,
+            error: error.message || 'C execution failed',
             executionTime: Date.now() - startTime
         };
     }
-    const execution = await sandbox.commands.run(
-        input ? `echo "${input}" | /tmp/main` : '/tmp/main'
-    );
-    return {
-        output: execution.stdout,
-        error: execution.stderr,
-        executionTime: Date.now() - startTime
-    };
 }
 
 async function runGo(sandbox: any, code: string, input?: string) {
     const startTime = Date.now();
-    await sandbox.files.write('/tmp/main.go', code);
-    const execution = await sandbox.commands.run(
-        input 
-            ? `cd /tmp && echo "${input}" | go run main.go`
-            : 'cd /tmp && go run main.go'
-    );
-    return {
-        output: execution.stdout,
-        error: execution.stderr,
-        executionTime: Date.now() - startTime
-    };
+    try {
+        await sandbox.files.write('/tmp/main.go', code);
+        const execution = await sandbox.commands.run(
+            input 
+                ? `cd /tmp && echo "${input}" | go run main.go`
+                : 'cd /tmp && go run main.go'
+        );
+        return {
+            output: execution.stdout,
+            error: execution.stderr,
+            executionTime: Date.now() - startTime
+        };
+    } catch (error: any) {
+        return {
+            output: error.result?.stdout || '',
+            error: error.result?.stderr || error.message || 'Execution failed',
+            executionTime: Date.now() - startTime
+        };
+    }
 }
 
 async function runRust(sandbox: any, code: string, input?: string) {
     const startTime = Date.now();
-    await sandbox.files.write('/tmp/main.rs', code);
-    const compile = await sandbox.commands.run('rustc /tmp/main.rs -o /tmp/main');
-    if (compile.stderr && compile.exitCode !== 0) {
+    try {
+        await sandbox.files.write('/tmp/main.rs', code);
+        
+        try {
+            const compile = await sandbox.commands.run('rustc /tmp/main.rs -o /tmp/main');
+            if (compile.stderr && compile.exitCode !== 0) {
+                return {
+                    output: '',
+                    error: compile.stderr,
+                    executionTime: Date.now() - startTime
+                };
+            }
+        } catch (compileError: any) {
+            return {
+                output: '',
+                error: compileError.result?.stderr || compileError.message || 'Compilation failed',
+                executionTime: Date.now() - startTime
+            };
+        }
+        
+        try {
+            const execution = await sandbox.commands.run(
+                input ? `echo "${input}" | /tmp/main` : '/tmp/main'
+            );
+            return {
+                output: execution.stdout,
+                error: execution.stderr,
+                executionTime: Date.now() - startTime
+            };
+        } catch (execError: any) {
+            return {
+                output: execError.result?.stdout || '',
+                error: execError.result?.stderr || execError.message || 'Execution failed',
+                executionTime: Date.now() - startTime
+            };
+        }
+    } catch (error: any) {
         return {
             output: '',
-            error: compile.stderr,
+            error: error.message || 'Rust execution failed',
             executionTime: Date.now() - startTime
         };
     }
-    const execution = await sandbox.commands.run(
-        input ? `echo "${input}" | /tmp/main` : '/tmp/main'
-    );
-    
-    return {
-        output: execution.stdout,
-        error: execution.stderr,
-        executionTime: Date.now() - startTime
-    };
 }
 
 export default compilerRouter;

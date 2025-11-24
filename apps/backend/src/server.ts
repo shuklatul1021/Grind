@@ -13,7 +13,10 @@ export const app = express();
 
 
 app.use(express.json())
-app.use(cors());
+app.use(cors({
+    origin : ["https://grind.codecollabhub.xyz"],
+    credentials : true,
+}));
 app.use(MatricsesMiddleware)
 app.use(routeratelimiter);
   

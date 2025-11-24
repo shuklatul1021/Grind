@@ -131,7 +131,7 @@ export default function AuthPage() {
           </Card>
 
           <p className="mt-4 text-center text-sm text-muted-foreground">
-            By continuing, you agree to our Terms of Service and Privacy Policy
+            By continuing, you agree to our <br /> <a href="/terms-and-conditions" className="underline">Terms of Service</a> and <a href="/privacy-policy" className="underline">Privacy Policy</a>
           </p>
         </div>
       </main>

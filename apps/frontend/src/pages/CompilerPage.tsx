@@ -369,7 +369,7 @@ export default function CompilerPage() {
             <CardHeader className="py-3 px-4 border-b border-border/40 bg-muted/20">
               <CardTitle className="text-base">Output</CardTitle>
             </CardHeader>
-            <CardContent className="flex-1 p-0 bg-[#1e1e1e]">
+            <CardContent className="flex-1 p-0 bg-[#1e1e1e] text-left">
               <div className="h-full w-full p-4 overflow-auto font-mono text-base text-gray-300">
                 {output ? (
                   <pre className="whitespace-pre-wrap">{output}</pre>

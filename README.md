@@ -67,6 +67,8 @@
 - **pnpm** - Package manager
 - **Shared Packages**: UI components, database client, configs
 
+![alt text](https://res.cloudinary.com/dwrrfy5wd/image/upload/v1764009258/chrome_6VRVT6iStF_qzphli.png)
+
 
 ## Getting Started
 

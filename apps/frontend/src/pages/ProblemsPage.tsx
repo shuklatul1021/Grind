@@ -134,16 +134,31 @@ export default function ProblemsPage() {
             <SquareChevronRight className="h-6 w-6" />
             <span className="text-xl font-bold">Grind</span>
           </div>
-          <div className='flex space-x-4'>
-            <div className='underline'>
-              <Link to="/problems">Problems</Link> 
-            </div>
-            <div>
-              <Link to="/contest">Contest</Link> 
-            </div>
-            <div>
-              <Link to="/compiler">Compiler</Link>
-            </div>
+          <div className="flex items-center gap-2">
+            <Link 
+              to="/problems" 
+              className="px-4 py-2 rounded-full bg-blue-500 text-white text-sm font-medium transition-all hover:bg-blue-600 hover:text-white"
+            >
+              Problems
+            </Link>
+            <Link 
+              to="/contest" 
+              className="px-4 py-2 rounded-full text-sm font-medium text-muted-foreground transition-all hover:bg-muted"
+            >
+              Contest
+            </Link>
+            <Link 
+              to="/compiler" 
+              className="px-4 py-2 rounded-full text-sm font-medium text-muted-foreground transition-all hover:bg-muted"
+            >
+              Compiler
+            </Link>
+            <Link 
+              to="/grind-ai" 
+              className="px-4 py-2 rounded-full text-sm font-medium text-muted-foreground transition-all hover:bg-muted"
+            >
+              Grind AI
+            </Link>
           </div>
           <div className="flex items-center gap-4">
             <Button

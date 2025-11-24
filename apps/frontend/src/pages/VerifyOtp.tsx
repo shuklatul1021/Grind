@@ -1,5 +1,5 @@
 import { Button } from "@repo/ui/button";
-import { Code2, Moon, Sun } from "lucide-react";
+import { Moon, SquareChevronRight, Sun } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "../contexts/ThemeContext";
 import {
@@ -69,7 +69,7 @@ export function VerifyOtp() {
             className="flex cursor-pointer items-center gap-2"
             onClick={() => navigate("/")}
           >
-            <Code2 className="h-6 w-6" />
+            <SquareChevronRight className="h-6 w-6" />
             <span className="text-xl font-bold">Grind</span>
           </div>
           <Button

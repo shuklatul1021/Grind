@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@repo/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@repo/ui/card';
 import { Badge } from '@repo/ui/badge';
 import {
   Select,
@@ -26,6 +26,8 @@ import {
 import { useTheme } from '../contexts/ThemeContext';
 import { BACKENDURL } from '../utils/urls';
 import CodeEditor from './CodeEditor';
+import { Textarea } from '@repo/ui/textarea';
+import { toast } from '../../../../packages/ui/src/hooks/use-toast';
 
 const LANGUAGES = [
   { value: 'javascript', label: 'JavaScript', version: 'Node.js 18.x' },
@@ -122,6 +124,22 @@ fn main() {
 }`,
 };
 
+function detectsInput(code: string, language: string): boolean {
+  const inputPatterns: Record<string, RegExp[]> = {
+    python: [/input\s*\(/],
+    javascript: [/readline\s*\(/, /prompt\s*\(/],
+    typescript: [/readline\s*\(/, /prompt\s*\(/],
+    java: [/Scanner\s*\(/, /BufferedReader/, /\.nextLine\(/, /\.nextInt\(/, /\.next\(/],
+    cpp: [/cin\s*>>/, /scanf\s*\(/, /getline\s*\(/],
+    c: [/scanf\s*\(/, /gets\s*\(/, /fgets\s*\(/],
+    go: [/fmt\.Scan/, /bufio\.NewReader/, /reader\.ReadString/],
+    rust: [/std::io::stdin/, /read_line/]
+  };
+
+  const patterns = inputPatterns[language] || [];
+  return patterns.some(pattern => pattern.test(code));
+}
+
 export default function CompilerPage() {
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
@@ -132,6 +150,11 @@ export default function CompilerPage() {
   const [copied, setCopied] = useState(false);
   const [layout, setLayout] = useState<'bottom' | 'right'>('bottom');
 
+
+  const [showInputModal, setShowInputModal] = useState(false);
+  const [userInput, setUserInput] = useState('');
+  const [pendingExecution, setPendingExecution] = useState<{code: string, language: string} | null>(null);
+
   const handleLanguageChange = (language: string) => {
     setSelectedLanguage(language);
     setCode(DEFAULT_CODE[language as keyof typeof DEFAULT_CODE] || '');
@@ -139,30 +162,62 @@ export default function CompilerPage() {
   };
 
   const handleRunCode = async () => {
+    if (detectsInput(code, selectedLanguage)) {
+      setPendingExecution({ code, language: selectedLanguage });
+      setShowInputModal(true);
+    } else {
+      await executeCode(code, selectedLanguage, undefined);
+    }
+  };
+
+  const executeCode = async (codeToRun: string, lang: string, input?: string) => {
     setIsRunning(true);
-    setOutput('Running code...\n');
+    setOutput('Running code...');
     try {
       const response = await fetch(`${BACKENDURL}/compiler/run`, {
-        method : "POST",
-        headers : {
-          "Content-Type" : "application/json",
-          "token" : localStorage.getItem("token") || ""
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'token': localStorage.getItem('token') || ''
         },
-        body : JSON.stringify({
-          code,
-          language : selectedLanguage
+        body: JSON.stringify({
+          code: codeToRun,
+          language: lang,
+          input: input
         })
       });
-      const json  = await response.json();
-      if(response.ok){
-        setOutput(json.output || json.error || 'No output');
-      }else{
-        setOutput(json.error || 'Error executing code');
+
+      const data = await response.json();
+
+      if (data.output != "") {
+        setOutput(data.output);
+      } else {
+        setOutput(data.error);
       }
-    }catch(e){
-      alert("Internal Server Error ")
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: "Code execution failed. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsRunning(false);
     }
-    setIsRunning(false);
+  };
+
+  const handleInputSubmit = () => {
+    if (pendingExecution) {
+      setShowInputModal(false);
+      executeCode(pendingExecution.code, pendingExecution.language, userInput);
+      setPendingExecution(null);
+      setUserInput(''); 
+    }
+  };
+
+  const handleInputCancel = () => {
+    setShowInputModal(false);
+    setPendingExecution(null);
+    setUserInput('');
   };
 
   const handleReset = () => {
@@ -359,7 +414,7 @@ export default function CompilerPage() {
                     <Download className="h-3 w-3" />
                   </Button>
                </div>
-               <div className="flex-1 h-full [&_.cm-editor]:h-full [&_.cm-scroller]:h-full">
+               <div className="flex-1 h-full">
                   <CodeEditor code={code} setCode={setCode} language={selectedLanguage} />
                </div>
             </CardContent>
@@ -381,6 +436,38 @@ export default function CompilerPage() {
               </div>
             </CardContent>
           </Card>
+
+
+          {showInputModal && (
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+              <Card className="w-full max-w-md">
+                <CardHeader>
+                  <CardTitle>Input Required</CardTitle>
+                  <CardDescription>
+                    This program requires input. Please provide it below (one value per line if multiple inputs needed)
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <Textarea
+                    value={userInput}
+                    onChange={(e) => setUserInput(e.target.value)}
+                    placeholder="Enter your input here...&#10;Line 1&#10;Line 2&#10;Line 3"
+                    className="min-h-[150px] font-mono"
+                    autoFocus
+                  />
+                  <div className="flex gap-2 justify-end">
+                    <Button variant="outline" onClick={handleInputCancel}>
+                      Cancel
+                    </Button>
+                    <Button onClick={handleInputSubmit}>
+                      <Play className="h-4 w-4 mr-2" />
+                      Run with Input
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
         </div>
       </main>
     </div>

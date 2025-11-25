@@ -325,8 +325,6 @@ export default function ProblemPage() {
                         </button>
                       ))}
                     </div>
-
-                    {/* Content panels */}
                     <div className="mt-4 grid gap-4 md:grid-cols-2">
                       <div className="rounded-md border border-border/40 bg-background/50 p-3">
                         <div className="flex items-start justify-between">
@@ -360,8 +358,6 @@ export default function ProblemPage() {
                         </pre>
                       </div>
                     </div>
-
-                    {/* Navigation */}
                     <div className="mt-4 flex items-center justify-between">
                       <div className="text-xs text-muted-foreground">
                         Showing {activeTest + 1} of {problem.testcase.length}

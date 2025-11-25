@@ -48,7 +48,6 @@ export default function GrindAIChat() {
   const hasMessages = currentSession && currentSession.messages.length > 0;
 
   useEffect(() => {
-    // Initialize session if it doesn't exist
     if (id && !sessions.find((s) => s.id === id)) {
       const newSession: ChatSession = {
         id,
@@ -108,8 +107,6 @@ export default function GrindAIChat() {
 
     setInput("");
     setIsLoading(true);
-
-    // Simulate AI response
     setTimeout(() => {
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -139,7 +136,6 @@ export default function GrindAIChat() {
 
   return (
     <div className="flex h-screen bg-background flex-col overflow-hidden">
-      {/* Header */}
       <header className="sticky top-0 z-50 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center justify-between px-4">
           <div
@@ -195,10 +191,7 @@ export default function GrindAIChat() {
           </div>
         </div>
       </header>
-
-      {/* Main Content Area */}
       <div className="flex flex-1 overflow-hidden relative">
-        {/* Sidebar */}
         <div
           className={`${
             isSidebarOpen ? "w-72" : "w-0"
@@ -261,8 +254,7 @@ export default function GrindAIChat() {
               )}
             </div>
           </ScrollArea>
-
-          {/* Sidebar Toggle Button - Only show when open */}
+  
           {isSidebarOpen && (
             <Button
               variant="ghost"
@@ -275,7 +267,6 @@ export default function GrindAIChat() {
           )}
         </div>
 
-        {/* Sidebar Open Button (when closed) */}
         {!isSidebarOpen && (
           <Button
             variant="ghost"
@@ -286,16 +277,11 @@ export default function GrindAIChat() {
             <ChevronRight className="h-4 w-4" />
           </Button>
         )}
-
-        {/* Main Chat Area */}
         <div className="flex-1 flex flex-col overflow-hidden">
-          {/* Messages Area */}
           <ScrollArea className="flex-1 p-4">
             {!hasMessages ? (
-              // Empty - show nothing
               <div className="h-full" />
             ) : (
-              // Messages view
               <div className="max-w-4xl mx-auto w-full space-y-8 pb-4 pt-4">
                 {currentSession?.messages.map((message) => (
                   <div key={message.id} className="flex gap-4 items-start">
@@ -353,7 +339,6 @@ export default function GrindAIChat() {
             )}
           </ScrollArea>
 
-          {/* Input Area - Fixed at bottom */}
           <div className="border-t border-border/40 bg-background/95 backdrop-blur p-4">
             <div className="max-w-4xl mx-auto">
               <div className="relative flex items-center gap-2">

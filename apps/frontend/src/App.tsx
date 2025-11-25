@@ -21,6 +21,7 @@ import AboutUs from './pages/AboutUs';
 import TermsAndConditions from './pages/TermsConditions';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import GrindAI from './pages/GrindAI';
+import { useEffect } from 'react';
 
 function RequireAuth({ redirectTo = "/" }: { redirectTo?: string }) {
   const { authState } = useAuthentication();
@@ -34,7 +35,12 @@ function RequireAdminAuth({ redirectTo = "/" }: { redirectTo?: string }) {
   return adminauthState.isAuthenticated ? <Outlet /> : <Navigate to={redirectTo} replace />;
 }
 
+
 function App() {
+  useEffect(()=>{
+    document.addEventListener('contextmenu', (e) => e.preventDefault());
+  },[])
+
   return (
     <ThemeProvider>
       <BrowserRouter>

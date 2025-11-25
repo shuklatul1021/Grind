@@ -13,7 +13,6 @@ import "prismjs/components/prism-go";
 import "prismjs/components/prism-rust";
 import "prismjs/themes/prism-tomorrow.css";
 
-// export type SupportedLang = "c" | "cpp" | "python" | "java" | "javascript" | "typescript" | "jsx" | "go" | "rust";
 
 type CodeEditorProps = {
   code: string;
@@ -132,11 +131,9 @@ export default function CodeEditor({
           />
         </div>
       </div>
-      <div className="flex items-center justify-between border-t border-border/40 px-3 py-2 text-xs text-muted-foreground">
+      <div className="flex items-center justify-between border-t border-border/40 px-3 py-1.5 text-xs text-muted-foreground">
         <div>{lines.length} {lines.length === 1 ? "line" : "lines"}</div>
-        <div className="flex items-center gap-2">
-          <div className="text-xs">Language: {language}</div>
-        </div>
+        <div>{language}</div>
       </div>
     </div>
   );

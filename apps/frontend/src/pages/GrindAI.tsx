@@ -20,6 +20,7 @@ import {
   Brain,
   Code
 } from 'lucide-react';
+import { toast } from '../../../../packages/ui/src/hooks/use-toast';
 
 interface Message {
   id: string;
@@ -78,59 +79,11 @@ export default function GrindAI() {
 
   const handleSendMessage = async () => {
     if (!input.trim()) return;
-    alert("Feature Coming Soon!");
-    // let sessionId = currentSessionId;
-
-    // // Create new session if none exists
-    // if (!sessionId) {
-    //   const newSession: ChatSession = {
-    //     id: Date.now().toString(),
-    //     title: input.slice(0, 30) + (input.length > 30 ? '...' : ''),
-    //     messages: [],
-    //     createdAt: new Date(),
-    //   };
-    //   setSessions(prev => [newSession, ...prev]);
-    //   sessionId = newSession.id;
-    //   setCurrentSessionId(sessionId);
-    // }
-
-    // const userMessage: Message = {
-    //   id: Date.now().toString(),
-    //   role: 'user',
-    //   content: input,
-    //   timestamp: new Date(),
-    // };
-
-    // setSessions(prev => prev.map(session => 
-    //   session.id === sessionId 
-    //     ? { 
-    //         ...session, 
-    //         messages: [...session.messages, userMessage],
-    //         title: session.messages.length === 0 ? input.slice(0, 30) + (input.length > 30 ? '...' : '') : session.title
-    //       }
-    //     : session
-    // ));
-
-    // setInput('');
-    // setIsLoading(true);
-
-    // // Simulate AI response
-    // setTimeout(() => {
-    //   const aiMessage: Message = {
-    //     id: (Date.now() + 1).toString(),
-    //     role: 'assistant',
-    //     content: `I'm Grind AI, your coding assistant! I received your message: "${userMessage.content}". This is a demo response. In production, I would help you with coding questions, algorithm explanations, debugging, and problem-solving strategies.`,
-    //     timestamp: new Date(),
-    //   };
-
-    //   setSessions(prev => prev.map(session => 
-    //     session.id === sessionId 
-    //       ? { ...session, messages: [...session.messages, aiMessage] }
-    //       : session
-    //   ));
-
-    //   setIsLoading(false);
-    // }, 1500);
+    toast({
+      title: "Comming Soon",
+      description: "This feature is under development and will be available soon.",
+      variant: "soon",
+    })
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -142,7 +95,6 @@ export default function GrindAI() {
 
   return (
     <div className="flex h-screen bg-background flex-col overflow-hidden">
-      {/* Header */}
       <header className="sticky top-0 z-50 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center justify-between px-4">
           <div
@@ -195,9 +147,7 @@ export default function GrindAI() {
         </div>
       </header>
 
-      {/* Main Content Area */}
       <div className="flex flex-1 overflow-hidden relative">
-        {/* Sidebar */}
         <div 
           className={`${
             isSidebarOpen ? 'w-72' : 'w-0'
@@ -258,8 +208,6 @@ export default function GrindAI() {
               )}
             </div>
           </ScrollArea>
-
-          {/* Sidebar Toggle Button - Only show when open */}
           {isSidebarOpen && (
             <Button
               variant="ghost"
@@ -272,7 +220,6 @@ export default function GrindAI() {
           )}
         </div>
 
-        {/* Sidebar Open Button (when closed) */}
         {!isSidebarOpen && (
           <Button
             variant="ghost"
@@ -284,12 +231,9 @@ export default function GrindAI() {
           </Button>
         )}
 
-        {/* Main Chat Area */}
         <div className="flex-1 flex flex-col overflow-hidden">
-          {/* Messages Area */}
           <ScrollArea className="flex-1 p-4">
             {!hasMessages ? (
-              // Initial empty state - centered
               <div className="h-full flex flex-col items-center justify-center max-w-4xl mx-auto px-4">
                 <div className="text-center mb-12">
                   <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-gradient-to-br from-blue-500/20 to-cyan-500/20 mb-6">
@@ -307,7 +251,6 @@ export default function GrindAI() {
                   </p>
                 </div>
 
-                {/* Features Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 w-full max-w-3xl">
                   <Card className="border-border/40 bg-card/50 backdrop-blur">
                     <CardContent className="p-6 text-center">
@@ -346,7 +289,6 @@ export default function GrindAI() {
                   </Card>
                 </div>
 
-                {/* Suggested prompts */}
                 <div className="w-full max-w-2xl">
                   <h2 className="text-2xl font-bold mb-6 text-center">Try asking about...</h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -396,7 +338,6 @@ export default function GrindAI() {
             )}
           </ScrollArea>
 
-          {/* Input Area - Fixed at bottom */}
           <div className="border-t border-border/40 bg-background/95 backdrop-blur p-4">
             <div className="max-w-4xl mx-auto">
               <div className="relative flex items-center gap-1 h-[100px]">

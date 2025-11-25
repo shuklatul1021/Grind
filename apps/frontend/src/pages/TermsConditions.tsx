@@ -8,7 +8,6 @@ export default function TermsAndConditions() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-background/80">
-      {/* Navigation Bar */}
       <header className="border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
         <div className="container flex h-16 items-center justify-between px-4">
           <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/')}>
@@ -23,7 +22,6 @@ export default function TermsAndConditions() {
       </header>
 
       <main className="container px-4 py-12 md:py-20 max-w-4xl mx-auto">
-        {/* Hero Section */}
         <div className="text-center mb-12">
           <div className="flex justify-center mb-6">
             <div className="h-16 w-16 rounded-full bg-blue-500/10 flex items-center justify-center">
@@ -37,8 +35,6 @@ export default function TermsAndConditions() {
             Last updated: November 24, 2025
           </p>
         </div>
-
-        {/* Content */}
         <div className="space-y-8 text-left">
           <Card className="border-border/40 bg-card/50 backdrop-blur">
             <CardHeader>

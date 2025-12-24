@@ -12,12 +12,56 @@ model User {
   username                    String?                     @unique
   fullname                    String?
   email                       String                      @unique
+  aitoken                     Int?
+  maxaitoken                  Int?                        @default(3) 
+  bio                         String?
+  avatar                      String?
+  location                    String?
+  problemsSolved              Int?                        @default(0)   
+  rank                        Int?                        @default(0)         
+  contestsParticipated        Int?                        @default(0)         
+  currentStreak               Int?                        @default(0)   
+  social                      Social?
+
   leaderboard                 LeaderBoard[]
   submittion                  Submittion[]
-  rank                        Int?                        @default(0)  
+
   contextsubmittion           ContestSubmittion[] 
+
+  AssistantMessage            ChatMessages[]
+  CompileCode                 CompilerCodeHistory[]
   createdAt                   DateTime                    @default(now())
   updatedAt                   DateTime                    @updatedAt()
+}
+
+model ChatMessages {
+  id                          String                     @id @default(uuid())
+  message                     String
+  userId                      String
+  user                        User                        @relation(fields: [userId], references : [id])   
+  createdAt                   DateTime                    @default(now())
+  updatedAt                   DateTime                    @updatedAt()         
+}
+
+model CompilerCodeHistory{
+  id                          String                      @id @default(uuid())
+  title                       String?
+  language                    String
+  code                        String
+  userId                      String
+  user                        User                        @relation(fields : [userId] , references : [id])
+  createdAt                   DateTime                    @default(now())
+  updatedAt                   DateTime                    @updatedAt()    
+}
+
+
+model Social {
+  id                          String                      @id @default(uuid()) 
+  github                      String?
+  linkedin                    String?
+  twitter                     String?
+  userId                      String                      @unique
+  user                        User                        @relation(fields: [userId], references : [id])   
 }
 
 model Admin {
@@ -59,6 +103,7 @@ model Challenges {
   tags                        String[]
   maxpoint                    Int
   starterCode                 String
+  isSolved                    Boolean                     @default(false)
   contestTochallegemapping    ContentToChallegesMapping[]
   submittions                 Submittion[]
   examples                    Example[]
@@ -81,6 +126,7 @@ model TestCase {
   input                       String
   expectedOutput              String
   challengeId                 String
+  testcasecode                String?
   challenges                  Challenges                    @relation(fields: [challengeId], references : [id]) 
 }
 

@@ -12,7 +12,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/ui/select";
-import { Moon, Sun, ArrowLeft, Save, Plus, X, SquareChevronRight } from "lucide-react";
+import {
+  Moon,
+  Sun,
+  ArrowLeft,
+  Save,
+  Plus,
+  X,
+  SquareChevronRight,
+} from "lucide-react";
 import { useTheme } from "../contexts/ThemeContext";
 import { BACKENDURL } from "../utils/urls";
 
@@ -21,6 +29,7 @@ interface TestCase {
   input: string;
   output: string;
   isHidden: boolean;
+  executableCodes: StarterCode[];
 }
 
 interface StarterCode {
@@ -33,7 +42,13 @@ export default function AdminCreateProblem() {
   const { theme, toggleTheme } = useTheme();
   const [loading, setLoading] = useState(false);
   const [testCases, setTestCases] = useState<TestCase[]>([
-    { id: "1", input: "", output: "", isHidden: false },
+    {
+      id: "1",
+      input: "",
+      output: "",
+      isHidden: false,
+      executableCodes: [{ language: "javascript", code: "" }],
+    },
   ]);
   const [starterCodes, setStarterCodes] = useState<StarterCode[]>([
     { language: "javascript", code: "" },
@@ -94,8 +109,6 @@ export default function AdminCreateProblem() {
 
   const handleChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-
-    // Auto-generate slug from title
     if (field === "title") {
       const slug = value
         .toLowerCase()
@@ -129,6 +142,7 @@ export default function AdminCreateProblem() {
       input: "",
       output: "",
       isHidden: false,
+      executableCodes: [{ language: "javascript", code: "" }],
     };
     setTestCases((prev) => [...prev, newTestCase]);
   };
@@ -146,6 +160,60 @@ export default function AdminCreateProblem() {
   ) => {
     setTestCases((prev) =>
       prev.map((tc) => (tc.id === id ? { ...tc, [field]: value } : tc))
+    );
+  };
+
+  const addExecutableCodeToTestCase = (testCaseId: string) => {
+    setTestCases((prev) =>
+      prev.map((tc) =>
+        tc.id === testCaseId
+          ? {
+              ...tc,
+              executableCodes: [
+                ...tc.executableCodes,
+                { language: "javascript", code: "" },
+              ],
+            }
+          : tc
+      )
+    );
+  };
+
+  const removeExecutableCodeFromTestCase = (
+    testCaseId: string,
+    codeIndex: number
+  ) => {
+    setTestCases((prev) =>
+      prev.map((tc) =>
+        tc.id === testCaseId
+          ? {
+              ...tc,
+              executableCodes: tc.executableCodes.filter(
+                (_, i) => i !== codeIndex
+              ),
+            }
+          : tc
+      )
+    );
+  };
+
+  const updateExecutableCode = (
+    testCaseId: string,
+    codeIndex: number,
+    field: keyof StarterCode,
+    value: string
+  ) => {
+    setTestCases((prev) =>
+      prev.map((tc) =>
+        tc.id === testCaseId
+          ? {
+              ...tc,
+              executableCodes: tc.executableCodes.map((code, i) =>
+                i === codeIndex ? { ...code, [field]: value } : code
+              ),
+            }
+          : tc
+      )
     );
   };
 
@@ -456,6 +524,104 @@ export default function AdminCreateProblem() {
                             )
                           }
                         />
+                      </div>
+                    </div>
+
+                    <div className="mt-6">
+                      <div className="flex items-center justify-between mb-4">
+                        <Label className="text-sm font-semibold">
+                          Executable Code for this Test Case
+                        </Label>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            addExecutableCodeToTestCase(testCase.id)
+                          }
+                        >
+                          <Plus className="h-4 w-4 mr-2" />
+                          Add Language
+                        </Button>
+                      </div>
+
+                      <div className="space-y-4">
+                        {testCase.executableCodes.map((execCode, codeIndex) => (
+                          <div
+                            key={codeIndex}
+                            className="p-4 border border-border/40 rounded-lg bg-muted/20 space-y-3 relative"
+                          >
+                            {testCase.executableCodes.length > 1 && (
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="absolute top-2 right-2 h-7 w-7"
+                                onClick={() =>
+                                  removeExecutableCodeFromTestCase(
+                                    testCase.id,
+                                    codeIndex
+                                  )
+                                }
+                              >
+                                <X className="h-3 w-3" />
+                              </Button>
+                            )}
+
+                            <div className="space-y-2">
+                              <Label className="text-xs">Language</Label>
+                              <Select
+                                value={execCode.language}
+                                onValueChange={(value) =>
+                                  updateExecutableCode(
+                                    testCase.id,
+                                    codeIndex,
+                                    "language",
+                                    value
+                                  )
+                                }
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select language" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="javascript">
+                                    JavaScript
+                                  </SelectItem>
+                                  <SelectItem value="python">Python</SelectItem>
+                                  <SelectItem value="java">Java</SelectItem>
+                                  <SelectItem value="cpp">C++</SelectItem>
+                                  <SelectItem value="c">C</SelectItem>
+                                  <SelectItem value="go">Go</SelectItem>
+                                  <SelectItem value="rust">Rust</SelectItem>
+                                  <SelectItem value="typescript">
+                                    TypeScript
+                                  </SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label className="text-xs">
+                                Full Implementation Code
+                              </Label>
+                              <Textarea
+                                placeholder="Enter full executable code..."
+                                className="min-h-[120px] font-mono text-sm"
+                                value={execCode.code}
+                                onChange={(e) =>
+                                  updateExecutableCode(
+                                    testCase.id,
+                                    codeIndex,
+                                    "code",
+                                    e.target.value
+                                  )
+                                }
+                                required
+                              />
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     </div>
                   </div>

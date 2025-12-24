@@ -2,6 +2,7 @@ import { Router } from "express";
 import { Sandbox } from '@e2b/code-interpreter';
 import { ComilerRateLimiter } from "../limiter/RateLimiter.js";
 import { UserAuthMiddleware } from "../middleware/user.js";
+import { prisma } from "@repo/db/DatabaseClient";
 const compilerRouter = Router();
 
 compilerRouter.post("/run", ComilerRateLimiter , UserAuthMiddleware , async (req, res) => {
@@ -117,6 +118,84 @@ compilerRouter.post("/run", ComilerRateLimiter , UserAuthMiddleware , async (req
         });
     }
 });
+
+
+compilerRouter.post("/create-code-history" , UserAuthMiddleware  ,async (req , res) => {
+    try{
+        const { title , code , language } = req.body;
+        const userId = req.userId;
+
+        if(!code && language){
+            return res.status(402).json({
+                message : "Code and Laguage Require",
+                success : false
+            })
+        }
+
+        const CreateCodeHistory = await prisma.compilerCodeHistory.create({
+            data : {
+                title,
+                code,
+                language,
+                userId
+            }
+        });
+
+        if(!CreateCodeHistory){
+            return res.status(402).json({
+                message : "Error While Storing Code History",
+                success : false
+            })
+        }
+
+        return res.status(200).json({
+            message : "Code History Updated",
+            success : true
+        })
+    }catch(e){
+        console.log(e);
+        return res.status(500).json({
+            message : "Internal Server Error",
+            success : false
+        })
+    }
+})
+
+
+compilerRouter.get("/get-code-history" , UserAuthMiddleware , async (req , res) =>{
+    try{
+        const userid = req.userId;
+    
+        const UserComplierHistory = await prisma.compilerCodeHistory.findMany({
+            where : {
+                userId : userid
+            },
+            orderBy: {
+                createdAt: 'desc', 
+            },
+        });
+
+        if(!UserComplierHistory){
+            return res.status(403).json({
+                message : "Error While Getting Compiler History",
+                success : false
+            })
+        };
+
+        return res.status(200).json({
+            message : "Fetched Successfull",
+            history : UserComplierHistory,
+            success : true
+        })
+
+    }catch(e){
+        console.log(e);
+        return res.status(500).json({
+            message : "Internal Server Error",
+            success : false
+        })
+    }
+})
 
 
 async function runPython(sandbox: any, code: string, input?: string) {

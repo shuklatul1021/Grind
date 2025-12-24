@@ -37,8 +37,9 @@ export default function AuthPage() {
       const json = await response.json();
       toast({
         title : "Success",
-        description : "Check your email for the verification link",
-        variant : "default"
+        description : "Check your email for the verification Code",
+        variant : "default",
+        className : "mr-[50px]"
       })
       setLoading(false);
       setAuthanticationData(setAuthData({

@@ -16,6 +16,8 @@
     "@authsignal/node": "^2.12.1",
     "@codesandbox/sdk": "^2.4.1",
     "@e2b/code-interpreter": "^2.0.1",
+    "@google/genai": "^1.30.0",
+    "@google/generative-ai": "^0.24.1",
     "@radix-ui/react-alert-dialog": "^1.1.15",
     "@repo/db": "*",
     "@types/bcrypt": "^6.0.0",

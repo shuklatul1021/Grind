@@ -98,8 +98,6 @@ export default function ContestPage(): JSX.Element {
   const [contest, setContest] = useState<ContestAPI | null>(null);
   const [loading, setLoading] = useState(true);
 
-  console.log(contest?.contestTochallegemapping[0]);
-
   useEffect(() => {
     if (!id) return;
     let cancelled = false;
@@ -115,9 +113,8 @@ export default function ContestPage(): JSX.Element {
         }
         const json = await res.json();
         if (!cancelled) setContest(json.contest ?? json);
-      } catch (err: any) {
-        console.error(err);
-        toast({ title: "Error", description: err?.message || "Failed to load contest", variant: "destructive" });
+      } catch (err) {
+        toast({ title: "Error", description: "Failed to load contest", variant: "destructive" });
       } finally {
         if (!cancelled) setLoading(false);
       }

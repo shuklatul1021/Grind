@@ -1,36 +1,55 @@
-import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Button } from '@repo/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/card';
-import { Badge } from '@repo/ui/badge';
-import { Input } from '@repo/ui/input';
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { Button } from "@repo/ui/button";
+import { Badge } from "@repo/ui/badge";
+import { Input } from "@repo/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@repo/ui/select';
-import { Moon, Sun, LogOut, Search, CheckCircle2, Circle, SquareChevronRight } from 'lucide-react';
-import { useTheme } from '../contexts/ThemeContext';
-import type { Problem, UserProgress } from '../types/problem';
-import { BACKENDURL } from '../utils/urls';
-import { toast } from '../../../../packages/ui/src/hooks/use-toast';
+} from "@repo/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@repo/ui/table";
+import {
+  Moon,
+  Sun,
+  LogOut,
+  Search,
+  CheckCircle2,
+  Circle,
+  SquareChevronRight,
+  Shuffle,
+} from "lucide-react";
+import { useTheme } from "../contexts/ThemeContext";
+import type { Problem, UserProgress } from "../types/problem";
+import { BACKENDURL } from "../utils/urls";
+import { toast } from "../../../../packages/ui/src/hooks/use-toast";
 import { useDispatch } from "react-redux";
-import { setUserDetails } from '../state/ReduxStateProvider';
-
+import { setUserDetails } from "../state/ReduxStateProvider";
 
 export default function ProblemsPage() {
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
   const [problems, setProblems] = useState<Problem[]>([]);
-  const [userProgress ] = useState<Map<string, UserProgress>>(new Map());
+  const [userProgress] = useState<Map<string, UserProgress>>(new Map());
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [difficultyFilter, setDifficultyFilter] = useState<string>('all');
-
-  // const setReduxProblems = useDispatch();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [difficultyFilter, setDifficultyFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [tagFilter, setTagFilter] = useState<string>("all");
   const setReduxUserDetails = useDispatch();
+
+  const uniqueTags = Array.from(
+    new Set(problems.flatMap((p) => p.tags))
+  ).sort();
 
   useEffect(() => {
     // if (!user) {
@@ -42,17 +61,17 @@ export default function ProblemsPage() {
   }, [navigate]);
 
   const getuserDetails = async () => {
-    const response = await fetch(`${BACKENDURL}/user/details`,{
-      method : "GET",
-      headers : {
-        "Content-Type" : "application/json",
-        "token" : localStorage.getItem("token") || ""
-      }
+    const response = await fetch(`${BACKENDURL}/user/details`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        token: localStorage.getItem("token") || "",
+      },
     });
-    if(response.ok){
+    if (response.ok) {
       const json = await response.json();
       setReduxUserDetails(setUserDetails(json.user));
-    }else{
+    } else {
       toast({
         title: "Error",
         description: "Failed to fetch user details. Please try again.",
@@ -63,18 +82,18 @@ export default function ProblemsPage() {
 
   const fetchProblems = async () => {
     setLoading(true);
-    const response = await fetch(`${BACKENDURL}/problems/getproblems`,{
-      method : "GET",
-      headers : {
-        "Content-Type" : "application/json",
-        "token" : localStorage.getItem("token") || ""
-      }
+    const response = await fetch(`${BACKENDURL}/problems/getproblems`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        token: localStorage.getItem("token") || "",
+      },
     });
-    if(response.ok){
+    if (response.ok) {
       const json = await response.json();
       setProblems(json.problems);
       // setReduxProblems(setReduxProblems(json.problems));
-    }else{
+    } else {
       toast({
         title: "Error",
         description: "Failed to fetch problems. Please try again.",
@@ -87,37 +106,58 @@ export default function ProblemsPage() {
 
   const handleSignOut = async () => {
     localStorage.removeItem("token");
-    navigate('/');
+    navigate("/");
+  };
+
+  const handleRandomPick = () => {
+    if (problems.length > 0) {
+      const randomIndex = Math.floor(Math.random() * problems.length);
+      const randomProblem = problems[randomIndex];
+      navigate(`/problem/${randomProblem.slug}`);
+    }
   };
 
   const filteredProblems = problems.filter((problem) => {
     const matchesSearch =
       problem.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      problem.tags.some((tag) => tag.toLowerCase().includes(searchQuery.toLowerCase()));
+      problem.tags.some((tag) =>
+        tag.toLowerCase().includes(searchQuery.toLowerCase())
+      );
     const matchesDifficulty =
-      difficultyFilter === 'all' || problem.difficulty.toLowerCase() === difficultyFilter;
-    return matchesSearch && matchesDifficulty;
+      difficultyFilter === "all" ||
+      problem.difficulty.toLowerCase() === difficultyFilter;
+
+    const status = userProgress.get(problem.id)?.status || "todo";
+    const matchesStatus =
+      statusFilter === "all" ||
+      (statusFilter === "solved" && status === "solved") ||
+      (statusFilter === "unsolved" && status !== "solved") ||
+      (statusFilter === "attempted" && status === "attempted");
+
+    const matchesTag = tagFilter === "all" || problem.tags.includes(tagFilter);
+
+    return matchesSearch && matchesDifficulty && matchesStatus && matchesTag;
   });
 
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty) {
-      case 'easy':
-        return 'bg-green-500/10 text-green-500 border-green-500/20';
-      case 'medium':
-        return 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20';
-      case 'hard':
-        return 'bg-red-500/10 text-red-500 border-red-500/20';
-      default:
-        return '';
-    }
-  };
+  // const getDifficultyColor = (difficulty: string) => {
+  //   switch (difficulty) {
+  //     case "easy":
+  //       return "bg-green-500/10 text-green-500 border-green-500/20";
+  //     case "medium":
+  //       return "bg-yellow-500/10 text-yellow-500 border-yellow-500/20";
+  //     case "hard":
+  //       return "bg-red-500/10 text-red-500 border-red-500/20";
+  //     default:
+  //       return "";
+  //   }
+  // };
 
   const getStatusIcon = (problemId: string) => {
     const progress = userProgress.get(problemId);
-    if (progress?.status === 'solved') {
+    if (progress?.status === "solved") {
       return <CheckCircle2 className="h-5 w-5 text-green-500" />;
     }
-    if (progress?.status === 'attempted') {
+    if (progress?.status === "attempted") {
       return <Circle className="h-5 w-5 text-yellow-500" />;
     }
     return <Circle className="h-5 w-5 text-muted-foreground" />;
@@ -129,35 +169,59 @@ export default function ProblemsPage() {
         <div className="container flex h-16 items-center justify-between px-4">
           <div
             className="flex cursor-pointer items-center gap-2"
-            onClick={() => navigate('/')}
+            onClick={() => navigate("/")}
           >
             <SquareChevronRight className="h-6 w-6" />
             <span className="text-xl font-bold">Grind</span>
           </div>
           <div className="flex items-center gap-2">
-            <Link 
-              to="/problems" 
+            <Link
+              to="/problems"
               className="px-4 py-2 rounded-full bg-blue-500 text-white text-sm font-medium transition-all hover:bg-blue-600 hover:text-white"
             >
               Problems
             </Link>
-            <Link 
-              to="/contest" 
+            <Link
+              to="/contest"
               className="px-4 py-2 rounded-full text-sm font-medium text-muted-foreground transition-all hover:bg-muted"
             >
               Contest
             </Link>
-            <Link 
-              to="/compiler" 
+            <Link
+              to="/compiler"
               className="px-4 py-2 rounded-full text-sm font-medium text-muted-foreground transition-all hover:bg-muted"
             >
               Compiler
             </Link>
-            <Link 
-              to="/grind-ai" 
+            <Link
+              to="/grind-ai"
               className="px-4 py-2 rounded-full text-sm font-medium text-muted-foreground transition-all hover:bg-muted"
             >
               Grind AI
+            </Link>
+            <Link
+              to="/pricing"
+              className="px-4 py-2 rounded-full text-sm font-medium text-muted-foreground transition-all hover:bg-muted"
+            >
+              Pricing
+            </Link>
+            {/* <Link 
+              to="/room" 
+              className="px-4 py-2 rounded-full text-sm font-medium text-muted-foreground transition-all hover:bg-muted"
+            >
+              Rooms
+            </Link> */}
+            <Link
+              to="/you"
+              className="px-4 py-2 rounded-full text-sm font-medium text-muted-foreground transition-all hover:bg-muted"
+            >
+              Profile
+            </Link>
+            <Link
+              to="/premium"
+              className="px-4 py-2 rounded-full text-sm font-medium text-muted-foreground transition-all hover:bg-muted"
+            >
+              Premium
             </Link>
           </div>
           <div className="flex items-center gap-4">
@@ -167,7 +231,11 @@ export default function ProblemsPage() {
               onClick={toggleTheme}
               className="rounded-full"
             >
-              {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+              {theme === "dark" ? (
+                <Sun className="h-5 w-5" />
+              ) : (
+                <Moon className="h-5 w-5" />
+              )}
             </Button>
             <Button variant="ghost" onClick={handleSignOut}>
               <LogOut className="mr-2 h-4 w-4" />
@@ -178,87 +246,176 @@ export default function ProblemsPage() {
       </header>
 
       <main className="container px-4 py-8">
-        <div className="mb-8">
-          <h1 className="mb-2 text-3xl font-bold">Problems</h1>
-          <p className="text-muted-foreground">
-            Solve coding challenges and improve your skills
-          </p>
-        </div>
+        <div className="flex flex-col gap-6">
+          {/* Title Section */}
+          <div className="flex flex-col gap-2">
+            <h1 className="text-3xl font-bold tracking-tight">Problems</h1>
+            <p className="text-muted-foreground">
+              Curated list of coding challenges to help you crack your next
+              interview.
+            </p>
+          </div>
 
-        <Card className="mb-6 border-border/40">
-          <CardHeader>
-            <CardTitle>Filter Problems</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col gap-4 md:flex-row">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  placeholder="Search problems or tags..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-              <Select value={difficultyFilter} onValueChange={setDifficultyFilter}>
-                <SelectTrigger className="w-full md:w-[180px]">
+          {/* Filters Section - Clean Bar */}
+          <div className="flex flex-col gap-4 md:flex-row md:items-center justify-between">
+            <div className="relative flex-1 max-w-sm">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Search questions..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 bg-background"
+              />
+            </div>
+            <div className="flex flex-wrap gap-2 items-center">
+              <Button
+                variant="outline"
+                className="gap-2 bg-background"
+                onClick={handleRandomPick}
+              >
+                <Shuffle className="h-4 w-4" />
+                <span className="hidden sm:inline">Pick One</span>
+              </Button>
+              <Select
+                value={difficultyFilter}
+                onValueChange={setDifficultyFilter}
+              >
+                <SelectTrigger className="w-[130px] bg-background">
                   <SelectValue placeholder="Difficulty" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Difficulties</SelectItem>
-                  <SelectItem value="easy">Easy</SelectItem>
-                  <SelectItem value="medium">Medium</SelectItem>
-                  <SelectItem value="hard">Hard</SelectItem>
+                  <SelectItem value="all">Difficulty</SelectItem>
+                  <SelectItem value="easy" className="text-green-500">
+                    Easy
+                  </SelectItem>
+                  <SelectItem value="medium" className="text-yellow-500">
+                    Medium
+                  </SelectItem>
+                  <SelectItem value="hard" className="text-red-500">
+                    Hard
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-[130px] bg-background">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Status</SelectItem>
+                  <SelectItem value="solved">Solved</SelectItem>
+                  <SelectItem value="unsolved">Unsolved</SelectItem>
+                  <SelectItem value="attempted">Attempted</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={tagFilter} onValueChange={setTagFilter}>
+                <SelectTrigger className="w-[130px] bg-background">
+                  <SelectValue placeholder="Tags" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Tags</SelectItem>
+                  {uniqueTags.map((tag) => (
+                    <SelectItem key={tag} value={tag}>
+                      {tag}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
-          </CardContent>
-        </Card>
+          </div>
 
-        {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {filteredProblems.map((problem) => (
-              <Card
-                key={problem.id}
-                className="cursor-pointer border-border/40 transition-colors hover:bg-muted/50"
-                onClick={() => navigate(`/problem/${problem.slug}`)}
-              >
-                <CardContent className="p-6">
-                  <div className="flex items-start gap-4">
-                    <div className="mt-1">{getStatusIcon(problem.id)}</div>
-                    <div className="flex-1">
-                      <div className="mb-2 flex flex-wrap items-center gap-2">
-                        <h3 className="text-lg font-semibold">{problem.title}</h3>
-                        <Badge
-                          variant="outline"
-                          className={getDifficultyColor(problem.difficulty)}
+          {/* Problems Table */}
+          <div className="rounded-md border bg-card">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[50px] text-center">Status</TableHead>
+                  <TableHead className="min-w-[200px] text-center">Title</TableHead>
+                  <TableHead className="w-[100px]">Difficulty</TableHead>
+                  <TableHead className="w-[100px]">Acceptance</TableHead>
+                  <TableHead className="hidden md:table-cell">Topic</TableHead>
+                  <TableHead className="text-right w-[100px]">Action</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {loading ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="h-24 text-center">
+                      <div className="flex justify-center">
+                        <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ) : filteredProblems.length === 0 ? (
+                  <TableRow>
+                    <TableCell
+                      colSpan={6}
+                      className="h-24 text-center text-muted-foreground"
+                    >
+                      No problems found.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredProblems.map((problem) => (
+                    <TableRow
+                      key={problem.id}
+                      className="cursor-pointer hover:bg-muted/50"
+                      onClick={() => navigate(`/problem/${problem.slug}`)}
+                    >
+                      <TableCell className="text-center">
+                        {getStatusIcon(problem.id)}
+                      </TableCell>
+                      <TableCell className="font-medium">
+                        {problem.title}
+                      </TableCell>
+                      <TableCell>
+                        <span
+                          className={`font-medium mr-[30px] ${
+                            problem.difficulty.toLowerCase() === "easy"
+                              ? "text-green-500"
+                              : problem.difficulty.toLowerCase() === "medium"
+                                ? "text-yellow-500"
+                                : "text-red-500"
+                          }`}
                         >
-                          {problem.difficulty}
-                        </Badge>
-                      </div>
-                      <div className="mb-3 flex flex-wrap gap-2">
-                        {problem.tags.map((tag) => (
-                          <Badge key={tag} variant="secondary" className="text-xs">
-                            {tag}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-            {filteredProblems.length === 0 && (
-              <div className="py-12 text-center text-muted-foreground">
-                No problems found matching your filters
-              </div>
-            )}
+                          {problem.difficulty.charAt(0).toUpperCase() +
+                            problem.difficulty.slice(1)}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {problem.acceptanceRate
+                          ? `${problem.acceptanceRate}%`
+                          : "-"}
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell">
+                        <div className="flex flex-wrap gap-1">
+                          {problem.tags.slice(0, 3).map((tag) => (
+                            <Badge
+                              key={tag}
+                              variant="secondary"
+                              className="text-[10px] px-1 py-0 h-5 font-normal"
+                            >
+                              {tag}
+                            </Badge>
+                          ))}
+                          {problem.tags.length > 3 && (
+                            <span className="text-xs text-muted-foreground">
+                              +{problem.tags.length - 3}
+                            </span>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <SquareChevronRight className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
           </div>
-        )}
+        </div>
       </main>
     </div>
   );

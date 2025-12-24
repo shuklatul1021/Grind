@@ -1,32 +1,87 @@
-import { useEffect, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
-import { Button } from '@repo/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/card';
-import { Badge } from '@repo/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@repo/ui/tabs';
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { Button } from "@repo/ui/button";
+import { Badge } from "@repo/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@repo/ui/tabs";
 import {
   Moon,
   Sun,
-  LogOut,
   Play,
   CheckCircle2,
   XCircle,
   ArrowLeft,
   Loader2,
   SquareChevronRight,
-} from 'lucide-react';
-import { useTheme } from '../contexts/ThemeContext';
-
-import { useToast } from '../../../../packages/ui/src/hooks/use-toast';
+  Code2,
+  Terminal,
+  Maximize2,
+  RotateCcw,
+  Timer as TimerIcon,
+  Settings,
+  CloudUpload,
+  Pause,
+  Play as PlayIcon,
+} from "lucide-react";
+import { useTheme } from "../contexts/ThemeContext";
+import { useToast } from "../../../../packages/ui/src/hooks/use-toast";
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
-} from '@repo/ui/resizable';
-import type { Example, Problem, StarterCode } from '../types/problem';
-import { BACKENDURL } from '../utils/urls';
-import CodeEditor from './CodeEditor';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@repo/ui/select';
+} from "@repo/ui/resizable";
+import type { Example, Problem, StarterCode } from "../types/problem";
+import { BACKENDURL } from "../utils/urls";
+import CodeEditor from "./CodeEditor";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@repo/ui/select";
+
+function WorkspaceTimer() {
+  const [seconds, setSeconds] = useState(0);
+  const [isActive, setIsActive] = useState(true);
+
+  useEffect(() => {
+    let interval: ReturnType<typeof setInterval>;
+    if (isActive) {
+      interval = setInterval(() => {
+        setSeconds((seconds) => seconds + 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [isActive]);
+
+  const formatTime = (totalSeconds: number) => {
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const secs = totalSeconds % 60;
+    return `${hours > 0 ? hours.toString().padStart(2, "0") + ":" : ""}${minutes
+      .toString()
+      .padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+  };
+
+  return (
+    <div className="flex items-center gap-3 bg-muted/20 px-4 py-1.5 rounded-full border border-border/40 shadow-sm">
+      <TimerIcon className="h-3.5 w-3.5 text-muted-foreground" />
+      <span className="font-mono text-sm font-medium text-foreground/90 w-[4.5ch] text-center">
+        {formatTime(seconds)}
+      </span>
+      <button
+        onClick={() => setIsActive(!isActive)}
+        className="ml-1 rounded-full p-0.5 hover:bg-muted/50 transition-colors"
+      >
+        {isActive ? (
+          <Pause className="h-3 w-3 text-muted-foreground" />
+        ) : (
+          <PlayIcon className="h-3 w-3 text-muted-foreground" />
+        )}
+      </button>
+    </div>
+  );
+}
 
 export default function ProblemPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -36,383 +91,560 @@ export default function ProblemPage() {
   const [problem, setProblem] = useState<Problem | null>(null);
   const [starterCodes, setStarterCodes] = useState<StarterCode[]>([]);
   const [activeTest, setActiveTest] = useState(0);
-  const [selectedLanguage, setSelectedLanguage] = useState('python');
-  const [code, setCode] = useState('');
+  const [selectedLanguage, setSelectedLanguage] = useState("python");
+  const [code, setCode] = useState("");
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [testResult, setTestResult] = useState<{
-    status: 'accepted' | 'wrong_answer' | 'runtime_error';
+    status: "accepted" | "wrong_answer" | "runtime_error";
     message: string;
   } | null>(null);
 
   const handleLanguageChange = (language: string) => {
     setSelectedLanguage(language);
     const selectedCode = starterCodes.find((sc) => sc.language === language);
-    setCode(selectedCode ? selectedCode.code : '');
+    setCode(selectedCode ? selectedCode.code : "");
   };
-
-
 
   useEffect(() => {
     fetchProblem();
-  }, [ slug ]);
+  }, [slug]);
 
   const fetchProblem = async () => {
     setLoading(true);
-    const response = await fetch(`${BACKENDURL}/problems/getproblem/${slug}`,{
-      method : "GET",
-      headers : {
-        "Content-Type" : "application/json",
-        token : localStorage.getItem("token") || ""
+    try {
+      const response = await fetch(
+        `${BACKENDURL}/problems/getproblem/${slug}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            token: localStorage.getItem("token") || "",
+          },
+        }
+      );
+      if (response.ok) {
+        const json = await response.json();
+        setProblem(json.problem);
+        const parsedStarterCodes = JSON.parse(json.problem.starterCode);
+        setStarterCodes(parsedStarterCodes);
+        const selectedCode = parsedStarterCodes.find(
+          (sc: StarterCode) => sc.language === selectedLanguage
+        );
+        setCode(selectedCode ? selectedCode.code : "");
+      } else {
+        throw new Error("Failed to fetch");
       }
-    });
-    if(response.ok){
-      const json = await response.json();
-      setProblem(json.problem);
-      setStarterCodes(JSON.parse(json.problem.starterCode));
-      const selectedCode = JSON.parse(json.problem.starterCode).find((sc: StarterCode) => sc.language === selectedLanguage);
-      setCode(selectedCode ? selectedCode.code : '');
-    }else{
+    } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to fetch problem",
+        description: "Failed to fetch problem details",
         variant: "destructive",
-        action: <button onClick={fetchProblem}>Retry</button>
+        action: (
+          <Button variant="outline" size="sm" onClick={fetchProblem}>
+            Retry
+          </Button>
+        ),
       });
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
-  };
-
-  const handleSignOut = async () => {
-    localStorage.removeItem("token");
-    navigate('/');
   };
 
   const handleRunCode = async () => {
     if (!problem) return;
     setSubmitting(true);
-    const response = await fetch(`${BACKENDURL}/submit/submitcode` , {
-      method : "POST",
-      headers : {
-        "Content-Type" : "application/json"
-      },
-      body : JSON.stringify({
-        code,
-        language : "python"
-      })
-    });
-    if(response.ok){
-      setTestResult({status : "accepted" , message : "Successfully Runs"})
-    }else{
-      setTestResult({status : "wrong_answer" , message : "Invalid Result"})
+    try {
+      const response = await fetch(
+        `${BACKENDURL}/submit/submitcode/${problem.id}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ code, language: selectedLanguage }),
+        }
+      );
+      if (response.ok) {
+        setTestResult({
+          status: "accepted",
+          message: "All test cases passed!",
+        });
+        toast({
+          title: "Success",
+          description: "Solution accepted!",
+          className:
+            "bg-green-500/10 border-green-500/20 text-green-600 dark:text-green-400",
+        });
+      } else {
+        setTestResult({
+          status: "wrong_answer",
+          message: "Wrong Answer on test case 1",
+        });
+      }
+    } catch (error) {
+      setTestResult({ status: "runtime_error", message: "Runtime Error" });
+    } finally {
+      setSubmitting(false);
     }
-
-    setSubmitting(false);
   };
 
-  console.log(slug);
-
   const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty) {
-      case 'easy':
-        return 'bg-green-500/10 text-green-500 border-green-500/20';
-      case 'medium':
-        return 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20';
-      case 'hard':
-        return 'bg-red-500/10 text-red-500 border-red-500/20';
+    switch (difficulty.toLowerCase()) {
+      case "easy":
+        return "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20";
+      case "medium":
+        return "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20";
+      case "hard":
+        return "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20";
       default:
-        return '';
+        return "bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20";
     }
   };
 
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      <div className="flex h-screen w-full items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-4">
+          <div className="relative flex h-12 w-12 items-center justify-center">
+            <div className="absolute h-full w-full animate-ping rounded-full bg-primary/20" />
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+          <p className="text-sm font-medium text-muted-foreground animate-pulse">
+            Loading workspace...
+          </p>
+        </div>
       </div>
     );
   }
 
-  if (!problem) {
-    return null;
-  }
+  if (!problem) return null;
 
   return (
-    <div className="flex h-screen flex-col bg-background">
-      <header className="border-b border-border/40 bg-background/95 backdrop-blur">
-        <div className="container flex h-16 items-center justify-between px-4">
-          <div className="flex items-center gap-4">
+    <div className="flex h-screen flex-col bg-background text-foreground overflow-hidden">
+      {/* Modern Header - Minimal & Clean */}
+      <header className="flex h-14 shrink-0 items-center justify-between border-b border-border/50 bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        {/* Left: Navigation & Context */}
+        <div className="flex items-center gap-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate("/problems")}
+            className="h-8 w-8 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <div className="flex items-center gap-3">
+            <div
+              className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+              onClick={() => navigate("/")}
+            >
+              <SquareChevronRight className="h-5 w-5 text-primary" />
+              <span className="font-semibold tracking-tight text-foreground">
+                Grind
+              </span>
+            </div>
+            <div className="h-4 w-[1px] bg-border/50" />
+            <span className="text-sm font-medium truncate max-w-[300px]">
+              {problem.title}
+            </span>
+          </div>
+        </div>
+
+        {/* Center: Timer */}
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+          <WorkspaceTimer />
+        </div>
+
+        {/* Right: Actions & Profile */}
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 mr-2">
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => navigate('/problems')}
+              className="h-8 w-8 text-muted-foreground hover:text-foreground"
             >
-              <ArrowLeft className="h-5 w-5" />
+              <Settings className="h-4 w-4" />
             </Button>
-            <div className="flex cursor-pointer items-center gap-2" onClick={() => navigate('/')}>
-              <SquareChevronRight className="h-6 w-6" />
-              <span className="text-xl font-bold">Grind</span>
-            </div>
-          </div>
-          <div className='flex space-x-4'>
-            <div>
-              <Link to="/problems">Problems</Link> 
-            </div>
-            <div>
-              <Link to="/contest">Contest</Link> 
-            </div>
-            <div>
-              <Link to="/compiler">Compiler</Link>
-            </div>
-          </div>
-          <div className="flex items-center gap-4">
             <Button
               variant="ghost"
               size="icon"
               onClick={toggleTheme}
-              className="rounded-full"
+              className="h-8 w-8 text-muted-foreground hover:text-foreground"
             >
-              {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+              {theme === "dark" ? (
+                <Sun className="h-4 w-4" />
+              ) : (
+                <Moon className="h-4 w-4" />
+              )}
             </Button>
-            <Button variant="ghost" onClick={handleSignOut}>
-              <LogOut className="mr-2 h-4 w-4" />
-              Sign Out
+          </div>
+
+          <div className="h-4 w-[1px] bg-border/50" />
+
+          <div className="flex items-center gap-2">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={handleRunCode}
+              disabled={submitting}
+              className="h-8 px-4 text-xs font-medium gap-2"
+            >
+              {submitting ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Play className="h-3.5 w-3.5 fill-current" />
+              )}
+              Run
+            </Button>
+            <Button
+              size="sm"
+              onClick={handleRunCode}
+              disabled={submitting}
+              className="h-8 px-4 text-xs font-medium gap-2 bg-green-600 hover:bg-green-700 text-white shadow-sm"
+            >
+              <CloudUpload className="h-3.5 w-3.5" />
+              Submit
             </Button>
           </div>
         </div>
       </header>
-
       <ResizablePanelGroup direction="horizontal" className="flex-1">
-        <ResizablePanel defaultSize={25} minSize={30}>
-          <div className="h-full overflow-y-auto p-6">
-            <div className="mb-4 flex flex-wrap items-center gap-2">
-              <h1 className="text-2xl font-bold">{problem.title}</h1>
-              <Badge
-                variant="outline"
-                className={getDifficultyColor(problem.difficulty)}
+        <ResizablePanel
+          defaultSize={40}
+          minSize={30}
+          maxSize={60}
+          className="bg-card/30"
+        >
+          <div className="flex h-full flex-col">
+            <Tabs defaultValue="description" className="flex-1 flex flex-col">
+              <div className="border-b border-border/50 px-4 bg-muted/10">
+                <TabsList className="h-10 w-full justify-start gap-6 rounded-none bg-transparent p-0">
+                  <TabsTrigger
+                    value="description"
+                    className="relative h-10 rounded-none border-b-2 border-transparent bg-transparent px-0 pb-2 pt-2 font-medium text-muted-foreground shadow-none transition-none data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:shadow-none hover:text-foreground"
+                  >
+                    Description
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="submissions"
+                    className="relative h-10 rounded-none border-b-2 border-transparent bg-transparent px-0 pb-2 pt-2 font-medium text-muted-foreground shadow-none transition-none data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:shadow-none hover:text-foreground"
+                  >
+                    Submissions
+                  </TabsTrigger>
+                </TabsList>
+              </div>
+
+              <TabsContent
+                value="description"
+                className="flex-1 overflow-y-auto p-6 outline-none mt-0"
               >
-                {problem.difficulty}
-              </Badge>
-            </div>
+                <div className="space-y-6 max-w-3xl mx-auto">
+                  <div className="space-y-4">
+                    <div className="flex items-start justify-between gap-4">
+                      <h1 className="text-2xl font-bold tracking-tight">
+                        {problem.title}
+                      </h1>
+                      <Badge
+                        variant="outline"
+                        className={`${getDifficultyColor(
+                          problem.difficulty
+                        )} capitalize px-2.5 py-0.5 text-xs font-semibold border`}
+                      >
+                        {problem.difficulty}
+                      </Badge>
+                    </div>
 
-            <div className="mb-4 flex flex-wrap gap-2">
-              {problem.tags.map((tag) => (
-                <Badge key={tag} variant="secondary">
-                  {tag}
-                </Badge>
-              ))}
-            </div>
+                    <div className="flex flex-wrap gap-2">
+                      {problem.tags.map((tag) => (
+                        <Badge
+                          key={tag}
+                          variant="secondary"
+                          className="bg-muted/50 text-muted-foreground hover:bg-muted text-[10px] px-2 py-0.5"
+                        >
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
 
-            <Tabs defaultValue="description" className="w-full">
-              <TabsList>
-                <TabsTrigger value="description">Description</TabsTrigger>
-                <TabsTrigger value="examples">Examples</TabsTrigger>
-                <TabsTrigger value="constraints">Constraints</TabsTrigger>
-              </TabsList>
+                  <div className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground leading-relaxed">
+                    <div className="whitespace-pre-wrap">
+                      {problem.description}
+                    </div>
+                  </div>
 
-              <TabsContent value="description" className="space-y-4">
-                <Card className="border-border/40">
-                  <CardContent className="pt-6">
-                    <div className="whitespace-pre-wrap text-sm">{problem.description}</div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="examples" className="space-y-4">
-                {(problem.examples as Example[]).map((example, index) => (
-                  <Card key={index} className="border-border/40">
-                    <CardHeader>
-                      <CardTitle className="text-base">Example {index + 1}</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-2 text-sm">
-                      <div>
-                        <span className="font-semibold">Input:</span> {example.input}
-                      </div>
-                      <div>
-                        <span className="font-semibold">Output:</span> {example.output}
-                      </div>
-                      {example.explanation && (
-                        <div>
-                          <span className="font-semibold">Explanation:</span>{' '}
-                          {example.explanation}
+                  <div className="space-y-4">
+                    <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                      <Terminal className="h-4 w-4" />
+                      Examples
+                    </h3>
+                    <div className="grid gap-4">
+                      {(problem.examples as Example[]).map((example, index) => (
+                        <div
+                          key={index}
+                          className="rounded-lg border border-border/50 bg-muted/20 p-4 space-y-3"
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                              Example {index + 1}
+                            </span>
+                          </div>
+                          <div className="space-y-2">
+                            <div className="flex gap-3 text-sm">
+                              <span className="font-mono font-semibold text-foreground min-w-[3rem]">
+                                Input:
+                              </span>
+                              <code className="font-mono text-muted-foreground bg-muted/30 px-1.5 py-0.5 rounded">
+                                {example.input}
+                              </code>
+                            </div>
+                            <div className="flex gap-3 text-sm">
+                              <span className="font-mono font-semibold text-foreground min-w-[3rem]">
+                                Output:
+                              </span>
+                              <code className="font-mono text-muted-foreground bg-muted/30 px-1.5 py-0.5 rounded">
+                                {example.output}
+                              </code>
+                            </div>
+                            {example.explanation && (
+                              <div className="flex gap-3 text-sm pt-1">
+                                <span className="font-mono font-semibold text-foreground min-w-[3rem]">
+                                  Note:
+                                </span>
+                                <span className="text-muted-foreground">
+                                  {example.explanation}
+                                </span>
+                              </div>
+                            )}
+                          </div>
                         </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                ))}
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </TabsContent>
 
-              <TabsContent value="constraints">
-                <Card className="border-border/40">
-                  <CardContent className="pt-6">
-                    <div className="whitespace-pre-wrap text-sm">{problem.constraints}</div>
-                  </CardContent>
-                </Card>
+              <TabsContent value="submissions" className="flex-1 p-6 mt-0">
+                <div className="flex h-full items-center justify-center text-muted-foreground">
+                  <div className="text-center">
+                    <Code2 className="h-10 w-10 mx-auto mb-3 opacity-20" />
+                    <p>No submissions yet.</p>
+                  </div>
+                </div>
               </TabsContent>
             </Tabs>
           </div>
         </ResizablePanel>
 
-        <ResizableHandle withHandle />
+        <ResizableHandle
+          withHandle
+          className="w-[1px] bg-border/50 hover:bg-primary/50 transition-colors"
+        />
 
-        <ResizablePanel defaultSize={55} minSize={30}>
-          <div className="flex h-full flex-col">
-            <div className="flex items-center justify-between border-b border-border/40 bg-muted/50 px-4 py-2">
-              <Select value={selectedLanguage} onValueChange={handleLanguageChange}>
-                <SelectTrigger className="w-[200px]">
-                  <SelectValue placeholder="Select Language" />
-                </SelectTrigger>
-                <SelectContent>
-                  {starterCodes.map((lang) => (
-                    <SelectItem key={lang.language} value={lang.language}>
-                      {lang.language}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Button
-                onClick={handleRunCode}
-                disabled={submitting}
-                size="sm"
-                className="gap-2"
-              >
-                {submitting ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Running...
-                  </>
-                ) : (
-                  <>
-                    <Play className="h-4 w-4" />
-                    Run Code
-                  </>
-                )}
-              </Button>
-            </div>
-
-            <div
-              className="flex-1 min-h-[50vh] max-h-[80vh] overflow-auto rounded-md border border-border/40 bg-muted/30"
-              role="region"
-              aria-label="Code editor"
+        {/* Right Panel: Code & Tests */}
+        <ResizablePanel
+          defaultSize={60}
+          minSize={40}
+          className="bg-background/50 backdrop-blur-sm"
+        >
+          <ResizablePanelGroup direction="vertical">
+            {/* Code Editor */}
+            <ResizablePanel
+              defaultSize={65}
+              minSize={30}
+              className="flex flex-col border-l border-border/50"
             >
-              <CodeEditor code={code} setCode={setCode} language={selectedLanguage}/>
-            </div>
-
-            {!testResult && (
-              <div className="border-t border-border/40 bg-muted/50">
-                <Card>
-                  <CardContent className="mt-1">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-sm font-semibold">Test Cases</h3>
-                      <div className="text-xs text-muted-foreground">{problem.testcase.length} total</div>
-                    </div>
-
-                    {/* Tabs */}
-                    <div className="mt-3 flex gap-2 overflow-x-auto">
-                      {problem.testcase.map((_, i) => (
-                        <button
-                          key={i}
-                          onClick={() => setActiveTest(i)}
-                          className={
-                            "inline-flex items-center justify-center min-w-[36px] h-8 px-2 rounded-md text-sm " +
-                            (i === activeTest
-                              ? "bg-primary text-black shadow"
-                              : "bg-transparent text-muted-foreground border border-border/20 hover:bg-muted/40")
-                          }
-                          aria-pressed={i === activeTest}
+              {/* Editor Toolbar */}
+              <div className="flex h-10 shrink-0 items-center justify-between border-b border-border/50 bg-background px-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground bg-muted/30 px-2 py-1 rounded-md border border-border/50">
+                    <Code2 className="h-3.5 w-3.5" />
+                    <span>Solution</span>
+                  </div>
+                  <div className="h-4 w-[1px] bg-border/50" />
+                  <Select
+                    value={selectedLanguage}
+                    onValueChange={handleLanguageChange}
+                  >
+                    <SelectTrigger className="h-7 w-[140px] border-none bg-transparent shadow-none hover:bg-muted/50 focus:ring-0 text-xs font-medium p-0 gap-1 text-muted-foreground hover:text-foreground transition-colors">
+                      <span className="truncate">Language:</span>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {starterCodes.map((lang) => (
+                        <SelectItem
+                          key={lang.language}
+                          value={lang.language}
+                          className="text-xs"
                         >
-                          Test {i + 1}
-                        </button>
+                          <span className="capitalize">{lang.language}</span>
+                        </SelectItem>
                       ))}
-                    </div>
-                    <div className="mt-4 grid gap-4 md:grid-cols-2">
-                      <div className="rounded-md border border-border/40 bg-background/50 p-3">
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <div className="text-xs font-medium">Input</div>
-                            <div className="text-2xs text-muted-foreground">Test #{activeTest + 1}</div>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                    onClick={() =>
+                      setCode(
+                        starterCodes.find(
+                          (sc) => sc.language === selectedLanguage
+                        )?.code || ""
+                      )
+                    }
+                    title="Reset Code"
+                  >
+                    <RotateCcw className="h-3.5 w-3.5" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                  >
+                    <Maximize2 className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              </div>
+
+              <div className="flex-1 relative bg-background">
+                <CodeEditor
+                  code={code}
+                  setCode={setCode}
+                  language={selectedLanguage}
+                />
+              </div>
+            </ResizablePanel>
+
+            <ResizableHandle
+              withHandle
+              className="h-[1px] bg-border/50 hover:bg-primary/50 transition-colors"
+            />
+            {/* Test Cases / Console */}
+            <ResizablePanel
+              defaultSize={35}
+              minSize={20}
+              className="bg-card/30 border-l border-border/50"
+            >
+              <div className="flex h-full flex-col">
+                {/* Test Case Header */}
+                <div className="flex h-10 shrink-0 items-center justify-between border-b border-border/50 bg-muted/10 px-4">
+                  <div className="flex items-center gap-2">
+                    <Terminal className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-xs font-medium text-muted-foreground">
+                      Test Cases
+                    </span>
+                  </div>
+                  {testResult && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setTestResult(null)}
+                      className="h-6 text-[10px] px-2 hover:bg-background"
+                    >
+                      Clear Result
+                    </Button>
+                  )}
+                </div>
+
+                <div className="flex-1 overflow-y-auto">
+                  {!testResult ? (
+                    <div className="flex h-full flex-col">
+                      {/* Case Tabs */}
+                      <div className="flex items-center gap-1 p-2 border-b border-border/50 bg-background/50">
+                        {problem.testcase.map((_, i) => (
+                          <button
+                            key={i}
+                            onClick={() => setActiveTest(i)}
+                            className={`
+                                px-3 py-1.5 rounded-md text-xs font-medium transition-all
+                                ${
+                                  i === activeTest
+                                    ? "bg-primary/10 text-primary shadow-sm ring-1 ring-primary/20"
+                                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                                }
+                              `}
+                          >
+                            Case {i + 1}
+                          </button>
+                        ))}
+                      </div>
+
+                      {/* Case Content */}
+                      <div className="p-4 space-y-4">
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <label className="text-xs font-medium text-muted-foreground">
+                              Input
+                            </label>
+                          </div>
+                          <div className="relative group">
+                            <div className="rounded-md border border-border/50 bg-muted/30 p-3 font-mono text-sm text-foreground/90 min-h-[40px]">
+                              {problem.testcase[activeTest]?.input ?? "-"}
+                            </div>
                           </div>
                         </div>
-
-                        <pre
-                          className="mt-3 max-h-56 overflow-auto whitespace-pre-wrap text-sm bg-transparent p-2 rounded"
-                          style={{ fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, 'Roboto Mono', monospace" }}
-                        >
-                          {problem.testcase[activeTest]?.input ?? "-"}
-                        </pre>
-                      </div>
-
-                      <div className="rounded-md border border-border/40 bg-background/50 p-3">
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <div className="text-xs font-medium">Expected Output</div>
-                            <div className="text-2xs text-muted-foreground">Test #{activeTest + 1}</div>
+                        <div className="space-y-2">
+                          <label className="text-xs font-medium text-muted-foreground">
+                            Expected Output
+                          </label>
+                          <div className="rounded-md border border-border/50 bg-muted/30 p-3 font-mono text-sm text-foreground/90 min-h-[40px]">
+                            {problem.testcase[activeTest]?.expectedOutput ??
+                              "-"}
                           </div>
                         </div>
-
-                        <pre
-                          className="mt-3 max-h-56 overflow-auto whitespace-pre-wrap text-sm bg-transparent p-2 rounded"
-                          style={{ fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, 'Roboto Mono', monospace" }}
-                        >
-                          {problem.testcase[activeTest]?.expectedOutput ?? "-"}
-                        </pre>
                       </div>
                     </div>
-                    <div className="mt-4 flex items-center justify-between">
-                      <div className="text-xs text-muted-foreground">
-                        Showing {activeTest + 1} of {problem.testcase.length}
+                  ) : (
+                    <div className="h-full flex flex-col">
+                      <div
+                        className={`rounded-lg border p-4 mb-4 ${
+                          testResult.status === "accepted"
+                            ? "bg-green-500/5 border-green-500/20"
+                            : "bg-red-500/5 border-red-500/20"
+                        }`}
+                      >
+                        <div className="flex items-center gap-3 mb-2">
+                          {testResult.status === "accepted" ? (
+                            <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400" />
+                          ) : (
+                            <XCircle className="h-5 w-5 text-red-600 dark:text-red-400" />
+                          )}
+                          <span
+                            className={`font-semibold ${
+                              testResult.status === "accepted"
+                                ? "text-green-600 dark:text-green-400"
+                                : "text-red-600 dark:text-red-400"
+                            }`}
+                          >
+                            {testResult.status === "accepted"
+                              ? "Accepted"
+                              : "Wrong Answer"}
+                          </span>
+                        </div>
+                        <p className="text-sm text-muted-foreground pl-8">
+                          {testResult.message}
+                        </p>
                       </div>
 
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => setActiveTest((s) => Math.max(0, s - 1))}
-                          className="rounded border px-3 py-1 text-sm disabled:opacity-50"
-                          disabled={activeTest <= 0}
+                      <div className="flex justify-end">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setTestResult(null)}
+                          className="text-xs"
                         >
-                          Prev
-                        </button>
-                        <button
-                          onClick={() => setActiveTest((s) => Math.min(problem.testcase.length - 1, s + 1))}
-                          className="rounded border px-3 py-1 text-sm disabled:opacity-50"
-                          disabled={activeTest >= problem.testcase.length - 1}
-                        >
-                          Next
-                        </button>
+                          Back to Test Cases
+                        </Button>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
+                  )}
+                </div>
               </div>
-            )}
-
-            {testResult && (
-              <div className="border-t border-border/40 bg-muted/50 p-4">
-                <Card
-                  className={`border-2 ${
-                    testResult.status === 'accepted'
-                      ? 'border-green-500/50 bg-green-500/10'
-                      : 'border-red-500/50 bg-red-500/10'
-                  }`}
-                >
-                  <CardContent className="flex items-start gap-3 pt-6">
-                    {testResult.status === 'accepted' ? (
-                      <CheckCircle2 className="h-5 w-5 flex-shrink-0 text-green-500" />
-                    ) : (
-                      <XCircle className="h-5 w-5 flex-shrink-0 text-red-500" />
-                    )}
-                    <div>
-                      <div className="mb-1 font-semibold">
-                        {testResult.status === 'accepted' ? 'Accepted' : 'Wrong Answer'}
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        {testResult.message}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            )}
-          </div>
+            </ResizablePanel>
+          </ResizablePanelGroup>
         </ResizablePanel>
       </ResizablePanelGroup>
     </div>

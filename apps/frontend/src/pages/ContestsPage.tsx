@@ -166,6 +166,30 @@ export default function ContestsPage() {
             >
               Grind AI
             </Link>
+            <Link 
+              to="/pricing" 
+              className="px-4 py-2 rounded-full text-sm font-medium text-muted-foreground transition-all hover:bg-muted"
+            >
+              Pricing
+            </Link>
+            {/* <Link 
+              to="/room" 
+              className="px-4 py-2 rounded-full text-sm font-medium text-muted-foreground transition-all hover:bg-muted"
+            >
+              Rooms
+            </Link> */}
+            <Link 
+              to="/you" 
+              className="px-4 py-2 rounded-full text-sm font-medium text-muted-foreground transition-all hover:bg-muted"
+            >
+              Profile
+            </Link>
+            <Link 
+              to="/premium" 
+              className="px-4 py-2 rounded-full text-sm font-medium text-muted-foreground transition-all hover:bg-muted"
+            >
+              Premium
+            </Link>
           </div>
           <div className="flex items-center gap-4">
             <Button

@@ -51,3 +51,46 @@ export interface Submission {
   memory: number;
   created_at: string;
 }
+
+type Social = {
+  id : string;
+  github? : string;
+  linkedin? : string
+  twitter? :  string
+}
+
+export interface UserInterface{
+  id : string;
+  username? : string;
+  fullname? :  string;
+  email : string;
+  bio? : string;
+  avatar? : string;
+  location? : string
+  problemsSolved? : number;
+  rank? : number;
+  contestsParticipated? : number;
+  currentStreak? : number
+  social? : Social
+  createdAt? : Date
+}
+
+
+export interface Message {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+  timestamp: Date;
+}
+
+export interface ChatSession {
+  id: string;
+  title: string;
+  messages: Message[];
+  createdAt: Date;
+}
+
+export interface FormattedMessageProps {
+  user : Message;
+  assistant : Message;
+}

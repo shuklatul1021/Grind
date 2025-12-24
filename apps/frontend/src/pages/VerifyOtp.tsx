@@ -110,10 +110,10 @@ export function VerifyOtp() {
             </InputOTP>
           </div>
           <div className="mt-[50px]">
-            <Button className="h-12 w-[200px]" disabled={loading} onClick={HandelVerifyOtp}>{loading ? <><div className="h-4 w-4 animate-spin rounded-full border-4 border-primary border-t-transparent"></div> Verifying...</> : "Verify"}</Button>
+            <Button className="h-12 w-[200px]" disabled={loading} onClick={HandelVerifyOtp}>{loading ? <><div className="h-4 w-4 animate-spin rounded-full border-4 border-primary border-t-transparent text-black"></div> Verifying...</> : "Verify"}</Button>
           </div>
           <p className="mt-4 text-center text-sm text-muted-foreground">
-            By continuing, you agree to our Terms of Service and Privacy Policy
+            By continuing, you agree to our <br /> <a href="/terms-and-conditions" className="underline">Terms of Service</a> and <a href="/privacy-policy" className="underline">Privacy Policy</a>
           </p>
         </div>
       </main>

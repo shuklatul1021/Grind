@@ -227,6 +227,9 @@ export default function LandingPage() {
                 <li><button className="hover:text-foreground" onClick={() => navigate('/about')}>About Us</button></li>
                 <li><button className="hover:text-foreground" onClick={() => navigate('/terms-and-conditions')}>Terms & Conditions</button></li>
                 <li><button className="hover:text-foreground" onClick={() => navigate('/privacy-policy')}>Privacy Policy</button></li>
+                <li><button className="hover:text-foreground" onClick={() => navigate('/cancellation-policy')}>Cancellation & Refunds</button></li>
+                <li><button className="hover:text-foreground" onClick={() => navigate('/shipping-policy')}>Shipping Policy</button></li>
+                <li><button className="hover:text-foreground" onClick={() => navigate('/contact-us')}>Contact Us</button></li>
               </ul>
             </div>
           </div>

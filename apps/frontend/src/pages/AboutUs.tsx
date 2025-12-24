@@ -1,7 +1,24 @@
-import { useNavigate } from 'react-router-dom';
-import { Button } from '@repo/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@repo/ui/card';
-import { Github, Linkedin, Twitter, Globe, ArrowLeft, Target, Users, Zap, Heart, SquareChevronRight } from 'lucide-react';
+import { useNavigate } from "react-router-dom";
+import { Button } from "@repo/ui/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@repo/ui/card";
+import {
+  Github,
+  Linkedin,
+  Twitter,
+  Globe,
+  ArrowLeft,
+  Target,
+  Users,
+  Zap,
+  Heart,
+  SquareChevronRight,
+} from "lucide-react";
 
 export default function AboutUs() {
   const navigate = useNavigate();
@@ -11,11 +28,18 @@ export default function AboutUs() {
       {/* Navigation Bar */}
       <header className="border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
         <div className="container flex h-16 items-center justify-between px-4">
-          <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/')}>
+          <div
+            className="flex items-center gap-2 cursor-pointer"
+            onClick={() => navigate("/")}
+          >
             <SquareChevronRight className="h-6 w-6" />
             <span className="text-xl font-bold">Grind</span>
           </div>
-          <Button variant="ghost" onClick={() => navigate('/')} className="gap-2">
+          <Button
+            variant="ghost"
+            onClick={() => navigate("/")}
+            className="gap-2"
+          >
             <ArrowLeft className="h-4 w-4" />
             Back to Home
           </Button>
@@ -28,11 +52,13 @@ export default function AboutUs() {
           <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl mb-6">
             About
             <span className="bg-gradient-to-r from-blue-500 to-cyan-500 bg-clip-text text-transparent">
-              {' '}Grind
+              {" "}
+              Grind
             </span>
           </h1>
           <p className="text-lg text-muted-foreground md:text-xl max-w-2xl mx-auto">
-            Empowering developers worldwide to master their coding skills through practice, dedication, and community.
+            Empowering developers worldwide to master their coding skills
+            through practice, dedication, and community.
           </p>
         </div>
 
@@ -49,9 +75,11 @@ export default function AboutUs() {
             </CardHeader>
             <CardContent className="text-center">
               <p className="text-lg text-muted-foreground leading-relaxed max-w-3xl mx-auto">
-                To create the ultimate platform for developers to sharpen their algorithmic thinking, 
-                prepare for technical interviews, and build the confidence needed to excel in their careers. 
-                We believe that consistent practice and quality problems are the keys to mastery.
+                To create the ultimate platform for developers to sharpen their
+                algorithmic thinking, prepare for technical interviews, and
+                build the confidence needed to excel in their careers. We
+                believe that consistent practice and quality problems are the
+                keys to mastery.
               </p>
             </CardContent>
           </Card>
@@ -62,20 +90,23 @@ export default function AboutUs() {
           <div className="space-y-6">
             <h2 className="text-3xl font-bold">What is Grind?</h2>
             <p className="text-muted-foreground leading-relaxed">
-              Grind is a modern coding practice platform designed to help developers of all levels 
-              improve their problem-solving skills. Whether you're a beginner learning your first 
-              algorithms or an experienced engineer preparing for FAANG interviews, Grind provides 
-              the tools and environment you need to succeed.
+              Grind is a modern coding practice platform designed to help
+              developers of all levels improve their problem-solving skills.
+              Whether you're a beginner learning your first algorithms or an
+              experienced engineer preparing for FAANG interviews, Grind
+              provides the tools and environment you need to succeed.
             </p>
             <p className="text-muted-foreground leading-relaxed">
-              Our platform features carefully curated problems across multiple difficulty levels, 
-              instant code execution with detailed feedback, comprehensive test cases, and a clean, 
-              distraction-free interface that lets you focus on what matters most: writing great code.
+              Our platform features carefully curated problems across multiple
+              difficulty levels, instant code execution with detailed feedback,
+              comprehensive test cases, and a clean, distraction-free interface
+              that lets you focus on what matters most: writing great code.
             </p>
             <p className="text-muted-foreground leading-relaxed">
-              Built with cutting-edge technologies and designed with developers in mind, Grind 
-              offers support for multiple programming languages, real-time compilation, and 
-              detailed submission history to track your progress over time.
+              Built with cutting-edge technologies and designed with developers
+              in mind, Grind offers support for multiple programming languages,
+              real-time compilation, and detailed submission history to track
+              your progress over time.
             </p>
           </div>
           <div className="space-y-4">
@@ -90,7 +121,8 @@ export default function AboutUs() {
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground">
-                  Every problem is handpicked and tested to ensure it provides real learning value
+                  Every problem is handpicked and tested to ensure it provides
+                  real learning value
                 </p>
               </CardContent>
             </Card>
@@ -105,7 +137,8 @@ export default function AboutUs() {
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground">
-                  Learn from others, share your solutions, and grow together as a community
+                  Learn from others, share your solutions, and grow together as
+                  a community
                 </p>
               </CardContent>
             </Card>
@@ -120,7 +153,8 @@ export default function AboutUs() {
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground">
-                  Crafted by a developer, for developers, with attention to every detail
+                  Crafted by a developer, for developers, with attention to
+                  every detail
                 </p>
               </CardContent>
             </Card>
@@ -129,12 +163,18 @@ export default function AboutUs() {
 
         {/* Founder Section */}
         <div className="max-w-4xl mx-auto mb-12">
-          <h2 className="text-3xl font-bold text-center mb-12">Meet the Founder & CEO</h2>
+          <h2 className="text-3xl font-bold text-center mb-12">
+            Meet the Founder & CEO
+          </h2>
           <Card className="border-border/40 bg-card/50 backdrop-blur overflow-hidden">
             <div className="md:flex">
               <div className="md:w-1/3 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 flex items-center justify-center p-12">
                 <div className="h-40 w-40 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white text-5xl font-bold shadow-2xl">
-                  <img src="https://media.licdn.com/dms/image/v2/D4D03AQHf3MsJwU7SYQ/profile-displayphoto-shrink_800_800/B4DZQYgFeyGgAo-/0/1735577853094?e=1765411200&v=beta&t=OA_bLDW019lSYfDbgfzxyKSKAZ6PONtPoPah41nZU38" alt="Atul Shukla" className="h-40 w-40 rounded-full object-cover" />
+                  <img
+                    src="/ceo.jpg"
+                    alt="Atul Shukla"
+                    className="h-40 w-40 rounded-full object-cover"
+                  />
                 </div>
               </div>
               <div className="md:w-2/3 p-8">
@@ -146,25 +186,33 @@ export default function AboutUs() {
                 </CardHeader>
                 <CardContent className="p-0 space-y-4">
                   <p className="text-muted-foreground leading-relaxed">
-                    Atul Shukla is the visionary founder and CEO behind Grind. As a passionate 
-                    Full Stack Developer with a deep love for algorithms and problem-solving, 
-                    Atul single-handedly architected, designed, and built the entire Grind platform 
+                    Atul Shukla is the visionary founder and CEO behind Grind.
+                    As a passionate Full Stack Developer with a deep love for
+                    algorithms and problem-solving, Atul single-handedly
+                    architected, designed, and built the entire Grind platform
                     from the ground up.
                   </p>
                   <p className="text-muted-foreground leading-relaxed">
-                    With expertise spanning modern web technologies including React, Node.js, 
-                    TypeScript, PostgreSQL, Redis, and Docker, Atul brought his vision to life 
-                    by creating a seamless, performant, and beautiful platform that developers love to use.
+                    With expertise spanning modern web technologies including
+                    React, Node.js, TypeScript, PostgreSQL, Redis, and Docker,
+                    Atul brought his vision to life by creating a seamless,
+                    performant, and beautiful platform that developers love to
+                    use.
                   </p>
                   <p className="text-muted-foreground leading-relaxed">
-                    His mission is simple: to help every developer unlock their full potential 
-                    through consistent practice, quality content, and a supportive community. 
-                    Grind is not just a product—it's a testament to what passion and dedication can achieve.
+                    His mission is simple: to help every developer unlock their
+                    full potential through consistent practice, quality content,
+                    and a supportive community. Grind is not just a product—it's
+                    a testament to what passion and dedication can achieve.
                   </p>
-                  
+
                   <div className="flex gap-4 pt-6">
                     <Button variant="outline" size="icon" asChild>
-                      <a href="https://github.com/shuklatul1021" target="_blank" rel="noopener noreferrer">
+                      <a
+                        href="https://github.com/shuklatul1021"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
                         <Github className="h-5 w-5" />
                       </a>
                     </Button>
@@ -189,16 +237,66 @@ export default function AboutUs() {
             </div>
           </Card>
         </div>
+        <hr/>
+        {/* My Team Section */}
+        <div className="max-w-4xl mx-auto mb-12 mt-6">
+          <h2 className="text-3xl font-bold text-center mb-8">My Team</h2>
+          <Card className="border-border/40 bg-card/50 backdrop-blur overflow-hidden">
+            <div className="md:flex">
+              <div className="md:w-1/3 bg-gradient-to-br from-purple-500/10 to-pink-500/10 flex items-center justify-center p-8">
+                <div className="h-32 w-32 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-4xl font-bold shadow-xl ">
+                  <img className="rounded-full" src="https://media.licdn.com/dms/image/v2/D4E03AQEQNvbSJSvJdg/profile-displayphoto-shrink_400_400/B4EZf5mdijH0Ag-/0/1752239301301?e=1766620800&v=beta&t=lcKRx_InW51tFCvUepBDhh0s5NnK4uqYrLXWUTWQ2po"/>
+                </div>
+              </div>
+              <div className="md:w-2/3 p-6">
+                <CardHeader className="p-0 mb-4">
+                  <CardTitle className="text-2xl">Asmit Panday</CardTitle>
+                  <CardDescription className="text-base font-semibold bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent">
+                    Chief Marketing Officer
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="p-0 space-y-3">
+                  <p className="text-muted-foreground leading-relaxed">
+                    Asmit Panday leads the marketing initiatives at Grind,
+                    bringing innovative strategies to connect with developers
+                    and grow our community worldwide.
+                  </p>
+
+                  <div className="flex gap-3 pt-4">
+                    <Button variant="outline" size="icon" asChild>
+                      <a href="#" target="_blank" rel="noopener noreferrer">
+                        <Github className="h-4 w-4" />
+                      </a>
+                    </Button>
+                    <Button variant="outline" size="icon" asChild>
+                      <a href="#" target="_blank" rel="noopener noreferrer">
+                        <Linkedin className="h-4 w-4" />
+                      </a>
+                    </Button>
+                    <Button variant="outline" size="icon" asChild>
+                      <a href="#" target="_blank" rel="noopener noreferrer">
+                        <Twitter className="h-4 w-4" />
+                      </a>
+                    </Button>
+                  </div>
+                </CardContent>
+              </div>
+            </div>
+          </Card>
+        </div>
 
         {/* Call to Action */}
         <div className="max-w-3xl mx-auto text-center">
           <Card className="border-border/40 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 backdrop-blur">
             <CardContent className="pt-8 pb-8">
-              <h3 className="text-2xl font-bold mb-4">Ready to Start Your Journey?</h3>
+              <h3 className="text-2xl font-bold mb-4">
+                Ready to Start Your Journey?
+              </h3>
               <p className="text-muted-foreground mb-6">
-                Join thousands of developers who are leveling up their skills on Grind
+                Join thousands of developers who are leveling up their skills on
+                Grind
               </p>
-              <Button size="lg" onClick={() => navigate('/problems')}>
+              <Button size="lg" onClick={() => navigate("/problems")}>
                 Start Practicing Now
               </Button>
             </CardContent>

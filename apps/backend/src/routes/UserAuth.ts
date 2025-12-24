@@ -76,7 +76,7 @@ userAuthRouter.post("/verify-otp" , OtpRateLimiter , async(req, res)=>{
         const StoreUserInfo = await prisma.user.upsert({
             where: { email: email },
             update: { },
-            create: { email: email,}
+            create: { email: email, aitoken : 3 }
         });
 
         if(!StoreUserInfo){
@@ -141,7 +141,7 @@ userAuthRouter.get("/verify" , UserAuthMiddleware , async(req, res)=>{
 userAuthRouter.get("/details" , UserAuthMiddleware , async(req, res)=>{
     try{
         const userId = req.userId;
-        const userDetails = await prisma.user.findFirst({ where : { id : userId}});
+        const userDetails = await prisma.user.findFirst({ where : { id : userId} , include : { social : true }});
         if(userDetails){
             return res.status(200).json({
                 user : userDetails,
@@ -161,6 +161,55 @@ userAuthRouter.get("/details" , UserAuthMiddleware , async(req, res)=>{
         })
     }
 });
+
+userAuthRouter.put("/editinfo" , UserAuthMiddleware , async (req , res)=>{
+    try{
+        const userId = req.userId;
+        const { username , fullname , bio , avatar , location , github , linkedin , twitter } = req.body;
+        const updateUserDetails = await prisma.user.update({
+            data : {
+                username,
+                fullname,
+                bio,
+                avatar,
+                location
+            },
+            where :{
+                id : userId
+            }
+        });
+
+        const updateUserSocialInfo = await prisma.social.create({
+            data : {
+                github,
+                linkedin,
+                twitter,
+                userId
+            },
+
+        })
+
+        if(updateUserDetails && updateUserSocialInfo){
+            return res.status(200).json({
+                message : "Successfully Updated User Info",
+                success : true
+            })
+        };
+
+        return res.status(402).json({
+            message : "Error While Updating User info",
+            success : false
+        })
+    
+
+    }catch(e){
+        console.log(e);
+        return res.status(500).json({
+            message : "Internal Server Error",
+            success : false
+        })
+    }
+})
 
 
 export default userAuthRouter;

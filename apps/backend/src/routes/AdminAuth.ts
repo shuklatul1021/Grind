@@ -10,6 +10,7 @@ const adminAuthRouter = Router();
 interface TestCase{
     input : string 
     output : string
+    executableCodes : string[]
 }
 
 /**
@@ -170,7 +171,8 @@ adminAuthRouter.post("/set-challenges" , AdminAuthMiddleware ,  async(req, res)=
                 data : {
                     input : test.input,
                     expectedOutput : test.output,
-                    challengeId : CreateChallenge.id
+                    testcasecode : JSON.stringify(test.executableCodes),
+                    challengeId : CreateChallenge.id,
                 }
             });
         })

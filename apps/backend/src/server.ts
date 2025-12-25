@@ -13,11 +13,10 @@ import grindaiRouter from "./routes/Chat.js";
 import evaluateRouter from "./routes/CodeEvaluate.js";
 export const app = express();
 
-
 app.use(express.json())
 app.use(cors({
     credentials: true,
-    origin: ["https://d5fx7g1lrnu5i.cloudfront.net"]
+    origin: ["https://www.grind.org.in"]
 }));
 app.use(MatricsesMiddleware)
 app.use(routeratelimiter);

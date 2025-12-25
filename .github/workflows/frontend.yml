@@ -31,10 +31,10 @@ jobs:
         with:
           args: --delete
         env:
-          AWS_S3_BUCKET: grind-frontend
+          AWS_S3_BUCKET: grind-org-in-frontend
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: eu-north-1
+          AWS_REGION: us-east-1
           SOURCE_DIR: apps/frontend/dist
 
       - name: Invalidate CloudFront cache
@@ -42,6 +42,6 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: eu-north-1
+          AWS_REGION: us-east-1
           DISTRIBUTION: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
           PATHS: '/*'

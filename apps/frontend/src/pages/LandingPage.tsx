@@ -81,7 +81,7 @@ export default function LandingPage() {
               >
                 Start Practicing
               </Button>
-              <Button size="lg" variant="outline" className="text-base">
+              <Button size="lg" variant="outline" className="text-base" onClick={() => navigate(user ? '/problems' : '/auth')}>
                 View Problems
               </Button>
             </div>
@@ -210,6 +210,7 @@ export default function LandingPage() {
                 <li><button className="hover:text-foreground" onClick={() => navigate('/leaderboard')}>Leaderboard</button></li>
                 <li><button className="hover:text-foreground" onClick={() => navigate('/contests')}>Contests</button></li>
                 <li><button className="hover:text-foreground" onClick={() => navigate('/compiler')}>Compiler</button></li>
+                <li><button className="hover:text-foreground" onClick={() => navigate('/grindai')}>Grind AI</button></li>
               </ul>
             </div>
             <div className="text-left">

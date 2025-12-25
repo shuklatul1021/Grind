@@ -60,8 +60,6 @@ socket.on("connection", (ws) => {
             })
           );
         });
-
-        // Listen for when the command execution completes
         shell.on("close", (code: number) => {
           ws.send(
             JSON.stringify({

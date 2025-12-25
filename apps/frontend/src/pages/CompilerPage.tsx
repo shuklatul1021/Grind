@@ -1,12 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@repo/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@repo/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@repo/ui/card";
 import { Badge } from "@repo/ui/badge";
 import { ScrollArea } from "@repo/ui/scroll-area";
 import {
@@ -176,6 +171,20 @@ export default function CompilerPage() {
   const [userInput, setUserInput] = useState("");
   const [waitingForInput, setWaitingForInput] = useState(false);
   const [wsConnection, setWsConnection] = useState<WebSocket | null>(null);
+
+  useEffect(() => {
+    try {
+      const adElement = document.querySelector(".adsbygoogle");
+      if (adElement && !(window as any).adsbygoogle) {
+        (window as any).adsbygoogle = [];
+      }
+      if (adElement) {
+        (window as any).adsbygoogle.push({});
+      }
+    } catch (err) {
+      console.error("AdSense error:", err);
+    }
+  }, []);
 
   const handleLanguageChange = (language: string) => {
     setSelectedLanguage(language);
@@ -425,7 +434,6 @@ export default function CompilerPage() {
           description: "Could not fetch code history.",
           variant: "destructive",
         });
-
       }
     } catch (e) {
       toast({
@@ -770,6 +778,20 @@ export default function CompilerPage() {
                 </div>
               </CardContent>
             </Card>
+          </div>
+        </div>
+
+        {/* Google AdSense Ad */}
+        <div className="my-8 flex justify-center">
+          <div>
+            <ins
+              className="adsbygoogle"
+              style={{ display: "block" }}
+              data-ad-client="ca-pub-2699219088015803"
+              data-ad-slot="9372820844"
+              data-ad-format="auto"
+              data-full-width-responsive="true"
+            ></ins>
           </div>
         </div>
       </main>

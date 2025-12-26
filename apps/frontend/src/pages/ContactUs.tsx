@@ -1,5 +1,5 @@
 // ContactUs.tsx
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@repo/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/card';
@@ -39,6 +39,14 @@ export default function ContactUs() {
       [e.target.name]: e.target.value
     });
   };
+
+  useEffect(()=>{
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: 'smooth'
+    });
+  }, [])
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-background/80">

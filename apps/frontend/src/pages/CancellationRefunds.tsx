@@ -2,9 +2,18 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@repo/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/card';
 import { ArrowLeft, RefreshCw, SquareChevronRight } from 'lucide-react';
+import { useEffect } from 'react';
 
 export default function CancellationRefunds() {
   const navigate = useNavigate();
+
+  useEffect(()=>{
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: 'smooth'
+    });
+  }, [])
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-background/80">

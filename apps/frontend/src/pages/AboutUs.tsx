@@ -19,9 +19,18 @@ import {
   Heart,
   SquareChevronRight,
 } from "lucide-react";
+import { useEffect } from "react";
 
 export default function AboutUs() {
   const navigate = useNavigate();
+
+  useEffect(()=>{
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: 'smooth'
+    });
+  }, [])
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-background/80">

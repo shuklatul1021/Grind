@@ -96,8 +96,11 @@ export default function ProblemPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [testResult, setTestResult] = useState<{
-    status: "accepted" | "wrong_answer" | "runtime_error";
+    status: "accepted" | "wrong_answer" | "runtime_error" | "syntax_error";
     message: string;
+    error?: string;
+    expectedOutput?: string;
+    yourOutput?: string;
   } | null>(null);
 
   const handleLanguageChange = (language: string) => {
@@ -163,6 +166,7 @@ export default function ProblemPage() {
           body: JSON.stringify({ code, language: selectedLanguage }),
         }
       );
+      const data = await response.json();
       if (response.ok) {
         setTestResult({
           status: "accepted",
@@ -175,10 +179,22 @@ export default function ProblemPage() {
             "bg-green-500/10 border-green-500/20 text-green-600 dark:text-green-400",
         });
       } else {
-        setTestResult({
-          status: "wrong_answer",
-          message: "Wrong Answer on test case 1",
-        });
+        // Check if it's a syntax error
+        if (data.message?.includes("Syntax Error")) {
+          setTestResult({
+            status: "syntax_error",
+            message: data.message,
+            error: data.error,
+          });
+        } else {
+          setTestResult({
+            status: "wrong_answer",
+            message: data.message || "Some test cases failed.",
+            error: data.error,
+            expectedOutput: data.expectedOutput,
+            yourOutput: data.yourOutput,
+          });
+        }
       }
     } catch (error) {
       setTestResult({ status: "runtime_error", message: "Runtime Error" });
@@ -598,7 +614,7 @@ export default function ProblemPage() {
                       </div>
                     </div>
                   ) : (
-                    <div className="h-full flex flex-col">
+                    <div className="h-full flex flex-col p-4 overflow-y-auto">
                       <div
                         className={`rounded-lg border p-4 mb-4 ${
                           testResult.status === "accepted"
@@ -606,14 +622,14 @@ export default function ProblemPage() {
                             : "bg-red-500/5 border-red-500/20"
                         }`}
                       >
-                        <div className="flex items-center gap-3 mb-2">
+                        <div className="flex items-center gap-3 mb-3">
                           {testResult.status === "accepted" ? (
                             <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400" />
                           ) : (
                             <XCircle className="h-5 w-5 text-red-600 dark:text-red-400" />
                           )}
                           <span
-                            className={`font-semibold ${
+                            className={`font-semibold text-base ${
                               testResult.status === "accepted"
                                 ? "text-green-600 dark:text-green-400"
                                 : "text-red-600 dark:text-red-400"
@@ -621,15 +637,62 @@ export default function ProblemPage() {
                           >
                             {testResult.status === "accepted"
                               ? "Accepted"
-                              : "Wrong Answer"}
+                              : testResult.status === "syntax_error"
+                                ? "Syntax Error"
+                                : "Wrong Answer"}
                           </span>
                         </div>
-                        <p className="text-sm text-muted-foreground pl-8">
+                        <p className="text-sm font-medium text-foreground/90 mb-3">
                           {testResult.message}
                         </p>
+
+                        {/* Syntax Error Details */}
+                        {testResult.status === "syntax_error" &&
+                          testResult.error && (
+                            <div className="mt-3 space-y-2">
+                              <div className="text-xs font-semibold text-red-600 dark:text-red-400 mb-2">
+                                Error Details:
+                              </div>
+                              <div className="rounded-md bg-red-950/20 border border-red-500/30 p-3">
+                                <pre className="text-xs text-red-600 dark:text-red-400 whitespace-pre-wrap font-mono overflow-x-auto">
+                                  {testResult.error}
+                                </pre>
+                              </div>
+                            </div>
+                          )}
+
+                        {/* Test Case Failure Details */}
+                        {testResult.status === "wrong_answer" && (
+                          <div className="mt-3 space-y-3">
+                            {testResult.expectedOutput && (
+                              <div>
+                                <div className="text-xs font-semibold text-muted-foreground mb-1.5">
+                                  Expected Output:
+                                </div>
+                                <div className="rounded-md bg-muted/50 border border-border/50 p-2.5">
+                                  <pre className="text-xs font-mono text-foreground/90 whitespace-pre-wrap">
+                                    {testResult.expectedOutput}
+                                  </pre>
+                                </div>
+                              </div>
+                            )}
+                            {testResult.yourOutput !== undefined && (
+                              <div>
+                                <div className="text-xs font-semibold text-muted-foreground mb-1.5">
+                                  Your Output:
+                                </div>
+                                <div className="rounded-md bg-muted/50 border border-red-500/30 p-2.5">
+                                  <pre className="text-xs font-mono text-foreground/90 whitespace-pre-wrap">
+                                    {testResult.yourOutput}
+                                  </pre>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
 
-                      <div className="flex justify-end">
+                      <div className="flex justify-end mt-auto pt-2">
                         <Button
                           variant="outline"
                           size="sm"

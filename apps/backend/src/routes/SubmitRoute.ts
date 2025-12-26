@@ -165,11 +165,13 @@ poblemsubmitRouter.post("/submitcode/:problemId", ComilerRateLimiter, async (req
         "Type of FirstTestCaseExprectation:",
         typeof FirstTestCaseExprectation
       );
+      
 
       if (FirstTestCaseExprectation !== Syntexoutput.trim()) {
         return res.status(400).json({
-          message:
-            "Code Did Not Pass The First Test Case. Please Check Your Code.",
+          message: "Test Case 1 Failed",
+          expectedOutput: FirstTestCaseExprectation,
+          yourOutput: `${Syntexoutput.trim() || ""}`,
           success: false,
         });
       }
@@ -209,7 +211,7 @@ poblemsubmitRouter.post("/submitcode/:problemId", ComilerRateLimiter, async (req
               case "javascript":
                 ({ output, error, executionTime } = await runJavaScript(
                   sandbox,
-                  codeFormat.code,
+                  `${code} \n${codeFormat.code}`,
                   getTestCase.testcase[testCase]?.input
                 ));
                 break;
@@ -217,7 +219,7 @@ poblemsubmitRouter.post("/submitcode/:problemId", ComilerRateLimiter, async (req
               case "typescript":
                 ({ output, error, executionTime } = await runTypeScript(
                   sandbox,
-                  codeFormat.code,
+                  `${code} \n${codeFormat.code} `,
                   getTestCase.testcase[testCase]?.input
                 ));
                 break;
@@ -225,7 +227,7 @@ poblemsubmitRouter.post("/submitcode/:problemId", ComilerRateLimiter, async (req
               case "java":
                 ({ output, error, executionTime } = await runJava(
                   sandbox,
-                  codeFormat.code,
+                  `${codeFormat.code} \n${code}`,
                   getTestCase.testcase[testCase]?.input
                 ));
                 break;
@@ -233,7 +235,7 @@ poblemsubmitRouter.post("/submitcode/:problemId", ComilerRateLimiter, async (req
               case "cpp":
                 ({ output, error, executionTime } = await runCpp(
                   sandbox,
-                  codeFormat.code,
+                  `${codeFormat.code} \n${code}`,
                   getTestCase.testcase[testCase]?.input
                 ));
                 break;
@@ -241,7 +243,7 @@ poblemsubmitRouter.post("/submitcode/:problemId", ComilerRateLimiter, async (req
               case "c":
                 ({ output, error, executionTime } = await runC(
                   sandbox,
-                  codeFormat.code,
+                  `${codeFormat.code} \n${code}`,
                   getTestCase.testcase[testCase]?.input
                 ));
                 break;
@@ -249,7 +251,7 @@ poblemsubmitRouter.post("/submitcode/:problemId", ComilerRateLimiter, async (req
               case "go":
                 ({ output, error, executionTime } = await runGo(
                   sandbox,
-                  codeFormat.code,
+                  `${code} ${codeFormat.code}`,
                   getTestCase.testcase[testCase]?.input
                 ));
                 break;
@@ -257,12 +259,14 @@ poblemsubmitRouter.post("/submitcode/:problemId", ComilerRateLimiter, async (req
               case "rust":
                 ({ output, error, executionTime } = await runRust(
                   sandbox,
-                  codeFormat.code,
+                  `${code} ${codeFormat.code}`,
                   getTestCase.testcase[testCase]?.input
                 ));
                 break;
             }
-
+            console.log("Error : ", error);
+            console.log("Output : ", output);
+            console.log("Expected Output : ", TestCaseExprectation);
             if (error) {
               return res.status(400).json({
                 message: `Error In Test Case ${testCase + 1}`,

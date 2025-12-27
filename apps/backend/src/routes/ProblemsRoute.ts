@@ -1,9 +1,10 @@
 import Router from "express";
 import { UserAuthMiddleware } from "../middleware/user.js";
 import { prisma } from "@repo/db/DatabaseClient";
+import { AdminAuthMiddleware } from "../middleware/admin.js";
 const problemsRouter = Router();
 
-problemsRouter.get("/getproblems" , async (req, res)=>{
+problemsRouter.get("/getproblems" , UserAuthMiddleware || AdminAuthMiddleware ,  async (req, res)=>{
     try{
         const GetProblems = await prisma.challenges.findMany({
             select : {
@@ -13,6 +14,7 @@ problemsRouter.get("/getproblems" , async (req, res)=>{
                 difficulty : true,
                 tags : true,
                 slug : true,
+                isSolved : true
             }
         });
         if(!GetProblems){
@@ -37,7 +39,7 @@ problemsRouter.get("/getproblems" , async (req, res)=>{
 });
 
 //NOTE : Add UserAuthMiddleware to verify token and get user info  
-problemsRouter.get("/getproblem/:slug"  , async (req, res)=>{
+problemsRouter.get("/getproblem/:slug"  , UserAuthMiddleware || AdminAuthMiddleware ,  async (req, res)=>{
     const { slug } = req.params;
     try{
         const problem = await prisma.challenges.findFirst({

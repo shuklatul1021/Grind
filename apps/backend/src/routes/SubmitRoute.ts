@@ -5,7 +5,7 @@ import { ComilerRateLimiter } from "../limiter/RateLimiter.js";
 import { prisma } from "@repo/db/DatabaseClient";
 const poblemsubmitRouter = Router();
 
-poblemsubmitRouter.post("/submitcode/:problemId", ComilerRateLimiter, async (req, res) => {
+poblemsubmitRouter.post("/submitcode/:problemId", ComilerRateLimiter, UserAuthMiddleware ,  async (req, res) => {
     try {
       const { code, language } = req.body;
       const problemId = req.params.problemId;
@@ -286,6 +286,20 @@ poblemsubmitRouter.post("/submitcode/:problemId", ComilerRateLimiter, async (req
           }
         }
       }
+
+      await prisma.challenges.update({
+        where: { id: problemId },
+        data: {
+          isSolved: true,
+        },
+      })
+
+      await prisma.user.update({
+        where: { id: req.userId },
+        data: {
+          problemsSolved : { increment : 1}
+        }
+      })
 
       return res.status(200).json({
         message: "Code Execution Completed Successfully",

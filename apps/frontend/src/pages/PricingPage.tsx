@@ -15,7 +15,8 @@ import {
   Clock,
   Shield,
   Sparkles,
-  TrendingUp
+  TrendingUp,
+  ArrowLeft
 } from 'lucide-react';
 import { toast } from '../../../../packages/ui/src/hooks/use-toast';
 
@@ -78,60 +79,18 @@ export default function PricingPage() {
       <header className="sticky top-0 z-50 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center justify-between px-4">
           <div
-            className="flex cursor-pointer items-center gap-2"
+            className="flex cursor-pointer  gap-2"
             onClick={() => navigate('/')}
           >
             <SquareChevronRight className="h-6 w-6" />
             <span className="text-xl font-bold">Grind</span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex gap-2">
             <Link 
               to="/problems" 
-              className="px-4 py-2 rounded-full text-sm font-medium text-muted-foreground transition-all hover:bg-muted"
+              className="px-4 gap-x-2 flex py-2 rounded-full text-sm font-medium text-muted-foreground transition-all hover:bg-muted"
             >
-              Problems
-            </Link>
-            <Link 
-              to="/contest" 
-              className="px-4 py-2 rounded-full text-sm font-medium text-muted-foreground transition-all hover:bg-muted"
-            >
-              Contest
-            </Link>
-            <Link 
-              to="/compiler" 
-              className="px-4 py-2 rounded-full text-sm font-medium text-muted-foreground transition-all hover:bg-muted"
-            >
-              Compiler
-            </Link>
-            <Link 
-              to="/grind-ai" 
-              className="px-4 py-2 rounded-full text-sm font-medium text-muted-foreground transition-all hover:bg-muted"
-            >
-              Grind AI
-            </Link>
-            {/* <Link 
-              to="/room" 
-              className="px-4 py-2 rounded-full text-sm font-medium text-muted-foreground transition-all hover:bg-muted"
-            >
-              Rooms
-            </Link> */}
-            <Link 
-              to="/pricing" 
-              className="px-4 py-2 rounded-full bg-blue-500 text-white text-sm font-medium transition-all hover:bg-blue-600 hover:text-white"
-            >
-              Pricing
-            </Link>
-            <Link 
-              to="/you" 
-              className="px-4 py-2 rounded-full text-sm font-medium text-muted-foreground transition-all hover:bg-muted"
-            >
-              Profile
-            </Link>
-            <Link
-              to="/premium"
-              className="px-4 py-2 rounded-full text-sm font-medium text-muted-foreground transition-all hover:bg-muted"
-            >
-              Premium
+              <ArrowLeft />Go Back
             </Link>
           </div>
           <div className="flex items-center gap-4">

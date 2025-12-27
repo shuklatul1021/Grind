@@ -205,7 +205,7 @@ export default function GrindAI() {
   const handleSendMessage = async () => {
     if (!input.trim()) return;
     if (userDetails?.aitoken === 0) {
-      navigate("/pricing");
+      navigate("/premium/pricing");
       return;
     }
     dispatch(
@@ -290,49 +290,43 @@ export default function GrindAI() {
           <div className="flex items-center gap-2">
             <Link
               to="/problems"
-              className="px-4 py-2 rounded-full text-sm font-medium text-muted-foreground transition-all hover:bg-muted"
+              className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"
             >
               Problems
             </Link>
             <Link
               to="/contest"
-              className="px-4 py-2 rounded-full text-sm font-medium text-muted-foreground transition-all hover:bg-muted"
+              className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"
             >
               Contest
             </Link>
             <Link
               to="/compiler"
-              className="px-4 py-2 rounded-full text-sm font-medium text-muted-foreground transition-all hover:bg-muted"
+              className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"
             >
               Compiler
             </Link>
             <Link
               to="/grind-ai"
-              className="px-4 py-2 rounded-full bg-blue-500 text-white text-sm font-medium transition-all hover:bg-blue-600 hover:text-white"
+              className="px-4 py-2 rounded-full bg-blue-500 text-white text-base font-medium transition-all hover:bg-blue-600 hover:text-white"
             >
               Grind AI
             </Link>
-            <Link
-              to="/pricing"
-              className="px-4 py-2 rounded-full text-sm font-medium text-muted-foreground transition-all hover:bg-muted"
-            >
-              Pricing
-            </Link>
             {/* <Link 
               to="/room" 
-              className="px-4 py-2 rounded-full text-sm font-medium text-muted-foreground transition-all hover:bg-muted"
+              className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"
             >
               Rooms
             </Link> */}
             <Link
               to="/you"
-              className="px-4 py-2 rounded-full text-sm font-medium text-muted-foreground transition-all hover:bg-muted"
+              className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"
             >
               Profile
             </Link>
             <Link
               to="/premium"
-              className="px-4 py-2 rounded-full text-sm font-medium text-muted-foreground transition-all hover:bg-muted"
+              className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"
             >
               Premium
             </Link>

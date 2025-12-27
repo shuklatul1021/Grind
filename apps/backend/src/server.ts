@@ -11,6 +11,7 @@ import { MatricsesMiddleware } from "./middleware/prometheus.js";
 import client from "prom-client";
 import grindaiRouter from "./routes/Chat.js";
 import evaluateRouter from "./routes/CodeEvaluate.js";
+import feedbackRouter from "./routes/FeedbackRoute.js";
 export const app = express();
 
 app.use(express.json())
@@ -29,6 +30,7 @@ app.use("/v1/api/submit" , poblemsubmitRouter);
 app.use("/v1/api/compiler" , compilerRouter);
 app.use("/v1/api/grindai" , grindaiRouter);
 app.use("/v1/api/evaluate" , evaluateRouter);
+app.use("/v1/api/feedback" , feedbackRouter);
 
 app.get('/metrics', async (req, res) => {
     try{

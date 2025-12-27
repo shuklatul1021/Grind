@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@repo/ui/button";
 import { Badge } from "@repo/ui/badge";
@@ -95,6 +95,7 @@ export default function ProblemPage() {
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const [testResult, setTestResult] = useState<{
     status: "accepted" | "wrong_answer" | "runtime_error" | "syntax_error";
     message: string;
@@ -108,6 +109,71 @@ export default function ProblemPage() {
     const selectedCode = starterCodes.find((sc) => sc.language === language);
     setCode(selectedCode ? selectedCode.code : "");
   };
+
+  useEffect(() => {
+    if (slug && code) {
+      const savedCodes = JSON.parse(
+        localStorage.getItem("grind_saved_codes") || "{}"
+      );
+      savedCodes[slug] = {
+        code,
+        language: selectedLanguage,
+        updatedAt: new Date().toISOString(),
+      };
+      localStorage.setItem("grind_saved_codes", JSON.stringify(savedCodes));
+    }
+  }, [code, slug, selectedLanguage]);
+
+  const lastSyncedCode = useRef<string>("");
+
+  const syncCodeToBackend = useCallback(async () => {
+    if (!slug || !code || code === lastSyncedCode.current) return;
+
+    try {
+      await fetch(`${BACKENDURL}/user/savecode`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          token: localStorage.getItem("token") || "",
+        },
+        body: JSON.stringify({
+          problemSlug: slug,
+          code,
+          language: selectedLanguage,
+        }),
+      });
+      lastSyncedCode.current = code;
+    } catch (error) {
+      console.error("Failed to sync code to backend:", error);
+    }
+  }, [slug, code, selectedLanguage]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      syncCodeToBackend();
+    }, 90000);
+
+    return () => clearInterval(interval);
+  }, [syncCodeToBackend]);
+
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (slug && code && code !== lastSyncedCode.current) {
+        navigator.sendBeacon(
+          `${BACKENDURL}/user/savecode`,
+          JSON.stringify({
+            problemSlug: slug,
+            code,
+            language: selectedLanguage,
+            token: localStorage.getItem("token") || "",
+          })
+        );
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [slug, code, selectedLanguage]);
 
   useEffect(() => {
     fetchProblem();
@@ -131,10 +197,16 @@ export default function ProblemPage() {
         setProblem(json.problem);
         const parsedStarterCodes = JSON.parse(json.problem.starterCode);
         setStarterCodes(parsedStarterCodes);
-        const selectedCode = parsedStarterCodes.find(
-          (sc: StarterCode) => sc.language === selectedLanguage
-        );
-        setCode(selectedCode ? selectedCode.code : "");
+        const savedCodes = JSON.parse(localStorage.getItem("grind_saved_codes") || "{}");
+        if (savedCodes[slug!]) {
+          setCode(savedCodes[slug!].code);
+          setSelectedLanguage(savedCodes[slug!].language);
+        } else {
+          const selectedCode = parsedStarterCodes.find(
+            (sc: StarterCode) => sc.language === selectedLanguage
+          );
+          setCode(selectedCode ? selectedCode.code : "");
+        }
       } else {
         throw new Error("Failed to fetch");
       }
@@ -175,11 +247,9 @@ export default function ProblemPage() {
         toast({
           title: "Success",
           description: "Solution accepted!",
-          className:
-            "bg-green-500/10 border-green-500/20 text-green-600 dark:text-green-400",
+          variant: "soon",
         });
       } else {
-        // Check if it's a syntax error
         if (data.message?.includes("Syntax Error")) {
           setTestResult({
             status: "syntax_error",
@@ -324,152 +394,157 @@ export default function ProblemPage() {
         </div>
       </header>
       <ResizablePanelGroup direction="horizontal" className="flex-1">
-        <ResizablePanel
-          defaultSize={40}
-          minSize={30}
-          maxSize={60}
-          className="bg-card/30"
-        >
-          <div className="flex h-full flex-col">
-            <Tabs defaultValue="description" className="flex-1 flex flex-col">
-              <div className="border-b border-border/50 px-4 bg-muted/10">
-                <TabsList className="h-10 w-full justify-start gap-6 rounded-none bg-transparent p-0">
-                  <TabsTrigger
-                    value="description"
-                    className="relative h-10 rounded-none border-b-2 border-transparent bg-transparent px-0 pb-2 pt-2 font-medium text-muted-foreground shadow-none transition-none data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:shadow-none hover:text-foreground"
-                  >
-                    Description
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="submissions"
-                    className="relative h-10 rounded-none border-b-2 border-transparent bg-transparent px-0 pb-2 pt-2 font-medium text-muted-foreground shadow-none transition-none data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:shadow-none hover:text-foreground"
-                  >
-                    Submissions
-                  </TabsTrigger>
-                </TabsList>
-              </div>
-
-              <TabsContent
-                value="description"
-                className="flex-1 overflow-y-auto p-6 outline-none mt-0"
-              >
-                <div className="space-y-6 max-w-3xl mx-auto">
-                  <div className="space-y-4">
-                    <div className="flex items-start justify-between gap-4">
-                      <h1 className="text-2xl font-bold tracking-tight">
-                        {problem.title}
-                      </h1>
-                      <Badge
-                        variant="outline"
-                        className={`${getDifficultyColor(
-                          problem.difficulty
-                        )} capitalize px-2.5 py-0.5 text-xs font-semibold border`}
+        {!isFullscreen && (
+          <>
+            <ResizablePanel
+              defaultSize={30}
+              minSize={30}
+              maxSize={60}
+              className="bg-card/30"
+            >
+              <div className="flex h-full flex-col">
+                <Tabs
+                  defaultValue="description"
+                  className="flex-1 flex flex-col"
+                >
+                  <div className="border-b border-border/50 px-4 bg-muted/10">
+                    <TabsList className="h-10 w-full justify-start gap-6 rounded-none bg-transparent p-0">
+                      <TabsTrigger
+                        value="description"
+                        className="relative h-10 rounded-none border-b-2 border-transparent bg-transparent px-0 pb-2 pt-2 font-medium text-muted-foreground shadow-none transition-none data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:shadow-none hover:text-foreground"
                       >
-                        {problem.difficulty}
-                      </Badge>
-                    </div>
-
-                    <div className="flex flex-wrap gap-2">
-                      {problem.tags.map((tag) => (
-                        <Badge
-                          key={tag}
-                          variant="secondary"
-                          className="bg-muted/50 text-muted-foreground hover:bg-muted text-[10px] px-2 py-0.5"
-                        >
-                          {tag}
-                        </Badge>
-                      ))}
-                    </div>
+                        Description
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="submissions"
+                        className="relative h-10 rounded-none border-b-2 border-transparent bg-transparent px-0 pb-2 pt-2 font-medium text-muted-foreground shadow-none transition-none data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:shadow-none hover:text-foreground"
+                      >
+                        Submissions
+                      </TabsTrigger>
+                    </TabsList>
                   </div>
 
-                  <div className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground leading-relaxed">
-                    <div className="whitespace-pre-wrap">
-                      {problem.description}
-                    </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                      <Terminal className="h-4 w-4" />
-                      Examples
-                    </h3>
-                    <div className="grid gap-4">
-                      {(problem.examples as Example[]).map((example, index) => (
-                        <div
-                          key={index}
-                          className="rounded-lg border border-border/50 bg-muted/20 p-4 space-y-3"
-                        >
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                              Example {index + 1}
-                            </span>
-                          </div>
-                          <div className="space-y-2">
-                            <div className="flex gap-3 text-sm">
-                              <span className="font-mono font-semibold text-foreground min-w-[3rem]">
-                                Input:
-                              </span>
-                              <code className="font-mono text-muted-foreground bg-muted/30 px-1.5 py-0.5 rounded">
-                                {example.input}
-                              </code>
-                            </div>
-                            <div className="flex gap-3 text-sm">
-                              <span className="font-mono font-semibold text-foreground min-w-[3rem]">
-                                Output:
-                              </span>
-                              <code className="font-mono text-muted-foreground bg-muted/30 px-1.5 py-0.5 rounded">
-                                {example.output}
-                              </code>
-                            </div>
-                            {example.explanation && (
-                              <div className="flex gap-3 text-sm pt-1">
-                                <span className="font-mono font-semibold text-foreground min-w-[3rem]">
-                                  Note:
-                                </span>
-                                <span className="text-muted-foreground">
-                                  {example.explanation}
-                                </span>
-                              </div>
-                            )}
-                          </div>
+                  <TabsContent
+                    value="description"
+                    className="flex-1 overflow-y-auto p-6 outline-none mt-0"
+                  >
+                    <div className="space-y-6 max-w-3xl mx-auto">
+                      <div className="space-y-4">
+                        <div className="flex items-start justify-between gap-4">
+                          <h1 className="text-2xl font-bold tracking-tight">
+                            {problem.title}
+                          </h1>
+                          <Badge
+                            variant="outline"
+                            className={`${getDifficultyColor(
+                              problem.difficulty
+                            )} capitalize px-2.5 py-0.5 text-xs font-semibold border`}
+                          >
+                            {problem.difficulty}
+                          </Badge>
                         </div>
-                      ))}
+
+                        <div className="flex flex-wrap gap-2">
+                          {problem.tags.map((tag) => (
+                            <Badge
+                              key={tag}
+                              variant="secondary"
+                              className="bg-muted/50 text-muted-foreground hover:bg-muted text-[10px] px-2 py-0.5"
+                            >
+                              {tag}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground leading-relaxed">
+                        <div className="whitespace-pre-wrap">
+                          {problem.description}
+                        </div>
+                      </div>
+
+                      <div className="space-y-4">
+                        <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                          <Terminal className="h-4 w-4" />
+                          Examples
+                        </h3>
+                        <div className="grid gap-4">
+                          {(problem.examples as Example[]).map(
+                            (example, index) => (
+                              <div
+                                key={index}
+                                className="rounded-lg border border-border/50 bg-muted/20 p-4 space-y-3"
+                              >
+                                <div className="flex items-center justify-between">
+                                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                                    Example {index + 1}
+                                  </span>
+                                </div>
+                                <div className="space-y-2">
+                                  <div className="flex gap-3 text-sm">
+                                    <span className="font-mono font-semibold text-foreground min-w-[3rem]">
+                                      Input:
+                                    </span>
+                                    <code className="font-mono text-muted-foreground bg-muted/30 px-1.5 py-0.5 rounded">
+                                      {example.input}
+                                    </code>
+                                  </div>
+                                  <div className="flex gap-3 text-sm">
+                                    <span className="font-mono font-semibold text-foreground min-w-[3rem]">
+                                      Output:
+                                    </span>
+                                    <code className="font-mono text-muted-foreground bg-muted/30 px-1.5 py-0.5 rounded">
+                                      {example.output}
+                                    </code>
+                                  </div>
+                                  {example.explanation && (
+                                    <div className="flex gap-3 text-sm pt-1">
+                                      <span className="font-mono font-semibold text-foreground min-w-[3rem]">
+                                        Note:
+                                      </span>
+                                      <span className="text-muted-foreground">
+                                        {example.explanation}
+                                      </span>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            )
+                          )}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              </TabsContent>
+                  </TabsContent>
 
-              <TabsContent value="submissions" className="flex-1 p-6 mt-0">
-                <div className="flex h-full items-center justify-center text-muted-foreground">
-                  <div className="text-center">
-                    <Code2 className="h-10 w-10 mx-auto mb-3 opacity-20" />
-                    <p>No submissions yet.</p>
-                  </div>
-                </div>
-              </TabsContent>
-            </Tabs>
-          </div>
-        </ResizablePanel>
+                  <TabsContent value="submissions" className="flex-1 p-6 mt-0">
+                    <div className="flex h-full items-center justify-center text-muted-foreground">
+                      <div className="text-center">
+                        <Code2 className="h-10 w-10 mx-auto mb-3 opacity-20" />
+                        <p>No submissions yet.</p>
+                      </div>
+                    </div>
+                  </TabsContent>
+                </Tabs>
+              </div>
+            </ResizablePanel>
 
-        <ResizableHandle
-          withHandle
-          className="w-[1px] bg-border/50 hover:bg-primary/50 transition-colors"
-        />
-
-        {/* Right Panel: Code & Tests */}
+            <ResizableHandle
+              withHandle
+              className="w-[1px] bg-border/50 hover:bg-primary/50 transition-colors"
+            />
+          </>
+        )}
         <ResizablePanel
-          defaultSize={60}
+          defaultSize={isFullscreen ? 100 : 60}
           minSize={40}
           className="bg-background/50 backdrop-blur-sm"
         >
           <ResizablePanelGroup direction="vertical">
-            {/* Code Editor */}
             <ResizablePanel
               defaultSize={65}
               minSize={30}
               className="flex flex-col border-l border-border/50"
             >
-              {/* Editor Toolbar */}
               <div className="flex h-10 shrink-0 items-center justify-between border-b border-border/50 bg-background px-4">
                 <div className="flex items-center gap-3">
                   <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground bg-muted/30 px-2 py-1 rounded-md border border-border/50">
@@ -518,14 +593,16 @@ export default function ProblemPage() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                    className={`h-7 w-7 text-muted-foreground hover:text-foreground ${isFullscreen ? "bg-primary/20 text-primary" : ""}`}
+                    onClick={() => setIsFullscreen(!isFullscreen)}
+                    title={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
                   >
                     <Maximize2 className="h-3.5 w-3.5" />
                   </Button>
                 </div>
               </div>
 
-              <div className="flex-1 relative bg-background">
+              <div className="flex-1 relative bg-background overflow-auto">
                 <CodeEditor
                   code={code}
                   setCode={setCode}
@@ -645,23 +722,19 @@ export default function ProblemPage() {
                         <p className="text-sm font-medium text-foreground/90 mb-3">
                           {testResult.message}
                         </p>
-
-                        {/* Syntax Error Details */}
                         {testResult.status === "syntax_error" &&
                           testResult.error && (
-                            <div className="mt-3 space-y-2">
+                            <div className="mt-3 space-y-2 text-left">
                               <div className="text-xs font-semibold text-red-600 dark:text-red-400 mb-2">
                                 Error Details:
                               </div>
-                              <div className="rounded-md bg-red-950/20 border border-red-500/30 p-3">
+                              <div className="rounded-md bg-red-950/20 border border-red-500/30 p-3 text-left">
                                 <pre className="text-xs text-red-600 dark:text-red-400 whitespace-pre-wrap font-mono overflow-x-auto">
                                   {testResult.error}
                                 </pre>
                               </div>
                             </div>
                           )}
-
-                        {/* Test Case Failure Details */}
                         {testResult.status === "wrong_answer" && (
                           <div className="mt-3 space-y-3">
                             {testResult.expectedOutput && (

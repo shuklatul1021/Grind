@@ -34,7 +34,6 @@ export default function AboutUs() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-background/80">
-      {/* Navigation Bar */}
       <header className="border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
         <div className="container flex h-16 items-center justify-between px-4">
           <div
@@ -120,7 +119,7 @@ export default function AboutUs() {
           </div>
           <div className="space-y-4">
             <Card className="border-border/40 bg-card/50 backdrop-blur">
-              <CardHeader>
+              <CardHeader className="items-center text-center">
                 <div className="flex items-center gap-3">
                   <div className="h-10 w-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
                     <Zap className="h-5 w-5 text-blue-500" />
@@ -136,7 +135,7 @@ export default function AboutUs() {
               </CardContent>
             </Card>
             <Card className="border-border/40 bg-card/50 backdrop-blur">
-              <CardHeader>
+              <CardHeader className="items-center text-center">
                 <div className="flex items-center gap-3">
                   <div className="h-10 w-10 rounded-lg bg-green-500/10 flex items-center justify-center">
                     <Users className="h-5 w-5 text-green-500" />
@@ -152,7 +151,7 @@ export default function AboutUs() {
               </CardContent>
             </Card>
             <Card className="border-border/40 bg-card/50 backdrop-blur">
-              <CardHeader>
+              <CardHeader className="items-center text-center">
                 <div className="flex items-center gap-3">
                   <div className="h-10 w-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
                     <Heart className="h-5 w-5 text-purple-500" />
@@ -254,7 +253,7 @@ export default function AboutUs() {
             <div className="md:flex">
               <div className="md:w-1/3 bg-gradient-to-br from-purple-500/10 to-pink-500/10 flex items-center justify-center p-8">
                 <div className="h-32 w-32 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-4xl font-bold shadow-xl ">
-                  <img className="rounded-full" src="https://media.licdn.com/dms/image/v2/D4E03AQEQNvbSJSvJdg/profile-displayphoto-shrink_400_400/B4EZf5mdijH0Ag-/0/1752239301301?e=1766620800&v=beta&t=lcKRx_InW51tFCvUepBDhh0s5NnK4uqYrLXWUTWQ2po"/>
+                  <img className="rounded-full" src="/cmo.jpg"/>
                 </div>
               </div>
               <div className="md:w-2/3 p-6">

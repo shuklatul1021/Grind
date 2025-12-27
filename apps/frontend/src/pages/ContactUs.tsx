@@ -1,12 +1,12 @@
-// ContactUs.tsx
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@repo/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/card';
 import { Input } from '@repo/ui/input';
 import { Textarea } from '@repo/ui/textarea';
-import { ArrowLeft, Mail, MessageSquare, Phone, SquareChevronRight, Send, MapPin } from 'lucide-react';
+import { ArrowLeft, Mail, MessageSquare, SquareChevronRight, Send, MapPin } from 'lucide-react';
 import { toast } from '../../../../packages/ui/src/hooks/use-toast';
+import { BACKENDURL } from '../utils/urls';
 
 export default function ContactUs() {
   const navigate = useNavigate();
@@ -16,21 +16,42 @@ export default function ContactUs() {
     subject: '',
     message: ''
   });
+
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Simulate form submission
-    setTimeout(() => {
+    const response =  await fetch(`${BACKENDURL}/feedback/submit`, {
+      method : "POST",
+      headers : {
+        "Content-Type" : "application/json"
+      },
+      body : JSON.stringify({
+        fullname : formData.name,
+        email : formData.email,
+        subject : formData.subject,
+        messages : formData.message
+      })
+    });
+
+    if(response.ok){
       toast({
         title: "Message Sent!",
         description: "We'll get back to you within 24-48 hours.",
+        variant: "default",
       });
-      setFormData({ name: '', email: '', subject: '', message: '' });
-      setIsSubmitting(false);
-    }, 1000);
+    }else{
+      toast({
+        title: "Error",
+        description: "There was an error sending your message. Please try again later.",
+        variant: "destructive",
+      });
+    }
+
+    setFormData({ name: '', email: '', subject: '', message: '' });
+    setIsSubmitting(false);
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -78,7 +99,7 @@ export default function ContactUs() {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8 mb-12">
+        <div className="grid md:grid-cols-3 gap-8 mb-12 ml-[285px]">
           <Card className="border-border/40 bg-card/50 backdrop-blur text-center">
             <CardContent className="pt-6">
               <div className="h-12 w-12 rounded-full bg-blue-500/10 flex items-center justify-center mx-auto mb-4">
@@ -89,22 +110,7 @@ export default function ContactUs() {
                 For general inquiries and support
               </p>
               <p className="text-sm text-blue-500">
-                support@grind.com
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="border-border/40 bg-card/50 backdrop-blur text-center">
-            <CardContent className="pt-6">
-              <div className="h-12 w-12 rounded-full bg-green-500/10 flex items-center justify-center mx-auto mb-4">
-                <Phone className="h-6 w-6 text-green-500" />
-              </div>
-              <h3 className="font-semibold mb-2">Call Us</h3>
-              <p className="text-sm text-muted-foreground mb-2">
-                Mon-Fri from 9am to 6pm IST
-              </p>
-              <p className="text-sm text-green-500">
-                +91 XXX XXX XXXX
+                atul@grind.org.in
               </p>
             </CardContent>
           </Card>
@@ -119,7 +125,7 @@ export default function ContactUs() {
                 Come say hello at our office
               </p>
               <p className="text-sm text-purple-500">
-                India
+                Indore, Madhya Pradesh, India
               </p>
             </CardContent>
           </Card>
@@ -256,7 +262,7 @@ export default function ContactUs() {
               For partnership opportunities, institutional licensing, bulk subscriptions for organizations, or media inquiries, please reach out to our business development team:
             </p>
             <p className="text-blue-500 font-medium">
-              business@grind.com
+              atul@grind.org.in
             </p>
             <p className="text-sm">
               We're always interested in collaborating with educational institutions, coding bootcamps, and corporate training programs.

@@ -153,43 +153,37 @@ export default function PremiumPage() {
           <div className="flex items-center gap-2">
             <Link
               to="/problems"
-              className="px-4 py-2 rounded-full text-sm font-medium text-muted-foreground transition-all hover:bg-muted"
+              className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"
             >
               Problems
             </Link>
             <Link
               to="/contest"
-              className="px-4 py-2 rounded-full text-sm font-medium text-muted-foreground transition-all hover:bg-muted"
+              className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"
             >
               Contest
             </Link>
             <Link
               to="/compiler"
-              className="px-4 py-2 rounded-full text-sm font-medium text-muted-foreground transition-all hover:bg-muted"
+              className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"
             >
               Compiler
             </Link>
             <Link
               to="/grind-ai"
-              className="px-4 py-2 rounded-full text-sm font-medium text-muted-foreground transition-all hover:bg-muted"
+              className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"
             >
               Grind AI
             </Link>
             <Link
-              to="/pricing"
-              className="px-4 py-2 rounded-full text-sm font-medium text-muted-foreground transition-all hover:bg-muted"
-            >
-              Pricing
-            </Link>
-            <Link
               to="/you"
-              className="px-4 py-2 rounded-full text-sm font-medium text-muted-foreground transition-all hover:bg-muted"
+              className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"
             >
               Profile
             </Link>
             <Link
               to="/premium"
-              className="px-4 py-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 text-white text-sm font-medium transition-all hover:from-blue-600 hover:to-purple-600 hover:text-black"
+              className="px-4 py-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 text-white text-base font-medium transition-all hover:from-blue-600 hover:to-purple-600 hover:text-black"
             >
               Premium
             </Link>
@@ -253,7 +247,7 @@ export default function PremiumPage() {
                     <Button
                       size="sm"
                       className="mt-3 h-8 text-xs bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600"
-                      onClick={() => navigate("/pricing")}
+                      onClick={() => navigate("/premium/pricing")}
                     >
                       <Crown className="h-3 w-3 mr-1" />
                       Upgrade Now

@@ -105,7 +105,7 @@ function App() {
             <Route path="/contest" element={<ContestsPage />} />
             <Route path="/contest/:id" element={<ContestPage />} />
             <Route path="/grind-ai" element={<GrindAI />} />
-            <Route path="/pricing" element={<PricingPage />} />
+            <Route path="/premium/pricing" element={<PricingPage />} />
             <Route path="/premium" element={<PremiumZone />} />
             {/* <Route path="/room" element={<RoomsPage />} /> */}
             <Route path="/you" element={<ProfilePage />} />

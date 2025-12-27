@@ -35,6 +35,15 @@ import { toast } from "../../../../packages/ui/src/hooks/use-toast";
 import { useDispatch } from "react-redux";
 import { setUserDetails } from "../state/ReduxStateProvider";
 
+// Local Skeleton component for loading UI
+function Skeleton({ className }: { className?: string }) {
+  return (
+    <div
+      className={`animate-pulse rounded-md bg-gray-300 dark:bg-gray-700 ${className || ""}`.trim()}
+    />
+  );
+}
+
 export default function ProblemsPage() {
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
@@ -52,10 +61,6 @@ export default function ProblemsPage() {
   ).sort();
 
   useEffect(() => {
-    // if (!user) {
-    //   navigate('/auth');
-    //   return;
-    // }
     getuserDetails();
     fetchProblems();
   }, [navigate]);
@@ -177,33 +182,27 @@ export default function ProblemsPage() {
           <div className="flex items-center gap-2">
             <Link
               to="/problems"
-              className="px-4 py-2 rounded-full bg-blue-500 text-white text-sm font-medium transition-all hover:bg-blue-600 hover:text-white"
+              className="px-4 py-2 rounded-full bg-blue-500 text-white text-base font-medium transition-all hover:bg-blue-600 hover:text-white"
             >
               Problems
             </Link>
             <Link
               to="/contest"
-              className="px-4 py-2 rounded-full text-sm font-medium text-muted-foreground transition-all hover:bg-muted"
+              className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"
             >
               Contest
             </Link>
             <Link
               to="/compiler"
-              className="px-4 py-2 rounded-full text-sm font-medium text-muted-foreground transition-all hover:bg-muted"
+              className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"
             >
               Compiler
             </Link>
             <Link
               to="/grind-ai"
-              className="px-4 py-2 rounded-full text-sm font-medium text-muted-foreground transition-all hover:bg-muted"
+              className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"
             >
               Grind AI
-            </Link>
-            <Link
-              to="/pricing"
-              className="px-4 py-2 rounded-full text-sm font-medium text-muted-foreground transition-all hover:bg-muted"
-            >
-              Pricing
             </Link>
             {/* <Link 
               to="/room" 
@@ -213,13 +212,13 @@ export default function ProblemsPage() {
             </Link> */}
             <Link
               to="/you"
-              className="px-4 py-2 rounded-full text-sm font-medium text-muted-foreground transition-all hover:bg-muted"
+              className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"
             >
               Profile
             </Link>
             <Link
               to="/premium"
-              className="px-4 py-2 rounded-full text-sm font-medium text-muted-foreground transition-all hover:bg-muted"
+              className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"
             >
               Premium
             </Link>
@@ -322,14 +321,14 @@ export default function ProblemsPage() {
               </Select>
             </div>
           </div>
-
-          {/* Problems Table */}
           <div className="rounded-md border bg-card">
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-[50px] text-center">Status</TableHead>
-                  <TableHead className="min-w-[200px] text-center">Title</TableHead>
+                  <TableHead className="min-w-[200px] text-left pl-24">
+                    Title
+                  </TableHead>
                   <TableHead className="w-[100px]">Difficulty</TableHead>
                   <TableHead className="w-[100px]">Acceptance</TableHead>
                   <TableHead className="hidden md:table-cell">Topic</TableHead>
@@ -338,13 +337,32 @@ export default function ProblemsPage() {
               </TableHeader>
               <TableBody>
                 {loading ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="h-24 text-center">
-                      <div className="flex justify-center">
-                        <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-                      </div>
-                    </TableCell>
-                  </TableRow>
+                  Array.from({ length: 10 }).map((_, index) => (
+                    <TableRow key={index}>
+                      <TableCell className="text-center">
+                        <Skeleton className="h-5 w-5 rounded-full mx-auto" />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton className="h-4 w-[200px]" />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton className="h-4 w-[60px]" />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton className="h-4 w-[40px]" />
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell">
+                        <div className="flex gap-1">
+                          <Skeleton className="h-5 w-12 rounded-full" />
+                          <Skeleton className="h-5 w-12 rounded-full" />
+                          <Skeleton className="h-5 w-12 rounded-full" />
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Skeleton className="h-8 w-8 ml-auto" />
+                      </TableCell>
+                    </TableRow>
+                  ))
                 ) : filteredProblems.length === 0 ? (
                   <TableRow>
                     <TableCell
@@ -364,7 +382,7 @@ export default function ProblemsPage() {
                       <TableCell className="text-center">
                         {getStatusIcon(problem.id)}
                       </TableCell>
-                      <TableCell className="font-medium">
+                      <TableCell className="font-medium text-left pl-24">
                         {problem.title}
                       </TableCell>
                       <TableCell>

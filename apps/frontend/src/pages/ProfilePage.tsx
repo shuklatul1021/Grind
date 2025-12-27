@@ -42,6 +42,8 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<"view" | "edit">("view");
   const [isLoading, setIsLoading] = useState(true);
   const [avatarPreview, setAvatarPreview] = useState<string>("");
+  const [isUploading, setIsUploading] = useState<boolean>(false);
+  const [handleSaveLoading , setHandleSaveLoading] = useState<boolean>(false);
 
   const [profile, setProfile] = useState<UserInterface>({
     id: "",
@@ -66,39 +68,88 @@ export default function ProfilePage() {
     navigate("/auth");
   };
 
-  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setAvatarPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+    setIsUploading(true);
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", "grind_assistes");
+    formData.append("cloud_name", "dwrrfy5wd");
+
+    try {
+      const response = await fetch(
+        `https://api.cloudinary.com/v1_1/dwrrfy5wd/image/upload`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        const imageUrl = data.secure_url;
+
+        console.log("Uploaded Image URL:", imageUrl);
+        setEditedProfile({ ...editedProfile, avatar: imageUrl });
+        setAvatarPreview(imageUrl);
+        setIsUploading(false);
+      } else {
+        console.error("Upload failed");
+        setIsUploading(false);
+      }
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      setIsUploading(false);
     }
   };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+    setHandleSaveLoading(true);
 
     try {
-      // TODO: API call to update profile
-      // await fetch(`${BACKENDURL}/user/profile`, {
-      //   method: 'PUT',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //     Authorization: `Bearer ${localStorage.getItem('token')}`
-      //   },
-      //   body: JSON.stringify(editedProfile)
-      // });
+      const response = await fetch(`${BACKENDURL}/user/editinfo`, {
+        method: "PUT",
+        headers: {
+          token: localStorage.getItem("token") || "",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username: editedProfile.username,
+          fullname: editedProfile.fullname,
+          bio: editedProfile.bio,
+          avatar: editedProfile.avatar,
+          location: editedProfile.location,
+          github: editedProfile.social?.github,
+          linkedin: editedProfile.social?.linkedin,
+          twitter: editedProfile.social?.linkedin,
+        }),
+      });
 
-      setProfile(editedProfile);
+      if (response.ok) {
+        setHandleSaveLoading(false);
+        toast({
+          title: "Updated Successfully",
+          description: "Your Details Updated Successfully",
+          variant: "soon",
+        });
+      } else {
+        setHandleSaveLoading(false);
+        toast({
+          title: "Error While Updating",
+          description: "Error While Updating Your Credential",
+          variant: "destructive",
+        });
+      }
       setActiveTab("view");
+      getUserInfo();
       setAvatarPreview("");
     } catch (error) {
       console.error("Error updating profile:", error);
     } finally {
       setIsLoading(false);
+      setHandleSaveLoading(false);
     }
   };
 
@@ -155,7 +206,6 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Header */}
       <header className="sticky top-0 z-50 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center justify-between px-4">
           <div
@@ -197,12 +247,6 @@ export default function ProfilePage() {
               Rooms
             </Link> */}
             <Link
-              to="/pricing"
-              className="px-4 py-2 rounded-full text-sm font-medium text-muted-foreground transition-all hover:bg-muted"
-            >
-              Pricing
-            </Link>
-            <Link
               to="/you"
               className="px-4 py-2 rounded-full bg-blue-500 text-white text-sm font-medium transition-all hover:bg-blue-600 hover:text-white"
             >
@@ -243,7 +287,6 @@ export default function ProfilePage() {
       ) : (
         <main className="container flex-1 px-4 py-12">
           <div className="mx-auto max-w-6xl">
-            {/* Page Header */}
             <div className="text-center mb-12">
               <h1 className="text-4xl font-bold mb-4">
                 Your
@@ -277,31 +320,25 @@ export default function ProfilePage() {
                 Edit Profile
               </Button>
             </div>
-
-            {/* Content Area */}
             <div className="max-w-4xl mx-auto space-y-6">
               {activeTab === "view" ? (
                 <>
-                  {/* Profile Overview Card */}
                   <Card className="border-border/40 bg-card/50 backdrop-blur">
                     <CardContent className="pt-6">
                       <div className="flex flex-col md:flex-row gap-6 items-start">
-                        {/* Avatar */}
                         <Avatar className="h-32 w-32 border-4 border-blue-500">
                           <AvatarImage src={profile.avatar} />
                           <AvatarFallback className="text-2xl bg-gradient-to-br from-blue-500 to-purple-600 text-white">
                             {getInitials(profile.fullname || "")}
                           </AvatarFallback>
                         </Avatar>
-
-                        {/* Profile Info */}
                         <div className="flex-1 space-y-4 text-left">
                           <div>
                             <h2 className="text-3xl font-bold mb-1">
-                              {profile.fullname || "Atul Shukla"}
+                              {profile.fullname || ""}
                             </h2>
                             <p className="text-lg text-muted-foreground">
-                              @{profile.username || "atul@1021"}
+                              @{profile.username || ""}
                             </p>
                           </div>
 
@@ -314,7 +351,7 @@ export default function ProfilePage() {
                             </div>
                             <div className="flex items-center gap-2 text-muted-foreground">
                               <MapPin className="h-4 w-4" />
-                              {profile.location || "Indore Madhya Pradesh"}
+                              {profile.location || ""}
                             </div>
                             <br />
                             <div className="flex items-center gap-2 text-muted-foreground">
@@ -332,8 +369,6 @@ export default function ProfilePage() {
                       </div>
                     </CardContent>
                   </Card>
-
-                  {/* Statistics Card */}
                   <Card className="border-border/40 bg-card/50 backdrop-blur">
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
@@ -378,7 +413,7 @@ export default function ProfilePage() {
                             </div>
                           </div>
                           <div className="text-sm text-muted-foreground">
-                            Day Streak 🔥
+                            Day Streak
                           </div>
                         </div>
                       </div>
@@ -456,7 +491,7 @@ export default function ProfilePage() {
                           <Label htmlFor="avatar" className="cursor-pointer">
                             <div className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border hover:bg-muted transition-colors">
                               <Camera className="h-4 w-4" />
-                              <span className="text-sm">Change Avatar</span>
+                              <span className="text-sm">{isUploading ? "Uploading..." : "Change Avatar"}</span>
                             </div>
                             <input
                               id="avatar"
@@ -472,7 +507,6 @@ export default function ProfilePage() {
                         </div>
                       </div>
 
-                      {/* Basic Info */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label htmlFor="fullName">Full Name *</Label>
@@ -502,22 +536,6 @@ export default function ProfilePage() {
                             required
                           />
                         </div>
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="email">Email *</Label>
-                        <Input
-                          id="email"
-                          type="email"
-                          value={editedProfile.email}
-                          onChange={(e) =>
-                            setEditedProfile({
-                              ...editedProfile,
-                              email: e.target.value,
-                            })
-                          }
-                          required
-                        />
                       </div>
 
                       <div className="space-y-2">
@@ -573,7 +591,11 @@ export default function ProfilePage() {
                             onChange={(_e) =>
                               setEditedProfile({
                                 ...editedProfile,
-                                // social: { ...editedProfile.social, github: e.target.value }
+                                social: { 
+                                  ...editedProfile.social, 
+                                  id: editedProfile.social?.id ?? "", 
+                                  github: _e.target.value 
+                                }
                               })
                             }
                           />
@@ -594,7 +616,11 @@ export default function ProfilePage() {
                             onChange={(_e) =>
                               setEditedProfile({
                                 ...editedProfile,
-                                // social: { ...editedProfile.social, linkedin: e.target.value }
+                                social: { 
+                                  ...editedProfile.social, 
+                                  id: editedProfile.social?.id ?? "", 
+                                  linkedin: _e.target.value 
+                                }
                               })
                             }
                           />
@@ -615,7 +641,11 @@ export default function ProfilePage() {
                             onChange={(_e) =>
                               setEditedProfile({
                                 ...editedProfile,
-                                // social: { ...editedProfile.social, twitter: e.target.value }
+                                social: { 
+                                  ...editedProfile.social, 
+                                  id: editedProfile.social?.id ?? "", 
+                                  twitter: _e.target.value 
+                                }
                               })
                             }
                           />
@@ -626,11 +656,11 @@ export default function ProfilePage() {
                       <div className="flex gap-3 pt-4">
                         <Button
                           type="submit"
-                          disabled={isLoading}
+                          disabled={handleSaveLoading}
                           className="flex-1"
                         >
                           <Save className="mr-2 h-4 w-4" />
-                          {isLoading ? "Saving..." : "Save Changes"}
+                          {handleSaveLoading ? "Saving..." : "Save Changes"}
                         </Button>
                         <Button
                           type="button"

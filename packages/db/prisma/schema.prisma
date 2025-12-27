@@ -103,7 +103,7 @@ model Challenges {
   tags                        String[]
   maxpoint                    Int
   starterCode                 String
-  isSolved                    Boolean                     @default(false)
+  isSolved                    Boolean                       @default(false)
   contestTochallegemapping    ContentToChallegesMapping[]
   submittions                 Submittion[]
   examples                    Example[]
@@ -159,6 +159,15 @@ model ContestSubmittion {
   userId                      String
   user                        User                            @relation(fields: [userId], references : [id]) 
   contestTochallegemapping    ContentToChallegesMapping       @relation(fields: [contestTochallegemappingid], references : [id]) 
+  createdAt                   DateTime                        @default(now())
+}
+
+model UserFeedback {
+  id                          String                          @id @default(uuid())
+  fullname                    String
+  email                       String
+  subject                     String
+  messages                    String
   createdAt                   DateTime                        @default(now())
 }
 

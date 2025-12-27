@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@repo/ui/button';
 import { Card, CardContent } from '@repo/ui/card';
 import { useTheme } from '../contexts/ThemeContext';
-import { Home, ArrowLeft, Moon, Sun, SquareTerminal, Search } from 'lucide-react';
+import { Home, ArrowLeft, Moon, Sun, Search, SquareChevronRight } from 'lucide-react';
 
 export default function NotFound() {
   const navigate = useNavigate();
@@ -13,7 +13,7 @@ export default function NotFound() {
       <header className="border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center justify-between px-4">
           <div className="flex items-center gap-2">
-            <SquareTerminal className="h-6 w-6" />
+            <SquareChevronRight className="h-6 w-6" />
             <span className="text-xl font-bold">Grind</span>
           </div>
           <div className="flex items-center gap-4">
@@ -115,7 +115,7 @@ export default function NotFound() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-12 md:gap-20 text-left">
             <div className="flex flex-col text-left">
               <div className="flex items-center gap-2 mb-3">
-                <SquareTerminal className="h-5 w-5" />
+                <SquareChevronRight className="h-5 w-5" />
                 <span className="font-semibold text-lg">Grind</span>
               </div>
               <p className="text-sm text-muted-foreground leading-relaxed">

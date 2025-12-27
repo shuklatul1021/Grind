@@ -179,13 +179,21 @@ userAuthRouter.put("/editinfo" , UserAuthMiddleware , async (req , res)=>{
             }
         });
 
-        const updateUserSocialInfo = await prisma.social.create({
-            data : {
+        const updateUserSocialInfo = await prisma.social.upsert({
+            update : { 
+                github,
+                linkedin,
+                twitter
+            },
+            where : {
+                userId : userId
+            },
+            create : {
                 github,
                 linkedin,
                 twitter,
-                userId
-            },
+                userId : userId
+            }
 
         })
 

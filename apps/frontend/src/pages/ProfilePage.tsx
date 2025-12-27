@@ -254,7 +254,7 @@ export default function ProfilePage() {
             </Link>
             <Link
               to="/premium"
-              className="px-4 py-2 rounded-full text-sm font-medium text-muted-foreground transition-all hover:bg-muted"
+              className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"
             >
               Premium
             </Link>

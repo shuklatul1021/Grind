@@ -10,6 +10,7 @@ export interface Problem {
   description: string;
   difficulty: 'easy' | 'medium' | 'hard';
   tags: string[];
+  isSolved: boolean;
   examples: Example[];
   constraints?: string;
   starterCode: StarterCode[];
@@ -35,6 +36,7 @@ export interface UserProgress {
   user_id: string;
   problem_id: string;
   status: 'solved' | 'attempted' | 'not_started';
+  isSolved : boolean;
   last_attempted: string;
   created_at: string;
   updated_at: string;

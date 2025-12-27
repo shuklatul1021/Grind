@@ -34,6 +34,7 @@ export default function AuthPage() {
       })
     })
     if(response.ok){
+      setLoading(false);
       const json = await response.json();
       toast({
         title : "Success",
@@ -41,19 +42,18 @@ export default function AuthPage() {
         variant : "default",
         className : "mr-[50px]"
       })
-      setLoading(false);
       setAuthanticationData(setAuthData({
         email : signInData.email,
         challengeId : json.challengeId
       }))
       navigate('/verify');
     }else if(!response.ok){
+      setLoading(false);
       toast({
         title : "Error",
         description : "Something went wrong",
         variant : "destructive"
       })
-      setLoading(false);
       return;
     }
     navigate('/verify')

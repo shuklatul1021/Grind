@@ -35,7 +35,6 @@ import { toast } from "../../../../packages/ui/src/hooks/use-toast";
 import { useDispatch } from "react-redux";
 import { setUserDetails } from "../state/ReduxStateProvider";
 
-// Local Skeleton component for loading UI
 function Skeleton({ className }: { className?: string }) {
   return (
     <div
@@ -132,12 +131,11 @@ export default function ProblemsPage() {
       difficultyFilter === "all" ||
       problem.difficulty.toLowerCase() === difficultyFilter;
 
-    const status = userProgress.get(problem.id)?.status || "todo";
+    const status = userProgress.get(problem.id)?.isSolved || "tod";
     const matchesStatus =
       statusFilter === "all" ||
-      (statusFilter === "solved" && status === "solved") ||
-      (statusFilter === "unsolved" && status !== "solved") ||
-      (statusFilter === "attempted" && status === "attempted");
+      (statusFilter === "solved" && status === true) ||
+      (statusFilter === "unsolved" && status !== true)
 
     const matchesTag = tagFilter === "all" || problem.tags.includes(tagFilter);
 
@@ -158,11 +156,11 @@ export default function ProblemsPage() {
   // };
 
   const getStatusIcon = (problemId: string) => {
-    const progress = userProgress.get(problemId);
-    if (progress?.status === "solved") {
+    const progress = problems.find((p) => p.id === problemId)
+    if (progress?.isSolved === true) {
       return <CheckCircle2 className="h-5 w-5 text-green-500" />;
     }
-    if (progress?.status === "attempted") {
+    if (progress?.isSolved === false) {
       return <Circle className="h-5 w-5 text-yellow-500" />;
     }
     return <Circle className="h-5 w-5 text-muted-foreground" />;

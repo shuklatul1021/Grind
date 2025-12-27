@@ -234,7 +234,7 @@ export default function ProblemPage() {
         `${BACKENDURL}/submit/submitcode/${problem.id}`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", token: localStorage.getItem("token") || "" },
           body: JSON.stringify({ code, language: selectedLanguage }),
         }
       );

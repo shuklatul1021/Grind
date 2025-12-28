@@ -184,7 +184,6 @@ export default function CompilerPage() {
   const [wsConnection, setWsConnection] = useState<WebSocket | null>(null);
   const UserProfile = useSelector((state: RootState) => state.userDetails);
 
-
   useEffect(() => {
     try {
       const adElement = document.querySelector(".adsbygoogle");
@@ -459,9 +458,7 @@ export default function CompilerPage() {
 
   useEffect(() => {
     getUserCodeHistory();
-    
   }, []);
-
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -527,13 +524,16 @@ export default function CompilerPage() {
                       src={UserProfile.user.avatar || ""}
                       alt="@user"
                     />
-                     <AvatarFallback>{UserProfile?.user.fullname?.[0] || "G"}</AvatarFallback>
+                    <AvatarFallback>
+                      {UserProfile?.user.fullname?.[0] || "G"}
+                    </AvatarFallback>
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-44">
                 <DropdownMenuItem onClick={() => navigate("/you")}>
-                  <UserIcon className="mr-2 h-4 w-4" />Profile
+                  <UserIcon className="mr-2 h-4 w-4" />
+                  Profile
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
@@ -600,11 +600,12 @@ export default function CompilerPage() {
                     <div
                       key={item.id}
                       onClick={() => loadHistoryItem(item)}
-                      className="group p-2 rounded-lg cursor-pointer transition-all hover:bg-muted/60 border border-border/40 hover:border-blue-500/50"
+                      className="group p-0.5 rounded-lg cursor-pointer transition-all border border-border/30 hover:border-blue-500/60 bg-[#18181b] hover:bg-[#23232a] shadow-sm"
+                      style={{ boxShadow: "0 2px 8px 0 rgba(0,0,0,0.04)" }}
                     >
-                      <div className="flex items-start gap-1.5">
-                        <div className="flex-1 min-w-0">
-                          <div className="text-xs font-medium text-foreground line-clamp-1 mb-0.5">
+                      <div className="flex items-center gap-2 px-2 py-2">
+                        <div className="flex flex-col flex-1 min-w-0">
+                          <pre className="text-xs font-mono text-blue-200 bg-[#161618] rounded px-2 py-1 mb-1 whitespace-pre-wrap">
                             {item.code
                               .split("\n")
                               .find(
@@ -614,18 +615,25 @@ export default function CompilerPage() {
                                   !line.trim().startsWith("#")
                               )
                               ?.trim()
-                              .slice(0, 35) || item.code.slice(0, 35)}
-                          </div>
-                          <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-                            <span className="font-medium">
+                              .slice(0, 60) || item.code.slice(0, 60)}
+                          </pre>
+                          <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                            <Badge
+                              variant="outline"
+                              className="px-1 py-0.5 text-[10px] font-medium border-blue-400/40 bg-[#22223a] text-blue-300"
+                            >
                               {
                                 LANGUAGES.find((l) => l.value === item.language)
                                   ?.label
                               }
+                            </Badge>
+                            <span className="text-gray-400">
+                              {formatTimeAgo(item.createdAt)}
                             </span>
-                            <span>•</span>
-                            <span>{formatTimeAgo(item.createdAt)}</span>
                           </div>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <History className="h-4 w-4 text-blue-400 opacity-70" />
                         </div>
                       </div>
                     </div>
@@ -761,12 +769,17 @@ export default function CompilerPage() {
                     <Download className="h-3 w-3" />
                   </Button>
                 </div>
-                <div className="flex-1 h-[300px]">
-                  <CodeEditor
-                    code={code}
-                    setCode={setCode}
-                    language={selectedLanguage}
-                  />
+                <div
+                  className={`flex-1 overflow-x-auto ${layout === "bottom" ? "h-[450px]" : "h-[300px]"}`}
+                  style={{ minWidth: 0 }}
+                >
+                  <div className="w-full h-full" style={{ minWidth: "100%" }}>
+                    <CodeEditor
+                      code={code}
+                      setCode={setCode}
+                      language={selectedLanguage}
+                    />
+                  </div>
                 </div>
               </CardContent>
             </Card>

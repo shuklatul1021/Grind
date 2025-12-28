@@ -14,7 +14,6 @@ import "prismjs/components/prism-rust";
 import { useTheme } from "../contexts/ThemeContext";
 import { KEYWORDS } from "../format/ResponseFormatter";
 
-
 // Helper to get caret coordinates
 const getCaretCoordinates = (
   element: HTMLTextAreaElement,
@@ -604,6 +603,9 @@ export default function CodeEditor({
           style={{
             fontFamily:
               '"JetBrains Mono", "Fira Code", Consolas, Monaco, "Andale Mono", "Ubuntu Mono", monospace',
+            whiteSpace: "pre",
+            overflowX: "auto",
+            minWidth: 0,
           }}
         >
           <Editor
@@ -619,6 +621,9 @@ export default function CodeEditor({
               backgroundColor: "transparent",
               minHeight: "100%",
               lineHeight: "1.6",
+              whiteSpace: "pre",
+              overflowX: "auto",
+              minWidth: 0,
             }}
             className="editor-container"
           />
@@ -671,7 +676,7 @@ export default function CodeEditor({
           backgroundColor: "#000000",
           borderTop: `1px solid ${theme === "dark" ? "#333" : "#e5e5e5"}`,
           color: "#ffffff",
-          border : "1px solid #333"
+          border: "1px solid #333",
         }}
       >
         <div className="flex items-center gap-3">

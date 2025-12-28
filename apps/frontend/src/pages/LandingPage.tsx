@@ -48,7 +48,7 @@ export default function LandingPage() {
               variant="ghost"
               size="icon"
               onClick={toggleTheme}
-              className="rounded-full"
+              className="rounded-full dark:text-foreground"
             >
               {theme === "dark" ? (
                 <Sun className="h-5 w-5" />
@@ -272,7 +272,7 @@ export default function LandingPage() {
               </p>
             </div>
             <div className="text-left">
-              <h4 className="font-semibold mb-4 text-sm uppercase tracking-wide">
+              <h4 className="font-semibold mb-4 text-sm uppercase tracking-wide dark:text-foreground">
                 Product
               </h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
@@ -319,7 +319,7 @@ export default function LandingPage() {
               </ul>
             </div>
             <div className="text-left">
-              <h4 className="font-semibold mb-4 text-sm uppercase tracking-wide">
+              <h4 className="font-semibold mb-4 text-sm uppercase tracking-wide dark:text-foreground">
                 Resources
               </h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
@@ -358,7 +358,7 @@ export default function LandingPage() {
               </ul>
             </div>
             <div className="text-left">
-              <h4 className="font-semibold mb-4 text-sm uppercase tracking-wide">
+              <h4 className="font-semibold mb-4 text-sm uppercase tracking-wide dark:text-foreground">
                 Company
               </h4>
               <ul className="space-y-2 text-sm text-muted-foreground">

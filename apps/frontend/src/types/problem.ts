@@ -1,14 +1,14 @@
 export interface StarterCode {
   language: string;
   code: string;
-} 
+}
 
 export interface Problem {
   id: string;
   title: string;
   slug?: string;
   description: string;
-  difficulty: 'easy' | 'medium' | 'hard';
+  difficulty: "easy" | "medium" | "hard";
   tags: string[];
   isSolved: boolean;
   examples: Example[];
@@ -35,8 +35,8 @@ export interface UserProgress {
   id: string;
   user_id: string;
   problem_id: string;
-  status: 'solved' | 'attempted' | 'not_started';
-  isSolved : boolean;
+  status: "solved" | "attempted" | "not_started";
+  isSolved: boolean;
   last_attempted: string;
   created_at: string;
   updated_at: string;
@@ -48,35 +48,40 @@ export interface Submission {
   problem_id: string;
   code: string;
   language: string;
-  status: 'accepted' | 'wrong_answer' | 'runtime_error' | 'time_limit_exceeded' | 'memory_limit_exceeded';
+  status:
+    | "accepted"
+    | "wrong_answer"
+    | "runtime_error"
+    | "time_limit_exceeded"
+    | "memory_limit_exceeded";
   runtime: number;
   memory: number;
   created_at: string;
 }
 
 type Social = {
-  id : string;
-  github? : string;
-  linkedin? : string
-  twitter? :  string
-}
+  id: string;
+  github?: string;
+  linkedin?: string;
+  twitter?: string;
+};
 
-export interface UserInterface{
-  id : string;
-  username? : string;
-  fullname? :  string;
-  email : string;
-  bio? : string;
-  avatar? : string;
-  location? : string
-  problemsSolved? : number;
-  rank? : number;
-  contestsParticipated? : number;
-  currentStreak? : number
-  social? : Social
-  createdAt? : Date
+export interface UserInterface {
+  id: string;
+  username?: string;
+  fullname?: string;
+  email: string;
+  bio?: string;
+  avatar?: string;
+  location?: string;
+  problemsSolved?: number;
+  rank?: number;
+  contestsParticipated?: number;
+  currentStreak?: number;
+  social?: Social;
+  createdAt?: Date;
+  propr?: string;
 }
-
 
 export interface Message {
   id: string;
@@ -93,6 +98,6 @@ export interface ChatSession {
 }
 
 export interface FormattedMessageProps {
-  user : Message;
-  assistant : Message;
+  user: Message;
+  assistant: Message;
 }

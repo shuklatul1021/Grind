@@ -295,7 +295,7 @@ export default function ProblemPage() {
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
           <p className="text-sm font-medium text-muted-foreground animate-pulse">
-            Loading workspace...
+            Loading Problem...
           </p>
         </div>
       </div>

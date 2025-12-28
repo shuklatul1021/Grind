@@ -29,12 +29,24 @@ import {
   Video,
   MessageCircle,
   Award,
+  UserIcon,
 } from "lucide-react";
 import { useTheme } from "../contexts/ThemeContext";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from "@repo/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@repo/ui/avatar";
+import type { RootState } from "../state/ReduxStateProvider";
+import { useSelector } from "react-redux";
 
 export default function PremiumPage() {
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
+  const UserProfile = useSelector((state: RootState) => state.userDetails);
 
   const premiumFeatures = [
     {
@@ -176,12 +188,6 @@ export default function PremiumPage() {
               Grind AI
             </Link>
             <Link
-              to="/you"
-              className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"
-            >
-              Profile
-            </Link>
-            <Link
               to="/premium"
               className="px-4 py-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 text-white text-base font-medium transition-all hover:from-blue-600 hover:to-purple-600 hover:text-black"
             >
@@ -201,10 +207,31 @@ export default function PremiumPage() {
                 <Moon className="h-5 w-5" />
               )}
             </Button>
-            <Button variant="ghost" onClick={handleSignOut}>
-              <LogOut className="mr-2 h-4 w-4" />
-              Sign Out
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="rounded-full">
+                  <Avatar>
+                    <AvatarImage
+                      src={UserProfile?.user.avatar || ""}
+                      alt="@user"
+                    />
+                     <AvatarFallback>{UserProfile?.user.fullname?.[0] || "G"}</AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-44">
+                <DropdownMenuItem onClick={() => navigate("/you")}>
+                  <UserIcon className="mr-2 h-4 w-4" />Profile
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={handleSignOut}
+                  className="text-red-600 focus:text-red-700"
+                >
+                  <LogOut className="mr-2 h-4 w-4" /> Sign Out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </header>

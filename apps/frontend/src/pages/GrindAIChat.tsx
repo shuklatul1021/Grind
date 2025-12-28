@@ -30,6 +30,7 @@ import {
   Copy,
   Check,
   Zap,
+  UserIcon,
 } from "lucide-react";
 import type { RootState } from "../state/ReduxStateProvider";
 import { useSelector, useDispatch } from "react-redux";
@@ -41,6 +42,14 @@ import {
   setUserCreditDetails,
   setUserPrompt,
 } from "../state/ReduxStateProvider";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from "@repo/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@repo/ui/avatar";
 
 const FormattedMessage = ({ content }: { content: string }) => {
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
@@ -346,11 +355,18 @@ export default function GrindAIChat() {
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  // For smooth streaming
+  const [streamingMessage, setStreamingMessage] = useState<string>("");
+  const [streamingMessageId, setStreamingMessageId] = useState<string | null>(
+    null
+  );
   const [pageLoading, setPageLoading] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const hasProcessedPrompt = useRef(false);
+
+  const UserProfile = useSelector((state: RootState) => state.userDetails);
 
   const [gettingUserLatestCreditLoading, setGettingUserLatestCreditLoading] =
     useState(false);
@@ -427,7 +443,8 @@ export default function GrindAIChat() {
               : session
           )
         );
-
+        setStreamingMessage("");
+        setStreamingMessageId(aiMessageId);
         setIsLoading(true);
 
         const response = await fetch(`${BACKENDURL}/grindai/chat`, {
@@ -444,23 +461,17 @@ export default function GrindAIChat() {
         if (response.ok) {
           const reader = response.body?.getReader();
           const decoder = new TextDecoder();
-
           if (!reader) return;
-
           let fullXMLText = "";
-
+          let lastCleaned = "";
           while (true) {
             const { done, value } = await reader.read();
-
             if (done) break;
-
             const chunk = decoder.decode(value);
             const lines = chunk.split("\n");
-
             for (const line of lines) {
               if (line.startsWith("data: ")) {
                 const data = JSON.parse(line.slice(6));
-
                 if (data.done) {
                   const finalCleanedText = cleanXMLResponse(fullXMLText);
                   setSessions((prev) => {
@@ -476,7 +487,6 @@ export default function GrindAIChat() {
                           }
                         : session
                     );
-
                     const updatedSession = updatedSessions.find(
                       (s) => s.id === id
                     );
@@ -493,25 +503,26 @@ export default function GrindAIChat() {
                       })
                         .then((response) => {
                           if (response.ok) {
-                            console.log("Messages saved to database");
                           } else {
-                            console.log("Failed to save messages to database");
                           }
                         })
-                        .catch((e) => {
-                          console.log("Error saving messages:", e);
-                        });
+                        .catch(() => {});
                     }
-
                     return updatedSessions;
                   });
+                  setStreamingMessage("");
+                  setStreamingMessageId(null);
                   break;
                 }
-
                 if (data.text) {
                   fullXMLText += data.text;
-                  const displayText = cleanXMLResponse(fullXMLText);
-
+                  // Only append the new chunk for smooth streaming
+                  const cleaned = cleanXMLResponse(fullXMLText);
+                  // Only update if new content
+                  if (cleaned !== lastCleaned) {
+                    setStreamingMessage(cleaned);
+                    lastCleaned = cleaned;
+                  }
                   setSessions((prev) =>
                     prev.map((session) =>
                       session.id === id
@@ -519,7 +530,7 @@ export default function GrindAIChat() {
                             ...session,
                             messages: session.messages.map((msg) =>
                               msg.id === aiMessageId
-                                ? { ...msg, content: displayText }
+                                ? { ...msg, content: cleaned }
                                 : msg
                             ),
                           }
@@ -527,9 +538,7 @@ export default function GrindAIChat() {
                     )
                   );
                 }
-
                 if (data.error) {
-                  console.error("Stream error:", data.error);
                 }
               }
             }
@@ -540,7 +549,6 @@ export default function GrindAIChat() {
             description: "Grind AI Server Is Overloaded Try Again Later",
             variant: "destructive",
           });
-
           setSessions((prev) =>
             prev.map((session) =>
               session.id === id
@@ -555,7 +563,6 @@ export default function GrindAIChat() {
           );
         }
       } catch (e) {
-        console.error(e);
         toast({
           title: "Grind AI Down",
           description: "Grind AI Server Is Overloaded Try Again",
@@ -593,7 +600,6 @@ export default function GrindAIChat() {
         });
       }
     } catch (e) {
-      console.log(e);
       toast({
         title: "Error",
         description: "Failed to fetch user details. Please try again.",
@@ -606,9 +612,8 @@ export default function GrindAIChat() {
     async (userPrompt: string) => {
       if (!id) return;
       const sessionExists = sessions.find((s) => s.id === id);
-      console.log("Session exists:", sessionExists);
+
       if (!sessionExists) {
-        console.log("Session doesn't exist, creating it first...");
         await new Promise((resolve) => setTimeout(resolve, 0));
       }
       getUserDetails();
@@ -629,7 +634,6 @@ export default function GrindAIChat() {
           timestamp: new Date(),
         };
 
-        console.log("Adding messages to session...");
         setSessions((prev) =>
           prev.map((session) =>
             session.id === id
@@ -711,16 +715,10 @@ export default function GrindAIChat() {
                       })
                         .then((response) => {
                           if (response.ok) {
-                            console.log(
-                              "Messages saved to database successfully"
-                            );
                           } else {
-                            console.log("Failed to save messages to database");
                           }
                         })
-                        .catch((e) => {
-                          console.log("Error saving messages:", e);
-                        });
+                        .catch(() => {});
                     }
 
                     return updatedSessions;
@@ -749,7 +747,6 @@ export default function GrindAIChat() {
                 }
 
                 if (data.error) {
-                  console.error("Stream error:", data.error);
                 }
               }
             }
@@ -775,7 +772,6 @@ export default function GrindAIChat() {
           );
         }
       } catch (e) {
-        console.error(e);
         toast({
           title: "Grind AI Down",
           description: "Grind AI Server Is Overloaded Try Again",
@@ -809,7 +805,6 @@ export default function GrindAIChat() {
         });
       }
     } catch (e) {
-      console.log(e);
       toast({
         title: "Error",
         description: "Failed to fetch chat sessions. Please try again.",
@@ -838,12 +833,6 @@ export default function GrindAIChat() {
       );
       if (response.ok) {
         const data = await response.json();
-        const newChat = {
-          id: data.chat.id,
-          message: data.chat.message,
-          createdAt: data.chat.createdAt,
-        };
-        console.log("Adding new chat to Redux:", newChat);
         await getUserChats();
         getUserDetails();
         navigate(`/grind-ai/c/${data.chat.id}`);
@@ -855,7 +844,6 @@ export default function GrindAIChat() {
         });
       }
     } catch (e) {
-      console.log(e);
       toast({
         title: "Error",
         description: "Failed to create a new chat session. Please try again.",
@@ -919,7 +907,7 @@ export default function GrindAIChat() {
 
   const deleteSession = async (sessionId: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    console.log("Session Id ", sessionId);
+
     const resposne = await fetch(
       `${BACKENDURL}/grindai/delete-chat/${sessionId}`,
       {
@@ -978,7 +966,6 @@ export default function GrindAIChat() {
           };
           setSessions((prev) => [newSession, ...prev]);
         } else {
-          console.error("Invalid messages format:", messages);
           const newSession: ChatSession = {
             id,
             title: "New Chat",
@@ -988,7 +975,6 @@ export default function GrindAIChat() {
           setSessions((prev) => [newSession, ...prev]);
         }
       } catch (e) {
-        console.error("Error parsing existing messages:", e);
         const newSession: ChatSession = {
           id,
           title: "New Chat",
@@ -1079,12 +1065,6 @@ export default function GrindAIChat() {
               Pricing
             </Link>
             <Link
-              to="/you"
-              className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"
-            >
-              Profile
-            </Link>
-            <Link
               to="/premium"
               className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"
             >
@@ -1104,10 +1084,34 @@ export default function GrindAIChat() {
                 <Moon className="h-5 w-5" />
               )}
             </Button>
-            <Button variant="ghost" onClick={handleSignOut}>
-              <LogOut className="mr-2 h-4 w-4" />
-              Sign Out
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="rounded-full">
+                  <Avatar>
+                    <AvatarImage
+                      src={UserProfile.user.avatar || ""}
+                      alt="@user"
+                    />
+                    <AvatarFallback>
+                      {UserProfile?.user.fullname?.[0] || "G"}
+                    </AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-44">
+                <DropdownMenuItem onClick={() => navigate("/you")}>
+                  <UserIcon className="mr-2 h-4 w-4" />
+                  Profile
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={handleSignOut}
+                  className="text-red-600 focus:text-red-700"
+                >
+                  <LogOut className="mr-2 h-4 w-4" /> Sign Out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </header>
@@ -1181,7 +1185,6 @@ export default function GrindAIChat() {
                             }
                             return "New Chat";
                           } catch (e) {
-                            console.error("Error parsing message:", e);
                             return "New Chat";
                           }
                         })()}
@@ -1332,48 +1335,62 @@ export default function GrindAIChat() {
               <div className="h-full flex items-center justify-center"></div>
             ) : (
               <div className="max-w-4xl mx-auto w-full space-y-6 pb-4 pt-4">
-                {currentSession.messages.map((mess: Message) => (
-                  <div key={mess.id} className="flex gap-4 items-start group">
-                    <div
-                      className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
-                        mess.role === "user"
-                          ? "bg-green-500/10 border border-green-500/20"
-                          : "bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-blue-500/20"
-                      }`}
-                    >
-                      {mess.role === "user" ? (
-                        <User className="h-5 w-5 text-green-500" />
-                      ) : (
-                        <SquareChevronRight className="h-5 w-5 text-blue-500" />
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="font-semibold text-sm text-foreground mb-2 text-left">
-                        {mess.role === "user" ? "You" : "Grind AI"}
-                      </div>
-                      <div className="prose prose-sm dark:prose-invert max-w-none">
-                        {mess.content ? (
-                          <FormattedMessage content={mess.content} />
+                {currentSession.messages.map((mess: Message) => {
+                  // If this is the streaming assistant message, show live typing indicator
+                  const isStreaming =
+                    mess.id === streamingMessageId && isLoading;
+                  return (
+                    <div key={mess.id} className="flex gap-4 items-start group">
+                      <div
+                        className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
+                          mess.role === "user"
+                            ? "bg-green-500/10 border border-green-500/20"
+                            : "bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-blue-500/20"
+                        }`}
+                      >
+                        {mess.role === "user" ? (
+                          <User className="h-5 w-5 text-green-500" />
                         ) : (
-                          <div className="flex gap-1.5 py-2">
-                            <div
-                              className="w-2 h-2 rounded-full bg-blue-500 animate-bounce"
-                              style={{ animationDelay: "0ms" }}
-                            />
-                            <div
-                              className="w-2 h-2 rounded-full bg-blue-500 animate-bounce"
-                              style={{ animationDelay: "150ms" }}
-                            />
-                            <div
-                              className="w-2 h-2 rounded-full bg-blue-500 animate-bounce"
-                              style={{ animationDelay: "300ms" }}
-                            />
-                          </div>
+                          <SquareChevronRight className="h-5 w-5 text-blue-500" />
                         )}
                       </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-semibold text-sm text-foreground mb-2 text-left">
+                          {mess.role === "user" ? "You" : "Grind AI"}
+                        </div>
+                        <div className="prose prose-sm dark:prose-invert max-w-none">
+                          {isStreaming ? (
+                            <>
+                              <FormattedMessage
+                                content={streamingMessage || mess.content || ""}
+                              />
+                              <span className="ml-1 animate-pulse text-blue-500">
+                                |
+                              </span>
+                            </>
+                          ) : mess.content ? (
+                            <FormattedMessage content={mess.content} />
+                          ) : (
+                            <div className="flex gap-1.5 py-2">
+                              <div
+                                className="w-2 h-2 rounded-full bg-blue-500 animate-bounce"
+                                style={{ animationDelay: "0ms" }}
+                              />
+                              <div
+                                className="w-2 h-2 rounded-full bg-blue-500 animate-bounce"
+                                style={{ animationDelay: "150ms" }}
+                              />
+                              <div
+                                className="w-2 h-2 rounded-full bg-blue-500 animate-bounce"
+                                style={{ animationDelay: "300ms" }}
+                              />
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
                 <div ref={messagesEndRef} />
               </div>
             )}

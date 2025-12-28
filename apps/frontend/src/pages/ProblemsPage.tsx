@@ -1,6 +1,14 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@repo/ui/button";
+import { Avatar, AvatarImage, AvatarFallback } from "@repo/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from "@repo/ui/dropdown-menu";
 import { Badge } from "@repo/ui/badge";
 import { Input } from "@repo/ui/input";
 import {
@@ -27,13 +35,14 @@ import {
   Circle,
   SquareChevronRight,
   Shuffle,
+  UserIcon,
 } from "lucide-react";
 import { useTheme } from "../contexts/ThemeContext";
 import type { Problem, UserProgress } from "../types/problem";
 import { BACKENDURL } from "../utils/urls";
 import { toast } from "../../../../packages/ui/src/hooks/use-toast";
-import { useDispatch } from "react-redux";
-import { setUserDetails } from "../state/ReduxStateProvider";
+import { useDispatch, useSelector } from "react-redux";
+import { setUserDetails, type RootState } from "../state/ReduxStateProvider";
 
 function Skeleton({ className }: { className?: string }) {
   return (
@@ -54,7 +63,8 @@ export default function ProblemsPage() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [tagFilter, setTagFilter] = useState<string>("all");
   const setReduxUserDetails = useDispatch();
-
+  const UserProfile = useSelector((state: RootState) => state.userDetails);
+  console.log("UserProfile:", UserProfile);
   const uniqueTags = Array.from(
     new Set(problems.flatMap((p) => p.tags))
   ).sort();
@@ -135,7 +145,7 @@ export default function ProblemsPage() {
     const matchesStatus =
       statusFilter === "all" ||
       (statusFilter === "solved" && status === true) ||
-      (statusFilter === "unsolved" && status !== true)
+      (statusFilter === "unsolved" && status !== true);
 
     const matchesTag = tagFilter === "all" || problem.tags.includes(tagFilter);
 
@@ -156,7 +166,7 @@ export default function ProblemsPage() {
   // };
 
   const getStatusIcon = (problemId: string) => {
-    const progress = problems.find((p) => p.id === problemId)
+    const progress = problems.find((p) => p.id === problemId);
     if (progress?.isSolved === true) {
       return <CheckCircle2 className="h-5 w-5 text-green-500" />;
     }
@@ -209,12 +219,6 @@ export default function ProblemsPage() {
               Rooms
             </Link> */}
             <Link
-              to="/you"
-              className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"
-            >
-              Profile
-            </Link>
-            <Link
               to="/premium"
               className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"
             >
@@ -234,10 +238,31 @@ export default function ProblemsPage() {
                 <Moon className="h-5 w-5" />
               )}
             </Button>
-            <Button variant="ghost" onClick={handleSignOut}>
-              <LogOut className="mr-2 h-4 w-4" />
-              Sign Out
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="rounded-full">
+                  <Avatar>
+                    <AvatarImage
+                      src={UserProfile?.user.avatar || ""}
+                      alt="@user"
+                    />
+                    <AvatarFallback>{UserProfile?.user.fullname?.[0] || "G"}</AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-44">
+                <DropdownMenuItem onClick={() => navigate("/you")}>
+                  <UserIcon className="mr-2 h-4 w-4" />Profile
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={handleSignOut}
+                  className="text-red-600 focus:text-red-700"
+                >
+                  <LogOut className="mr-2 h-4 w-4" /> Sign Out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </header>

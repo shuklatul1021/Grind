@@ -1,12 +1,8 @@
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@repo/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@repo/ui/card';
-import { useTheme } from '../contexts/ThemeContext';
 import {
   SquareChevronRight,
-  Sun,
-  Moon,
-  LogOut,
   Check,
   Zap,
   Crown,
@@ -22,12 +18,6 @@ import { toast } from '../../../../packages/ui/src/hooks/use-toast';
 
 export default function PricingPage() {
   const navigate = useNavigate();
-  const { theme, toggleTheme } = useTheme();
-
-  const handleSignOut = () => {
-    localStorage.removeItem("token");
-    navigate('/auth');
-  };
 
   const HandleOnBuyClick = () => {
     toast({
@@ -78,33 +68,14 @@ export default function PricingPage() {
     <div className="min-h-screen bg-background flex flex-col">
       <header className="sticky top-0 z-50 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center justify-between px-4">
-          <div
-            className="flex cursor-pointer  gap-2"
-            onClick={() => navigate('/')}
-          >
-            <SquareChevronRight className="h-6 w-6" />
-            <span className="text-xl font-bold">Grind</span>
-          </div>
-          <div className="flex gap-2">
-            <Link 
-              to="/problems" 
-              className="px-4 gap-x-2 flex py-2 rounded-full text-sm font-medium text-muted-foreground transition-all hover:bg-muted"
-            >
-              <ArrowLeft />Go Back
-            </Link>
-          </div>
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleTheme}
-              className="rounded-full"
-            >
-              {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-            </Button>
-            <Button variant="ghost" onClick={handleSignOut}>
-              <LogOut className="mr-2 h-4 w-4" />
-              Sign Out
+          <div className="container flex h-16 items-center justify-between px-4">
+            <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/')}>
+              <SquareChevronRight className="h-6 w-6" />
+              <span className="text-xl font-bold">Grind</span>
+            </div>
+            <Button variant="ghost" onClick={() => navigate(-1)} className="gap-2">
+              <ArrowLeft className="h-4 w-4" />
+              Back to Problem
             </Button>
           </div>
         </div>
@@ -265,7 +236,7 @@ export default function PricingPage() {
                   </Button>
                   <Button size="lg">
                     <Clock className="mr-2 h-4 w-4" />
-                    Start Free Trial
+                    Start Now
                   </Button>
                 </div>
               </CardContent>

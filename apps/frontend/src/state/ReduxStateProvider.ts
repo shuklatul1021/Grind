@@ -1,4 +1,5 @@
 import { createSlice, configureStore } from "@reduxjs/toolkit";
+import type { UserInterface } from "../types/problem";
 
 const User2FAAuthanticationSlice = createSlice({
   name: "User2FAAuthantication",
@@ -31,7 +32,22 @@ const userCreditDetailsSlice = createSlice({
 const UserDetailsSlice = createSlice({
   name: "userDetails",
   initialState: {
-    user: {},
+    user: {
+      id: "",
+      username: "",
+      fullname: "",
+      email: "",
+      bio: "",
+      avatar: "",
+      location: "",
+      problemsSolved: 0,
+      rank: 0,
+      contestsParticipated: 0,
+      currentStreak: 0,
+      social: { id: "", github: "", linkedin: "", twitter: "" },
+      createdAt: undefined,
+      propr: "",
+    } as UserInterface,
   },
   reducers: {
     setUserDetails: (state, action) => {

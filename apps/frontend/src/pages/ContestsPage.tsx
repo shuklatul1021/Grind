@@ -13,13 +13,24 @@ import {
   Trophy,
   TrendingUp,
   ChevronRight,
-  SquareChevronRight
+  SquareChevronRight,
+  UserIcon
 } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { toast } from '../../../../packages/ui/src/hooks/use-toast';
 import { BACKENDURL } from '../utils/urls';
 // import { useDispatch, useSelector } from "react-redux";
 // import type { RootState } from '../state/ReduxStateProvider';
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from "@repo/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@repo/ui/avatar";
+import type { RootState } from '../state/ReduxStateProvider';
+import { useSelector } from "react-redux";
 
 interface Contest {
   id: string;
@@ -40,6 +51,8 @@ export default function ContestsPage() {
   const [contests, setContests] = useState<Contest[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'all' | 'weekly' | 'monthly'>('all');
+  const UserProfile = useSelector((state: RootState) => state.userDetails);
+
   // const setReduxContests = useDispatch();
 
   // const getUserinfo = useSelector((state: RootState) => state.userDetails);
@@ -173,12 +186,6 @@ export default function ContestsPage() {
               Rooms
             </Link> */}
             <Link 
-              to="/you" 
-              className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"
-            >
-              Profile
-            </Link>
-            <Link 
               to="/premium" 
               className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"
             >
@@ -194,10 +201,31 @@ export default function ContestsPage() {
             >
               {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
             </Button>
-            <Button variant="ghost" onClick={handleSignOut}>
-              <LogOut className="mr-2 h-4 w-4" />
-              Sign Out
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="rounded-full">
+                  <Avatar>
+                    <AvatarImage
+                      src={UserProfile.user.avatar || ""}
+                      alt="@user"
+                    />
+                    <AvatarFallback>U</AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-44">
+                <DropdownMenuItem onClick={() => navigate("/you")}>
+                  <UserIcon className="mr-2 h-4 w-4" />Profile
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={handleSignOut}
+                  className="text-red-600 focus:text-red-700"
+                >
+                  <LogOut className="mr-2 h-4 w-4" /> Sign Out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </header>

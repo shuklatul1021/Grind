@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@repo/ui/button";
 import {
   Card,
@@ -11,12 +11,8 @@ import {
 import { Input } from "@repo/ui/input";
 import { Label } from "@repo/ui/label";
 import { Textarea } from "@repo/ui/textarea";
-import { useTheme } from "../contexts/ThemeContext";
 import {
   SquareChevronRight,
-  Sun,
-  Moon,
-  LogOut,
   User,
   Mail,
   MapPin,
@@ -30,6 +26,7 @@ import {
   Trophy,
   Flame,
   Target,
+  ArrowLeft,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@repo/ui/avatar";
 import { BACKENDURL } from "../utils/urls";
@@ -38,12 +35,11 @@ import type { UserInterface } from "../types/problem";
 
 export default function ProfilePage() {
   const navigate = useNavigate();
-  const { theme, toggleTheme } = useTheme();
   const [activeTab, setActiveTab] = useState<"view" | "edit">("view");
   const [isLoading, setIsLoading] = useState(true);
   const [avatarPreview, setAvatarPreview] = useState<string>("");
   const [isUploading, setIsUploading] = useState<boolean>(false);
-  const [handleSaveLoading , setHandleSaveLoading] = useState<boolean>(false);
+  const [handleSaveLoading, setHandleSaveLoading] = useState<boolean>(false);
 
   const [profile, setProfile] = useState<UserInterface>({
     id: "",
@@ -62,11 +58,6 @@ export default function ProfilePage() {
   });
 
   const [editedProfile, setEditedProfile] = useState(profile);
-
-  const handleSignOut = () => {
-    localStorage.removeItem("token");
-    navigate("/auth");
-  };
 
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -208,73 +199,14 @@ export default function ProfilePage() {
     <div className="min-h-screen bg-background flex flex-col">
       <header className="sticky top-0 z-50 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center justify-between px-4">
-          <div
-            className="flex cursor-pointer items-center gap-2"
-            onClick={() => navigate("/")}
-          >
-            <SquareChevronRight className="h-6 w-6" />
-            <span className="text-xl font-bold">Grind</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Link
-              to="/problems"
-              className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"
-            >
-              Problems
-            </Link>
-            <Link
-              to="/contest"
-              className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"
-            >
-              Contest
-            </Link>
-            <Link
-              to="/compiler"
-              className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"
-            >
-              Compiler
-            </Link>
-            <Link
-              to="/grind-ai"
-              className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"
-            >
-              Grind AI
-            </Link>
-            {/* <Link 
-              to="/room" 
-              className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"
-            >
-              Rooms
-            </Link> */}
-            <Link
-              to="/you"
-              className="px-4 py-2 rounded-full bg-blue-500 text-white text-base font-medium transition-all hover:bg-blue-600 hover:text-white"
-            >
-              Profile
-            </Link>
-            <Link
-              to="/premium"
-              className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"
-            >
-              Premium
-            </Link>
-          </div>
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleTheme}
-              className="rounded-full"
-            >
-              {theme === "dark" ? (
-                <Sun className="h-5 w-5" />
-              ) : (
-                <Moon className="h-5 w-5" />
-              )}
-            </Button>
-            <Button variant="ghost" onClick={handleSignOut}>
-              <LogOut className="mr-2 h-4 w-4" />
-              Sign Out
+          <div className="container flex h-16 items-center justify-between px-4">
+            <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/')}>
+              <SquareChevronRight className="h-6 w-6" />
+              <span className="text-xl font-bold">Grind</span>
+            </div>
+            <Button variant="ghost" onClick={() => navigate(-1)} className="gap-2">
+              <ArrowLeft className="h-4 w-4" />
+              Back to Problem
             </Button>
           </div>
         </div>
@@ -491,7 +423,9 @@ export default function ProfilePage() {
                           <Label htmlFor="avatar" className="cursor-pointer">
                             <div className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border hover:bg-muted transition-colors">
                               <Camera className="h-4 w-4" />
-                              <span className="text-sm">{isUploading ? "Uploading..." : "Change Avatar"}</span>
+                              <span className="text-sm">
+                                {isUploading ? "Uploading..." : "Change Avatar"}
+                              </span>
                             </div>
                             <input
                               id="avatar"
@@ -591,11 +525,11 @@ export default function ProfilePage() {
                             onChange={(_e) =>
                               setEditedProfile({
                                 ...editedProfile,
-                                social: { 
-                                  ...editedProfile.social, 
-                                  id: editedProfile.social?.id ?? "", 
-                                  github: _e.target.value 
-                                }
+                                social: {
+                                  ...editedProfile.social,
+                                  id: editedProfile.social?.id ?? "",
+                                  github: _e.target.value,
+                                },
                               })
                             }
                           />
@@ -616,11 +550,11 @@ export default function ProfilePage() {
                             onChange={(_e) =>
                               setEditedProfile({
                                 ...editedProfile,
-                                social: { 
-                                  ...editedProfile.social, 
-                                  id: editedProfile.social?.id ?? "", 
-                                  linkedin: _e.target.value 
-                                }
+                                social: {
+                                  ...editedProfile.social,
+                                  id: editedProfile.social?.id ?? "",
+                                  linkedin: _e.target.value,
+                                },
                               })
                             }
                           />
@@ -641,11 +575,11 @@ export default function ProfilePage() {
                             onChange={(_e) =>
                               setEditedProfile({
                                 ...editedProfile,
-                                social: { 
-                                  ...editedProfile.social, 
-                                  id: editedProfile.social?.id ?? "", 
-                                  twitter: _e.target.value 
-                                }
+                                social: {
+                                  ...editedProfile.social,
+                                  id: editedProfile.social?.id ?? "",
+                                  twitter: _e.target.value,
+                                },
                               })
                             }
                           />

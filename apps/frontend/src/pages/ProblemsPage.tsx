@@ -38,7 +38,7 @@ import {
   UserIcon,
 } from "lucide-react";
 import { useTheme } from "../contexts/ThemeContext";
-import type { Problem, UserProgress } from "../types/problem";
+import type { Problem } from "../types/problem";
 import { BACKENDURL } from "../utils/urls";
 import { toast } from "../../../../packages/ui/src/hooks/use-toast";
 import { useDispatch, useSelector } from "react-redux";
@@ -56,7 +56,6 @@ export default function ProblemsPage() {
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
   const [problems, setProblems] = useState<Problem[]>([]);
-  const [userProgress] = useState<Map<string, UserProgress>>(new Map());
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [difficultyFilter, setDifficultyFilter] = useState<string>("all");
@@ -141,7 +140,7 @@ export default function ProblemsPage() {
       difficultyFilter === "all" ||
       problem.difficulty.toLowerCase() === difficultyFilter;
 
-    const status = userProgress.get(problem.id)?.isSolved || "tod";
+    const status = problems.find((p) => p.id === problem.id)?.isSolved;
     const matchesStatus =
       statusFilter === "all" ||
       (statusFilter === "solved" && status === true) ||
@@ -212,6 +211,12 @@ export default function ProblemsPage() {
             >
               Grind AI
             </Link>
+            {/* <Link
+              to="/learning"
+              className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"
+            >
+              Learning
+            </Link> */}
             {/* <Link 
               to="/room" 
               className="px-4 py-2 rounded-full text-sm font-medium text-muted-foreground transition-all hover:bg-muted"
@@ -334,7 +339,7 @@ export default function ProblemsPage() {
                   <SelectValue placeholder="Tags" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Tags</SelectItem>
+                  <SelectItem value="all">Topics</SelectItem>
                   {uniqueTags.map((tag) => (
                     <SelectItem key={tag} value={tag}>
                       {tag}
@@ -354,7 +359,7 @@ export default function ProblemsPage() {
                   </TableHead>
                   <TableHead className="w-[100px]">Difficulty</TableHead>
                   <TableHead className="w-[100px]">Acceptance</TableHead>
-                  <TableHead className="hidden md:table-cell">Topic</TableHead>
+                  <TableHead className="hidden md:table-cell">Topics</TableHead>
                   <TableHead className="text-right w-[100px]">Action</TableHead>
                 </TableRow>
               </TableHeader>

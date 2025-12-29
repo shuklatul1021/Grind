@@ -496,6 +496,12 @@ export default function CompilerPage() {
             >
               Grind AI
             </Link>
+            {/* <Link
+              to="/learning"
+              className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"
+            >
+              Learning
+            </Link> */}
             <Link
               to="/premium"
               className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"

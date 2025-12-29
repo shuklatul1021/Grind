@@ -747,6 +747,7 @@ export default function GrindAIChat() {
                 }
 
                 if (data.error) {
+                  console.error("Error from Grind AI:", data.error);
                 }
               }
             }
@@ -1058,12 +1059,12 @@ export default function GrindAIChat() {
             >
               Grind AI
             </Link>
-            <Link
-              to="/pricing"
+            {/* <Link
+              to="/learning"
               className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"
             >
-              Pricing
-            </Link>
+              Learning
+            </Link> */}
             <Link
               to="/premium"
               className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"

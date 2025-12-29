@@ -39,6 +39,19 @@ import ShippingPolicy from "./pages/ShippingPolicy";
 import ContactUs from "./pages/ContactUs";
 import PremiumZone from "./pages/PremiumPage";
 import NotFound from "./pages/Not-Found";
+// import LearningPage from "./Learning/Learning";
+// import QuizPage from "./Learning/PracticeZone/Apptitude/Quiz";
+// import InterviewWorkspace from "./pages/InterviewPage";
+// import HrRoundPage from "./pages/HRRoundPage";
+// import PracticePage from "./Learning/PracticeZone/PracticePage";
+// import InterviewPreparationPage from "./Learning/InterviewPreparation/InterviewPreparation";
+// import ConceptLearningPage from "./Learning/ConceptLearning/ConceptLearning";
+// import CareerGrowthPage from "./Learning/CareerGrowth/CareerGrowth";
+// import ApptitudeSyllabus from "./Learning/PracticeZone/Apptitude/ApptitudeSyllabus";
+// import CodingPracticeSyllabus from "./Learning/PracticeZone/CodingPractice/CodingPracticeSyllabus";
+// import DSASyllabus from "./Learning/PracticeZone/DSA/DSA-Syllabus";
+// import LogicalReasoningSyllabus from "./Learning/PracticeZone/LogicalReasoning/LogicalReasoningSyllabus";
+// import CodingPracticesEditorPage from "./Learning/PracticeZone/CodingPractice/CodingPracticesWorkspace";
 
 function RequireAuth({ redirectTo = "/" }: { redirectTo?: string }) {
   const { authState } = useAuthentication();
@@ -105,6 +118,37 @@ function App() {
             <Route path="/contest" element={<ContestsPage />} />
             <Route path="/contest/:id" element={<ContestPage />} />
             <Route path="/grind-ai" element={<GrindAI />} />
+
+            {/* Learning Routes */}
+            {/* <Route path="/learning" element={<LearningPage />} /> */}
+              {/* Learning Practice */}
+                {/* <Route path="/learning/practice" element={<PracticePage />} />
+                <Route path="/learning/practice/aptitude" element={<ApptitudeSyllabus />} />
+                <Route path="/learning/practice/aptitude/topic" element={<QuizPage />} /> */}
+
+              {/* Coding Practice Syllabus */}
+                {/* <Route path="/learning/practice/coding" element={<CodingPracticeSyllabus />} />
+                <Route path="/learning/practice/coding/:slug" element={<CodingPracticesEditorPage />} /> */}
+
+              {/* DSA Syllabus */}
+                {/* <Route path="/learning/practice/dsa" element={<DSASyllabus />} /> */}
+
+              {/* Logical Reasoning Syllabus */}
+                {/* <Route path="/learning/practice/logical-reasoning" element={<LogicalReasoningSyllabus />} /> */}
+
+
+            {/* Learning Interview Preparation */}
+            {/* <Route path="/learning/interview" element={<InterviewPreparationPage />} /> */}
+            {/* Learning Concepts */}
+            {/* <Route path="/learning/concepts" element={<ConceptLearningPage />} /> */}
+            {/* Learning Career Growth */}
+            {/* <Route path="/learning/career" element={<CareerGrowthPage />} /> */}
+
+
+            {/* <Route path="/learning/quiz" element={<QuizPage />} />
+            <Route path="/learning/interview" element={<InterviewWorkspace />} />
+            <Route path="/learning/hr" element={<HrRoundPage />} /> */}
+
             <Route path="/premium/pricing" element={<PricingPage />} />
             <Route path="/premium" element={<PremiumZone />} />
             {/* <Route path="/room" element={<RoomsPage />} /> */}

@@ -15,11 +15,11 @@ import feedbackRouter from "./routes/FeedbackRoute.js";
 export const app = express();
 
 app.use(express.json())
-// app.use(cors({
-//     credentials: true,
-//     origin: ["https://www.grind.org.in"]
-// }));
-app.use(cors());
+app.use(cors({
+    credentials: true,
+    origin: ["https://www.grind.org.in"]
+}));
+// app.use(cors());
 app.use(MatricsesMiddleware)
 app.use(routeratelimiter);
    

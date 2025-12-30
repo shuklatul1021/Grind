@@ -1,5 +1,4 @@
 // import { Badge } from "@repo/ui/badge";
-// import { Button } from "@repo/ui/button";
 // import { Brain } from "lucide-react";
 // import { useNavigate } from "react-router-dom";
 
@@ -136,6 +135,7 @@
 
 // export default function ApptitudeSyllabus() {
 //   const navigate = useNavigate();
+  
 //   return (
 //     <div className="container py-12">
 //       <div className="flex items-center gap-4 mb-8">

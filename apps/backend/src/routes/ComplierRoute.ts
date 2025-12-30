@@ -109,7 +109,7 @@ compilerRouter.post(
 
         return res.status(200).json({
           success: true,
-          output,
+          output : `${output}\n✓ Code Execution Completed`,
           error,
           executionTime,
           language,

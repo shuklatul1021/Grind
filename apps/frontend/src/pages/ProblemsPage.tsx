@@ -56,6 +56,7 @@ export default function ProblemsPage() {
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
   const [problems, setProblems] = useState<Problem[]>([]);
+  const [solvedProblems, setSolvedProblems] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [difficultyFilter, setDifficultyFilter] = useState<string>("all");
@@ -105,6 +106,7 @@ export default function ProblemsPage() {
     if (response.ok) {
       const json = await response.json();
       setProblems(json.problems);
+      setSolvedProblems(json.solvedProblems || []);
       // setReduxProblems(setReduxProblems(json.problems));
     } else {
       toast({
@@ -165,14 +167,10 @@ export default function ProblemsPage() {
   // };
 
   const getStatusIcon = (problemId: string) => {
-    const progress = problems.find((p) => p.id === problemId);
-    if (progress?.isSolved === true) {
+    if (solvedProblems.includes(problemId)) {
       return <CheckCircle2 className="h-5 w-5 text-green-500" />;
     }
-    if (progress?.isSolved === false) {
-      return <Circle className="h-5 w-5 text-yellow-500" />;
-    }
-    return <Circle className="h-5 w-5 text-muted-foreground" />;
+    return <Circle className="h-5 w-5 text-yellow-500" />;
   };
 
   return (
@@ -251,13 +249,16 @@ export default function ProblemsPage() {
                       src={UserProfile?.user.avatar || ""}
                       alt="@user"
                     />
-                    <AvatarFallback>{UserProfile?.user.fullname?.[0] || "G"}</AvatarFallback>
+                    <AvatarFallback>
+                      {UserProfile?.user.fullname?.[0] || "G"}
+                    </AvatarFallback>
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-44">
                 <DropdownMenuItem onClick={() => navigate("/you")}>
-                  <UserIcon className="mr-2 h-4 w-4" />Profile
+                  <UserIcon className="mr-2 h-4 w-4" />
+                  Profile
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem

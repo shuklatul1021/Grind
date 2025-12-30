@@ -10,6 +10,10 @@ socket.on("connection", (ws) => {
   let shell: any = null;
   let commandProcess: any = null;
 
+  const RATE_LIMIT = 5; // max 5 'run' messages
+  const WINDOW_MS = 60 * 1000; // per 1 minute
+  let runTimestamps: number[] = [];
+
   function cleanup() {
     if (shell) shell.kill("SIGKILL");
     if (containerId) {
@@ -27,6 +31,20 @@ socket.on("connection", (ws) => {
       return;
     }
     if (data.type === "run") {
+      // Rate limiting logic
+      const now = Date.now();
+      runTimestamps = runTimestamps.filter((ts) => now - ts < WINDOW_MS);
+      if (runTimestamps.length >= RATE_LIMIT) {
+        ws.send(
+          JSON.stringify({
+            type: "error",
+            message: `Rate limit exceeded. Max ${RATE_LIMIT} runs per minute. Please wait.`,
+          })
+        );
+        return;
+      }
+      runTimestamps.push(now);
+
       const { code, language } = data;
       cleanup();
       const run = spawn("docker", [

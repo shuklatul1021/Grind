@@ -287,17 +287,13 @@ poblemsubmitRouter.post("/submitcode/:problemId", ComilerRateLimiter, UserAuthMi
         }
       }
 
-      await prisma.challenges.update({
-        where: { id: problemId },
-        data: {
-          isSolved: true,
-        },
-      })
-
       await prisma.user.update({
         where: { id: req.userId },
         data: {
-          problemsSolved : { increment : 1}
+          problemsSolved : { increment : 1},
+          SolvedProblem : {
+            push : problemId
+          }
         }
       })
 

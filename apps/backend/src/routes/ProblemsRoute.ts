@@ -6,6 +6,9 @@ const problemsRouter = Router();
 
 problemsRouter.get("/getproblems" , UserAuthMiddleware || AdminAuthMiddleware ,  async (req, res)=>{
     try{
+        const userId = req.userId;
+        const user = await prisma.user.findFirst({ where : { id : userId } , select : { SolvedProblem : true }});
+
         const GetProblems = await prisma.challenges.findMany({
             select : {
                 id : true,
@@ -14,7 +17,7 @@ problemsRouter.get("/getproblems" , UserAuthMiddleware || AdminAuthMiddleware , 
                 difficulty : true,
                 tags : true,
                 slug : true,
-                isSolved : true
+                isSolved : true,
             }
         });
         if(!GetProblems){
@@ -26,7 +29,8 @@ problemsRouter.get("/getproblems" , UserAuthMiddleware || AdminAuthMiddleware , 
         res.status(200).json({
             message : "Problems Fetched Successfully",
             success : true,
-            problems : GetProblems
+            problems : GetProblems,
+            solvedProblems : user?.SolvedProblem || []
         })
 
     }catch(e){

@@ -19,8 +19,7 @@ app.use(cors({
     credentials: true,
     origin: ["https://www.grind.org.in"]
 }));
-// app.use(cors());
-app.use(MatricsesMiddleware)
+app.use(MatricsesMiddleware) 
 app.use(routeratelimiter);
    
 app.use("/v1/api/user" , userAuthRouter);

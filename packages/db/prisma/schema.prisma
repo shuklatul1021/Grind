@@ -28,6 +28,8 @@ model User {
 
   contextsubmittion           ContestSubmittion[] 
 
+  SolvedProblem               String[]              
+
   AssistantMessage            ChatMessages[]
   CompileCode                 CompilerCodeHistory[]
   createdAt                   DateTime                    @default(now())

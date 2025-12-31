@@ -6,7 +6,6 @@ const problemsRouter = Router();
 
 problemsRouter.get(
   "/getproblems",
-  UserAuthMiddleware || AdminAuthMiddleware,
   async (req, res) => {
     try {
       const userId = req.userId;
@@ -51,7 +50,6 @@ problemsRouter.get(
 //NOTE : Add UserAuthMiddleware to verify token and get user info
 problemsRouter.get(
   "/getproblem/:slug",
-  UserAuthMiddleware || AdminAuthMiddleware,
   async (req, res) => {
     const { slug } = req.params;
     try {

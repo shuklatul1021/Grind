@@ -5,7 +5,7 @@ import { AdminAuthMiddleware } from "../middleware/admin.js";
 const contestRouter = Router();
 
 
-contestRouter.get("/getcontests" , UserAuthMiddleware || AdminAuthMiddleware , async (req, res)=>{
+contestRouter.get("/getcontests" , async (req, res)=>{
     try{
         const GetContests = await prisma.contest.findMany();
         if(!GetContests){
@@ -29,7 +29,7 @@ contestRouter.get("/getcontests" , UserAuthMiddleware || AdminAuthMiddleware , a
     }
 })
 
-contestRouter.get("/getcontest/:id" , UserAuthMiddleware || AdminAuthMiddleware , async (req, res)=>{
+contestRouter.get("/getcontest/:id" , async (req, res)=>{
     const { id } = req.params;
     try{
         const contest = await prisma.contest.findUnique({

@@ -165,7 +165,7 @@ function detectsInput(code: string, language: string): boolean {
   };
 
   const patterns = inputPatterns[language] || [];
-  return patterns.some((pattern) => pattern.test(code)) ;
+  return patterns.some((pattern) => pattern.test(code));
 }
 
 export default function CompilerPage() {
@@ -274,7 +274,11 @@ export default function CompilerPage() {
   };
 
   const CheckUserCode = () => {
-    if ((selectedLanguage === "go" || selectedLanguage === "rust") || detectsInput(code, selectedLanguage)) {
+    if (
+      selectedLanguage === "go" ||
+      selectedLanguage === "rust" ||
+      detectsInput(code, selectedLanguage)
+    ) {
       executeInputRequireCode();
     } else {
       executeCode(code, selectedLanguage, undefined);
@@ -837,6 +841,28 @@ export default function CompilerPage() {
             ></ins>
           </div>
         </div>
+
+        {/* Google AdSense Ad (official snippet) */}
+        <div className="my-8 flex justify-center">
+          <div>
+            {/* AdSense script should be loaded ONCE per page, ideally in index.html <head> or <body> */}
+            <ins
+              className="adsbygoogle"
+              style={{ display: "block" }}
+              data-ad-client="ca-pub-2699219088015803"
+              data-ad-slot="9372820844"
+              data-ad-format="auto"
+              data-full-width-responsive="true"
+            ></ins>
+          </div>
+        </div>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (adsbygoogle = window.adsbygoogle || []).push({});
+            `,
+          }}
+        />
       </main>
     </div>
   );

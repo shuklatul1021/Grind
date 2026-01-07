@@ -39,24 +39,54 @@ import ShippingPolicy from "./pages/ShippingPolicy";
 import ContactUs from "./pages/ContactUs";
 import PremiumZone from "./pages/PremiumPage";
 import NotFound from "./pages/Not-Found";
-// import LearningPage from "./Learning/Learning";
-// import QuizPage from "./Learning/PracticeZone/Apptitude/Quiz";
-// import InterviewWorkspace from "./pages/InterviewPage";
-// import HrRoundPage from "./pages/HRRoundPage";
-// import PracticePage from "./Learning/PracticeZone/PracticePage";
-// import InterviewPreparationPage from "./Learning/InterviewPreparation/InterviewPreparation";
-// import ConceptLearningPage from "./Learning/ConceptLearning/ConceptLearning";
-// import CareerGrowthPage from "./Learning/CareerGrowth/CareerGrowth";
-// import ApptitudeSyllabus from "./Learning/PracticeZone/Apptitude/ApptitudeSyllabus";
-// import CodingPracticeSyllabus from "./Learning/PracticeZone/CodingPractice/CodingPracticeSyllabus";
-// import DSASyllabus from "./Learning/PracticeZone/DSA/DSA-Syllabus";
-// import LogicalReasoningSyllabus from "./Learning/PracticeZone/LogicalReasoning/LogicalReasoningSyllabus";
-// import CodingPracticesEditorPage from "./Learning/PracticeZone/CodingPractice/CodingPracticesWorkspace";
+import { PrimiumResume } from "./premium/resume/Resume";
+import { ResumeAnalysisPage } from "./premium/resume/ResumeAnalysis";
+import LearningPage from "./Learning/Learning";
+import QuizPage from "./Learning/PracticeZone/Apptitude/Quiz";
+import HrRoundPage from "./pages/HRRoundPage";
+import PracticePage from "./Learning/PracticeZone/PracticePage";
+import InterviewPreparationPage from "./Learning/InterviewPreparation/InterviewPreparation";
+import ConceptLearningPage from "./Learning/ConceptLearning/ConceptLearning";
+import CareerGrowthPage from "./Learning/CareerGrowth/CareerGrowth";
+import ApptitudeSyllabus from "./Learning/PracticeZone/Apptitude/ApptitudeSyllabus";
+import TopicLearningPage from "./Learning/PracticeZone/Apptitude/TopicLearning";
+import CodingPracticeSyllabus from "./Learning/PracticeZone/CodingPractice/CodingPracticeSyllabus";
+import DSASyllabus from "./Learning/PracticeZone/DSA/DSA-Syllabus";
+import LogicalReasoningSyllabus from "./Learning/PracticeZone/LogicalReasoning/LogicalReasoningSyllabus";
+import CodingPracticesEditorPage from "./Learning/PracticeZone/CodingPractice/CodingPracticesWorkspace";
+import DSAInterviewPage from "./Learning/InterviewPreparation/DSAInterview";
+import HRBehavioralPage from "./Learning/InterviewPreparation/HRBehavioral";
+import DBMSPage from "./Learning/ConceptLearning/DBMSPage";
+import CSPage from "./Learning/ConceptLearning/CSPage";
+import OOPSPage from "./Learning/ConceptLearning/OOPSPage";
+import OSPage from "./Learning/ConceptLearning/OSPage";
+import NetworksPage from "./Learning/ConceptLearning/NetworksPage";
+import ComputerArchitecturePage from "./Learning/ConceptLearning/ComputerArchitecturePage";
+import ResumeBuildingPage from "./Learning/CareerGrowth/ResumeBuilding";
+import CareerGuidancePage from "./Learning/CareerGrowth/CareerGuidance";
+import { PremiumQuestions } from "./premium/PremiumQuestions/FaangQuation";
+import { PremiumWorkspace } from "./premium/PremiumQuestions/PremiumWorkspace";
+import ExclusiveContests from "./premium/ExclusiveContests/ExclusiveContestsPage";
+import InterviewPreparation from "./premium/InterviewPreparation/InterviewPreparation";
+import PersonalCompiler from "./premium/PersonalCompiler/VS-Code-Complier";
+import RoomsPage from "./pages/Room/RoomPage";
+import { PremiumDSANotes } from "./premium/DSA-Notes-Resources/PremiumDSANotes";
+import UserCodeArenaPage from "./pages/Room/ParticipateArena";
+import HostRoomPage from "./pages/Room/HostDashboard";
 
 function RequireAuth({ redirectTo = "/" }: { redirectTo?: string }) {
   const { authState } = useAuthentication();
   if (authState.loading)
-    return <div className="p-4">Checking authentication…</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <div className="text-lg font-medium text-muted-foreground">
+            Checking authentication…
+          </div>
+        </div>
+      </div>
+    );
   return authState.isAuthenticated ? (
     <Outlet />
   ) : (
@@ -76,10 +106,9 @@ function RequireAdminAuth({ redirectTo = "/" }: { redirectTo?: string }) {
 }
 
 function App() {
-  useEffect(()=>{
-    document.addEventListener('contextmenu', (e) => e.preventDefault());
-  },[])
-  
+  // useEffect(()=>{
+  //   document.addEventListener('contextmenu', (e) => e.preventDefault());
+  // },[])
 
   console.log(
     "%c⚠️ SECURITY WARNING ⚠️\n" +
@@ -118,40 +147,94 @@ function App() {
             <Route path="/contest" element={<ContestsPage />} />
             <Route path="/contest/:id" element={<ContestPage />} />
             <Route path="/grind-ai" element={<GrindAI />} />
+            <Route path="/room" element={<RoomsPage />} />
+            <Route path="/room/join" element={<UserCodeArenaPage />} />
+            <Route path="/room/create" element={<HostRoomPage />} />
+
 
             {/* Learning Routes */}
-            {/* <Route path="/learning" element={<LearningPage />} /> */}
+            <Route path="/learning" element={<LearningPage />} />
               {/* Learning Practice */}
-                {/* <Route path="/learning/practice" element={<PracticePage />} />
-                <Route path="/learning/practice/aptitude" element={<ApptitudeSyllabus />} />
-                <Route path="/learning/practice/aptitude/topic" element={<QuizPage />} /> */}
+                <Route path="/learning/practice" element={<PracticePage />} />
+                <Route path="/learning/practice/aptitude" element={<ApptitudeSyllabus />}/>
+                <Route path="/learning/practice/aptitude/topic" element={<TopicLearningPage />}/>
+                <Route path="/learning/practice/aptitude/topic/quiz" element={<QuizPage />} />
 
-              {/* Coding Practice Syllabus */}
-                {/* <Route path="/learning/practice/coding" element={<CodingPracticeSyllabus />} />
-                <Route path="/learning/practice/coding/:slug" element={<CodingPracticesEditorPage />} /> */}
+                {/* Coding Practice Syllabus */}
+                <Route path="/learning/practice/coding" element={<CodingPracticeSyllabus />} />
+                <Route path="/learning/practice/coding/:slug" element={<CodingPracticesEditorPage />}/>
 
-              {/* DSA Syllabus */}
-                {/* <Route path="/learning/practice/dsa" element={<DSASyllabus />} /> */}
+                {/* DSA Syllabus */}
+                <Route path="/learning/practice/dsa" element={<DSASyllabus />} />
 
-              {/* Logical Reasoning Syllabus */}
-                {/* <Route path="/learning/practice/logical-reasoning" element={<LogicalReasoningSyllabus />} /> */}
+                {/* Logical Reasoning Syllabus */}
+                <Route path="/learning/practice/logical-reasoning" element={<LogicalReasoningSyllabus />} />
 
 
-            {/* Learning Interview Preparation */}
-            {/* <Route path="/learning/interview" element={<InterviewPreparationPage />} /> */}
-            {/* Learning Concepts */}
-            {/* <Route path="/learning/concepts" element={<ConceptLearningPage />} /> */}
+              {/* Learning Interview Preparation */}
+                <Route path="/learning/interview" element={<InterviewPreparationPage />} />
+                <Route path="/learning/interview/dsa" element={<DSAInterviewPage />}/>
+                <Route path="/learning/interview/hr" element={<HRBehavioralPage />} />
+
+
+              {/* Learning Concepts */}
+                <Route path="/learning/concepts" element={<ConceptLearningPage />} />
+                <Route path="/learning/concepts/cs" element={<CSPage />} />
+                <Route path="/learning/concepts/oops" element={<OOPSPage />} />
+                <Route path="/learning/concepts/dbms" element={<DBMSPage />} />
+                <Route path="/learning/concepts/os" element={<OSPage />} />
+                <Route path="/learning/concepts/networks" element={<NetworksPage />} />
+                <Route path="/learning/concepts/computer-architecture" element={<ComputerArchitecturePage />} />
+
+
             {/* Learning Career Growth */}
-            {/* <Route path="/learning/career" element={<CareerGrowthPage />} /> */}
+            <Route path="/learning/career" element={<CareerGrowthPage />} />
+            <Route
+              path="/learning/career/resume"
+              element={<ResumeBuildingPage />}
+            />
+            <Route
+              path="/learning/career/guidance"
+              element={<CareerGuidancePage />}
+            />
 
+            <Route path="/learning/quiz" element={<QuizPage />} />
+            <Route
+              path="/learning/interview"
+              element={<InterviewPreparationPage />}
+            />
+            <Route path="/learning/hr" element={<HrRoundPage />} />
 
-            {/* <Route path="/learning/quiz" element={<QuizPage />} />
-            <Route path="/learning/interview" element={<InterviewWorkspace />} />
-            <Route path="/learning/hr" element={<HrRoundPage />} /> */}
-
+            {/* Premium Routes */}
             <Route path="/premium/pricing" element={<PricingPage />} />
             <Route path="/premium" element={<PremiumZone />} />
-            {/* <Route path="/room" element={<RoomsPage />} /> */}
+            <Route path="/premium/resume" element={<PrimiumResume />} />
+            <Route
+              path="/premium/resume/analyze"
+              element={<ResumeAnalysisPage />}
+            />
+            <Route path="/premium/dsa-notes" element={<PremiumDSANotes />} />
+            <Route
+              path="/premium/premium-questions"
+              element={<PremiumQuestions />}
+            />
+            <Route
+              path="/premium/premium-questions/workspace"
+              element={<PremiumWorkspace />}
+            />
+            <Route
+              path="/premium/exclusive-contests"
+              element={<ExclusiveContests />}
+            />
+            <Route
+              path="/premium/interview-prep"
+              element={<InterviewPreparation />}
+            />
+            <Route
+              path="/premium/personal-compiler"
+              element={<PersonalCompiler />}
+            />
+
             <Route path="/you" element={<ProfilePage />} />
             <Route path="/grind-ai/c/:id" element={<GrindAIChat />} />
           </Route>

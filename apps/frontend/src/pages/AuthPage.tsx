@@ -68,21 +68,28 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-background to-background/80 dark:from-background dark:via-background dark:to-background flex flex-col">
-      <header className="border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-16 items-center justify-between px-4">
+    <div className="min-h-screen bg-[#050505] flex flex-col relative overflow-hidden">
+      {/* Background Gradients */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-zinc-900/50 via-[#050505] to-[#050505]" />
+      <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:60px_60px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_70%,transparent_100%)]" />
+      <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-96 h-96 bg-primary/10 rounded-full blur-3xl opacity-30" />
+
+      <header className="fixed top-0 left-0 right-0 z-50 border-b border-border/40 bg-background/80 backdrop-blur-xl">
+        <div className="container mx-auto px-4 h-16 flex items-center justify-between max-w-7xl">
           <div
-            className="flex cursor-pointer items-center gap-2"
+            className="flex items-center gap-2 font-bold text-lg tracking-tight cursor-pointer hover:opacity-80 transition-opacity"
             onClick={() => navigate("/")}
           >
-            <SquareChevronRight className="h-6 w-6" />
-            <span className="text-xl font-bold">Grind</span>
+            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary text-primary-foreground">
+              <SquareChevronRight className="h-5 w-5" />
+            </div>
+            <span>Grind</span>
           </div>
           <Button
             variant="ghost"
             size="icon"
             onClick={toggleTheme}
-            className="rounded-full"
+            className="rounded-full hover:bg-muted"
           >
             {theme === "dark" ? (
               <Sun className="h-5 w-5" />
@@ -93,35 +100,30 @@ export default function AuthPage() {
         </div>
       </header>
 
-      <main className="flex flex-1 items-center justify-center px-4 py-12">
-        <div className="w-full max-w-md mx-auto bg-white/90 dark:bg-background/80 rounded-2xl shadow-xl p-8 border border-border">
-          <div className="mb-8 text-center">
-            <h1 className="text-4xl font-extrabold tracking-tight text-gray-900 dark:text-white">
-              Welcome Back
+      <main className="flex-1 flex items-center justify-center px-4 py-20 relative z-10">
+        <div className="w-full max-w-md">
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold tracking-tight mb-2">
+              Welcome back
             </h1>
-            <p className="mt-2 text-base text-muted-foreground">
-              Sign up to continue your coding journey
+            <p className="text-muted-foreground">
+              Enter your email to sign in to your account
             </p>
           </div>
 
-          <Card className="border-none shadow-none bg-transparent">
-            <CardHeader className="p-0 mb-4">
-              <CardTitle className="text-2xl font-bold">Sign Up</CardTitle>
-              <CardDescription className="text-base">
-                Enter your email to access your account
+          <Card className="border-border/40 bg-card/50 backdrop-blur-xl shadow-2xl">
+            <CardHeader className="text-center">
+              <CardTitle>Sign In</CardTitle>
+              <CardDescription>
+                We'll send you a verification code to get started.
               </CardDescription>
             </CardHeader>
-            <CardContent className="p-0">
-              <form onSubmit={handleSignIn} className="space-y-6">
+            <CardContent>
+              <form onSubmit={handleSignIn} className="space-y-4">
                 <div className="space-y-2">
-                  <Label
-                    htmlFor="signin-email"
-                    className="text-base font-medium"
-                  >
-                    Email
-                  </Label>
+                  <Label htmlFor="email">Email</Label>
                   <Input
-                    id="signin-email"
+                    id="email"
                     type="email"
                     placeholder="name@example.com"
                     value={signInData.email}
@@ -129,18 +131,14 @@ export default function AuthPage() {
                       setSignInData({ ...signInData, email: e.target.value })
                     }
                     required
-                    className="h-12 px-4 text-base rounded-lg border-2 border-border focus:ring-2 focus:ring-primary transition-all duration-150"
+                    className="bg-background/50 border-border/40 focus:border-primary/50 transition-colors"
                   />
                 </div>
-                <Button
-                  type="submit"
-                  className="w-full h-12 text-lg font-semibold shadow-md"
-                  disabled={loading}
-                >
+                <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Sending Verification Code...
+                      Sending code...
                     </>
                   ) : (
                     <>
@@ -153,13 +151,13 @@ export default function AuthPage() {
             </CardContent>
           </Card>
 
-          <p className="mt-8 text-center text-xs text-muted-foreground">
-            By continuing, you agree to our{" "}<br/>
-            <a href="/terms-and-conditions" className="underline">
+          <p className="mt-8 text-center text-xs text-muted-foreground px-8">
+            By clicking continue, you agree to our <br />
+            <a href="/terms" className="underline hover:text-primary">
               Terms of Service
             </a>{" "}
             and{" "}
-            <a href="/privacy-policy" className="underline">
+            <a href="/privacy" className="underline hover:text-primary">
               Privacy Policy
             </a>
             .

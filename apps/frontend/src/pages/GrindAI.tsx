@@ -293,12 +293,12 @@ export default function GrindAI() {
       <header className="sticky top-0 z-50 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center justify-between px-4">
           <div
-            className="flex cursor-pointer items-center gap-2"
+            className="flex cursor-pointer items-center gap-2 ml-6"
             onClick={() => navigate("/")}
           >
             <SquareChevronRight className="h-6 w-6" />
             <span className="text-xl font-bold">Grind</span>
-          </div>
+          </div> 
           <div className="flex items-center gap-2">
             <Link
               to="/problems"
@@ -324,18 +324,18 @@ export default function GrindAI() {
             >
               Grind AI
             </Link>
-              {/* <Link
+              <Link
               to="/learning"
               className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"
             >
               Learning
-            </Link> */}
-            {/* <Link 
+            </Link>
+            <Link 
               to="/room" 
               className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"
             >
               Rooms
-            </Link> */}
+            </Link>
             <Link
               to="/premium"
               className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"
@@ -393,9 +393,6 @@ export default function GrindAI() {
         >
           <div className="p-4 border-b border-border/40">
             <div className="flex items-center gap-2 mb-4">
-              <div className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-500/20 to-cyan-500/20 flex items-center justify-center">
-                <SquareChevronRight className="h-4 w-4 text-blue-500" />
-              </div>
               <div className="text-left">
                 <div className="font-bold text-sm">Grind AI</div>
                 <div className="text-xs text-muted-foreground">
@@ -708,7 +705,7 @@ export default function GrindAI() {
             )}
           </ScrollArea>
 
-          <div className="border-t border-border/40 bg-background/95 backdrop-blur p-4">
+
             <div className="max-w-4xl mx-auto">
               <div className="relative flex items-center gap-1 h-[100px]">
                 <Input
@@ -717,7 +714,7 @@ export default function GrindAI() {
                   onChange={(e) => setInput(e.target.value)}
                   onKeyPress={handleKeyPress}
                   placeholder="Ask Grind AI anything about coding..."
-                  className="pr-12 h-[90px] text-base rounded-xl pb-[45px]"
+                  className="pr-12 h-[90px] w-screen text-base rounded-xl pb-[45px]"
                   disabled={isLoading}
                 />
                 <Button
@@ -738,7 +735,6 @@ export default function GrindAI() {
                 information.
               </p>
             </div>
-          </div>
         </div>
       </div>
     </div>

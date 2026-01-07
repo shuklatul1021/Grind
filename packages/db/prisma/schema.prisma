@@ -173,6 +173,80 @@ model UserFeedback {
   createdAt                   DateTime                        @default(now())
 }
 
+model LearningCategory {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  slug        String   @unique
+  description String?
+  order       Int?
+
+  modules     LearningModule[]
+
+  createdAt   DateTime @default(now())
+}
+
+model LearningModule {
+  id          String   @id @default(uuid())
+  categoryId  String
+  title       String
+  slug        String   @unique
+  description String?
+  icon        String?
+  order       Int?
+
+  category    LearningCategory @relation(fields: [categoryId], references: [id])
+  sections    LearningSection[]
+
+  createdAt   DateTime @default(now())
+}
+
+model LearningSection {
+  id        String   @id @default(uuid())
+  moduleId String
+  title     String
+  order     Int?
+
+  module    LearningModule @relation(fields: [moduleId], references: [id])
+  topics    LearningTopic[]
+
+  createdAt DateTime @default(now())
+}
+
+model LearningTopic {
+  id          String   @id @default(uuid())
+  sectionId  String
+  title       String
+  slug        String   @unique
+  description String?
+  difficulty  DifficultyLevel?
+  order       Int?
+
+  section     LearningSection @relation(fields: [sectionId], references: [id])
+  contents    LearningContent[]
+  challenges  LearningTopicChallenge[]
+
+  createdAt   DateTime @default(now())
+}
+
+model LearningContent {
+  id        String   @id @default(uuid())
+  topicId  String
+  type      ContentType
+  title     String
+  body      String   // Markdown / HTML
+  duration  Int?
+
+  topic     LearningTopic @relation(fields: [topicId], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+enum ContentType {
+  ARTICLE
+  NOTE
+  VIDEO
+}
+
 
 enum DifficultyLevel {
   HARD

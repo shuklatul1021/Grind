@@ -287,15 +287,26 @@ poblemsubmitRouter.post("/submitcode/:problemId", ComilerRateLimiter, UserAuthMi
         }
       }
 
-      await prisma.user.update({
+      const GetUserSolvedProblems = await prisma.user.findFirst({
         where: { id: req.userId },
-        data: {
-          problemsSolved : { increment : 1},
-          SolvedProblem : {
-            push : problemId
+        select: { SolvedProblem: true },
+      });
+
+      const IsProblemAlreadySolved = GetUserSolvedProblems?.SolvedProblem.includes(
+        problemId
+      );
+
+      if(!IsProblemAlreadySolved){
+         await prisma.user.update({
+          where: { id: req.userId },
+          data: {
+            problemsSolved : { increment : 1},
+            SolvedProblem : {
+              push : problemId
+            }
           }
-        }
-      })
+        })
+      }
 
       return res.status(200).json({
         message: "Code Execution Completed Successfully",

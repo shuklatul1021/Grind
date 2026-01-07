@@ -1,18 +1,24 @@
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { Button } from '@repo/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@repo/ui/card';
-import { Input } from '@repo/ui/input';
-import { Label } from '@repo/ui/label';
-import { Textarea } from '@repo/ui/textarea';
+import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { Button } from "@repo/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@repo/ui/card";
+import { Input } from "@repo/ui/input";
+import { Label } from "@repo/ui/label";
+import { Textarea } from "@repo/ui/textarea";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@repo/ui/select';
-import { useTheme } from '../contexts/ThemeContext';
+} from "@repo/ui/select";
+import { useTheme } from "../../contexts/ThemeContext";
 import {
   SquareChevronRight,
   Sun,
@@ -23,28 +29,37 @@ import {
   Lock,
   Globe,
   Clock,
-  Code
-} from 'lucide-react';
+  Code,
+  UserIcon,
+} from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@repo/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@repo/ui/avatar";
 
 export default function RoomsPage() {
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
-  const [activeTab, setActiveTab] = useState<'create' | 'join'>('join');
+  const [activeTab, setActiveTab] = useState<"create" | "join">("join");
 
   // Create Room State
-  const [roomName, setRoomName] = useState('');
-  const [roomDescription, setRoomDescription] = useState('');
-  const [maxParticipants, setMaxParticipants] = useState('10');
-  const [difficulty, setDifficulty] = useState('medium');
-  const [duration, setDuration] = useState('60');
+  const [roomName, setRoomName] = useState("");
+  const [roomDescription, setRoomDescription] = useState("");
+  const [maxParticipants, setMaxParticipants] = useState("10");
+  const [difficulty, setDifficulty] = useState("medium");
+  const [duration, setDuration] = useState("60");
   const [isPrivate, setIsPrivate] = useState(false);
-  const [selectedProblem, setSelectedProblem] = useState('');
+  const [selectedProblem, setSelectedProblem] = useState("");
 
   // Join Room State
-  const [roomCode, setRoomCode] = useState('');
+  const [roomCode, setRoomCode] = useState("");
 
   const handleSignOut = () => {
-    navigate('/auth');
+    navigate("/auth");
   };
 
   const handleCreateRoom = async (e: React.FormEvent) => {
@@ -57,7 +72,7 @@ export default function RoomsPage() {
       difficulty,
       duration,
       isPrivate,
-      selectedProblem
+      selectedProblem,
     });
   };
 
@@ -69,52 +84,57 @@ export default function RoomsPage() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Header */}
       <header className="sticky top-0 z-50 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-16 items-center justify-between px-4">
+        <div className="flex h-16 items-center justify-between px-6 max-w-[1600px] mx-auto">
           <div
-            className="flex cursor-pointer items-center gap-2"
-            onClick={() => navigate('/')}
+            className="flex cursor-pointer items-center gap-2 ml-6"
+            onClick={() => navigate("/")}
           >
             <SquareChevronRight className="h-6 w-6" />
             <span className="text-xl font-bold">Grind</span>
           </div>
           <div className="flex items-center gap-2">
-            <Link 
-              to="/problems" 
-              className="px-4 py-2 rounded-full text-sm font-medium text-muted-foreground transition-all hover:bg-muted"
+            <Link
+              to="/problems"
+              className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"
             >
               Problems
             </Link>
-            <Link 
-              to="/contest" 
-              className="px-4 py-2 rounded-full text-sm font-medium text-muted-foreground transition-all hover:bg-muted"
+            <Link
+              to="/contest"
+              className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"
             >
               Contest
             </Link>
-            <Link 
-              to="/compiler" 
-              className="px-4 py-2 rounded-full text-sm font-medium text-muted-foreground transition-all hover:bg-muted"
+            <Link
+              to="/compiler"
+              className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"
             >
               Compiler
             </Link>
-            <Link 
-              to="/grind-ai" 
-              className="px-4 py-2 rounded-full text-sm font-medium text-muted-foreground transition-all hover:bg-muted"
+            <Link
+              to="/grind-ai"
+              className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"
             >
               Grind AI
             </Link>
-            <Link 
-              to="/room" 
-              className="px-4 py-2 rounded-full bg-blue-500 text-white text-sm font-medium transition-all hover:bg-blue-600 hover:text-white"
+            <Link
+              to="/learning"
+              className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"
+            >
+              Learning
+            </Link>
+            <Link
+              to="/room"
+              className="px-4 py-2 rounded-full bg-blue-500 text-white text-base font-medium transition-all hover:bg-blue-600 hover:text-white"
             >
               Rooms
             </Link>
-            <Link 
-              to="/you" 
-              className="px-4 py-2 rounded-full text-sm font-medium text-muted-foreground transition-all hover:bg-muted"
+            <Link
+              to="/premium"
+              className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"
             >
-              Profile
+              Premium
             </Link>
           </div>
           <div className="flex items-center gap-4">
@@ -124,12 +144,35 @@ export default function RoomsPage() {
               onClick={toggleTheme}
               className="rounded-full"
             >
-              {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+              {theme === "dark" ? (
+                <Sun className="h-5 w-5" />
+              ) : (
+                <Moon className="h-5 w-5" />
+              )}
             </Button>
-            <Button variant="ghost" onClick={handleSignOut}>
-              <LogOut className="mr-2 h-4 w-4" />
-              Sign Out
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="rounded-full">
+                  <Avatar>
+                    <AvatarImage src={""} alt="@user" />
+                    <AvatarFallback>{"G"}</AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-44">
+                <DropdownMenuItem onClick={() => navigate("/you")}>
+                  <UserIcon className="mr-2 h-4 w-4" />
+                  Profile
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={handleSignOut}
+                  className="text-red-600 focus:text-red-700"
+                >
+                  <LogOut className="mr-2 h-4 w-4" /> Sign Out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </header>
@@ -142,27 +185,29 @@ export default function RoomsPage() {
             <h1 className="text-4xl font-bold mb-4">
               Coding
               <span className="bg-gradient-to-r from-blue-500 to-cyan-500 bg-clip-text text-transparent">
-                {' '}Rooms
+                {" "}
+                Rooms
               </span>
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Create private coding rooms with custom problems or join existing rooms to compete with other developers
+              Create private coding rooms with custom problems or join existing
+              rooms to compete with other developers
             </p>
           </div>
 
           {/* Tab Buttons */}
           <div className="flex justify-center gap-4 mb-8">
             <Button
-              variant={activeTab === 'join' ? 'default' : 'outline'}
-              onClick={() => setActiveTab('join')}
+              variant={activeTab === "join" ? "default" : "outline"}
+              onClick={() => setActiveTab("join")}
               className="px-8"
             >
               <Users className="mr-2 h-4 w-4" />
               Join Room
             </Button>
             <Button
-              variant={activeTab === 'create' ? 'default' : 'outline'}
-              onClick={() => setActiveTab('create')}
+              variant={activeTab === "create" ? "default" : "outline"}
+              onClick={() => setActiveTab("create")}
               className="px-8"
             >
               <Plus className="mr-2 h-4 w-4" />
@@ -172,7 +217,7 @@ export default function RoomsPage() {
 
           {/* Content Area */}
           <div className="max-w-2xl mx-auto">
-            {activeTab === 'join' ? (
+            {activeTab === "join" ? (
               // Join Room Card
               <Card className="border-border/40 bg-card/50 backdrop-blur">
                 <CardHeader>
@@ -181,7 +226,8 @@ export default function RoomsPage() {
                     Join a Room
                   </CardTitle>
                   <CardDescription>
-                    Enter the room code shared by the host to join an active coding session
+                    Enter the room code shared by the host to join an active
+                    coding session
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -192,7 +238,9 @@ export default function RoomsPage() {
                         id="roomCode"
                         placeholder="Enter 6-digit room code (e.g., ABC123)"
                         value={roomCode}
-                        onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
+                        onChange={(e) =>
+                          setRoomCode(e.target.value.toUpperCase())
+                        }
                         maxLength={6}
                         className="text-center text-2xl font-mono tracking-widest"
                         required
@@ -202,7 +250,7 @@ export default function RoomsPage() {
                       </p>
                     </div>
 
-                    <Button type="submit" className="w-full" size="lg">
+                    <Button type="submit" className="w-full" size="lg" onClick={()=>navigate("join")}>
                       <Users className="mr-2 h-4 w-4" />
                       Join Room
                     </Button>
@@ -261,16 +309,28 @@ export default function RoomsPage() {
                     {/* Select Problem */}
                     <div className="space-y-2">
                       <Label htmlFor="problem">Select Problem *</Label>
-                      <Select value={selectedProblem} onValueChange={setSelectedProblem} required>
+                      <Select
+                        value={selectedProblem}
+                        onValueChange={setSelectedProblem}
+                        required
+                      >
                         <SelectTrigger>
                           <SelectValue placeholder="Choose a problem" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="two-sum">Two Sum</SelectItem>
-                          <SelectItem value="reverse-string">Reverse String</SelectItem>
-                          <SelectItem value="valid-parentheses">Valid Parentheses</SelectItem>
-                          <SelectItem value="merge-sorted-arrays">Merge Sorted Arrays</SelectItem>
-                          <SelectItem value="binary-search">Binary Search</SelectItem>
+                          <SelectItem value="reverse-string">
+                            Reverse String
+                          </SelectItem>
+                          <SelectItem value="valid-parentheses">
+                            Valid Parentheses
+                          </SelectItem>
+                          <SelectItem value="merge-sorted-arrays">
+                            Merge Sorted Arrays
+                          </SelectItem>
+                          <SelectItem value="binary-search">
+                            Binary Search
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -280,7 +340,10 @@ export default function RoomsPage() {
                       {/* Difficulty */}
                       <div className="space-y-2">
                         <Label htmlFor="difficulty">Difficulty</Label>
-                        <Select value={difficulty} onValueChange={setDifficulty}>
+                        <Select
+                          value={difficulty}
+                          onValueChange={setDifficulty}
+                        >
                           <SelectTrigger>
                             <SelectValue />
                           </SelectTrigger>
@@ -294,8 +357,13 @@ export default function RoomsPage() {
 
                       {/* Max Participants */}
                       <div className="space-y-2">
-                        <Label htmlFor="maxParticipants">Max Participants</Label>
-                        <Select value={maxParticipants} onValueChange={setMaxParticipants}>
+                        <Label htmlFor="maxParticipants">
+                          Max Participants
+                        </Label>
+                        <Select
+                          value={maxParticipants}
+                          onValueChange={setMaxParticipants}
+                        >
                           <SelectTrigger>
                             <SelectValue />
                           </SelectTrigger>
@@ -311,7 +379,10 @@ export default function RoomsPage() {
 
                     {/* Duration */}
                     <div className="space-y-2">
-                      <Label htmlFor="duration" className="flex items-center gap-2">
+                      <Label
+                        htmlFor="duration"
+                        className="flex items-center gap-2"
+                      >
                         <Clock className="h-4 w-4" />
                         Duration (minutes)
                       </Label>
@@ -338,13 +409,12 @@ export default function RoomsPage() {
                         )}
                         <div>
                           <Label className="text-base">
-                            {isPrivate ? 'Private Room' : 'Public Room'}
+                            {isPrivate ? "Private Room" : "Public Room"}
                           </Label>
                           <p className="text-xs text-muted-foreground">
-                            {isPrivate 
-                              ? 'Only users with the code can join' 
-                              : 'Anyone can discover and join'
-                            }
+                            {isPrivate
+                              ? "Only users with the code can join"
+                              : "Anyone can discover and join"}
                           </p>
                         </div>
                       </div>
@@ -354,11 +424,11 @@ export default function RoomsPage() {
                         size="sm"
                         onClick={() => setIsPrivate(!isPrivate)}
                       >
-                        {isPrivate ? 'Make Public' : 'Make Private'}
+                        {isPrivate ? "Make Public" : "Make Private"}
                       </Button>
                     </div>
 
-                    <Button type="submit" className="w-full" size="lg">
+                    <Button type="submit" className="w-full" size="lg" onClick={()=> navigate("create")}>
                       <Plus className="mr-2 h-4 w-4" />
                       Create Room
                     </Button>

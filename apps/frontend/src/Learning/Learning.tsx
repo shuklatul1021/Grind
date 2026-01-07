@@ -69,8 +69,7 @@ const LEARNING_MODULES = [
     type: "Career",
     tags: ["HR", "Resume", "Soft Skills"],
     status: "completed",
-    description:
-      "Improve communication, HR skills, and career readiness.",
+    description: "Improve communication, HR skills, and career readiness.",
     link: "/learning/career",
   },
 ];
@@ -92,11 +91,9 @@ export default function LearningPage() {
         tag.toLowerCase().includes(searchQuery.toLowerCase())
       );
 
-    const matchesType =
-      typeFilter === "all" || mod.type === typeFilter;
+    const matchesType = typeFilter === "all" || mod.type === typeFilter;
 
-    const matchesStatus =
-      statusFilter === "all" || mod.status === statusFilter;
+    const matchesStatus = statusFilter === "all" || mod.status === statusFilter;
 
     return matchesSearch && matchesType && matchesStatus;
   });
@@ -112,8 +109,8 @@ export default function LearningPage() {
   return (
     <div className="min-h-screen bg-background">
       {/* HEADER */}
-      <header className="sticky top-0 z-50 border-b bg-background/90 backdrop-blur">
-        <div className="container flex h-16 items-center justify-between">
+      <header className="sticky top-0 z-50 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="max-w-[1800px] mx-auto flex h-16 items-center justify-between px-6">
           <div
             className="flex items-center gap-2 cursor-pointer"
             onClick={() => navigate("/")}
@@ -122,7 +119,7 @@ export default function LearningPage() {
             <span className="text-xl font-bold">Grind</span>
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2">
             <Link
               to="/problems"
               className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"
@@ -153,12 +150,12 @@ export default function LearningPage() {
             >
               Learning
             </Link>
-            {/* <Link 
-              to="/room" 
-              className="px-4 py-2 rounded-full text-sm font-medium text-muted-foreground transition-all hover:bg-muted"
+            <Link
+              to="/room"
+              className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"
             >
               Rooms
-            </Link> */}
+            </Link>
             <Link
               to="/premium"
               className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"
@@ -183,31 +180,36 @@ export default function LearningPage() {
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <Avatar>
-                    <AvatarImage src={UserProfile.user.avatar || ""} />
+                <Button
+                  variant="ghost"
+                  className="relative h-10 w-10 rounded-full"
+                >
+                  <Avatar className="h-10 w-10">
+                    <AvatarImage
+                      src={UserProfile.profilePicture}
+                      alt={UserProfile.username}
+                    />
                     <AvatarFallback>
-                      {"G"}
+                      <UserIcon className="h-5 w-5" />
                     </AvatarFallback>
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
 
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => navigate("/you")}>
+              <DropdownMenuContent className="w-56" align="end">
+                <DropdownMenuItem onClick={() => navigate("/profile")}>
                   <UserIcon className="mr-2 h-4 w-4" />
                   Profile
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
-                  className="text-red-600"
                   onClick={() => {
                     localStorage.removeItem("token");
-                    navigate("/");
+                    navigate("/auth");
                   }}
                 >
                   <LogOut className="mr-2 h-4 w-4" />
-                  Sign Out
+                  Sign out
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -216,10 +218,11 @@ export default function LearningPage() {
       </header>
 
       {/* MAIN */}
-      <main className="container py-8">
+      <main className="max-w-[1800px] mx-auto px-6 py-8">
         <h1 className="text-3xl font-bold">Learning Hub</h1>
         <p className="text-muted-foreground mt-1">
-          Practice, learn concepts, prepare for interviews, and grow your career.
+          Practice, learn concepts, prepare for interviews, and grow your
+          career.
         </p>
 
         {/* Filters */}

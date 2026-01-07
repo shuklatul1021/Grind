@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { updateSEO, seoConfigs } from "../utils/seo";
 import { Button } from "@repo/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@repo/ui/avatar";
 import {
@@ -70,6 +71,7 @@ export default function ProblemsPage() {
   ).sort();
 
   useEffect(() => {
+    updateSEO(seoConfigs.problems);
     getuserDetails();
     fetchProblems();
   }, [navigate]);
@@ -176,9 +178,9 @@ export default function ProblemsPage() {
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-50 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-16 items-center justify-between px-4">
+        <div className="flex h-16 items-center justify-between px-6 max-w-[1600px] mx-auto">
           <div
-            className="flex cursor-pointer items-center gap-2"
+            className="flex cursor-pointer items-center gap-2 ml-6"
             onClick={() => navigate("/")}
           >
             <SquareChevronRight className="h-6 w-6" />
@@ -209,18 +211,18 @@ export default function ProblemsPage() {
             >
               Grind AI
             </Link>
-            {/* <Link
+            <Link
               to="/learning"
               className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"
             >
               Learning
-            </Link> */}
-            {/* <Link 
+            </Link>
+            <Link 
               to="/room" 
               className="px-4 py-2 rounded-full text-sm font-medium text-muted-foreground transition-all hover:bg-muted"
             >
               Rooms
-            </Link> */}
+            </Link>
             <Link
               to="/premium"
               className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"
@@ -273,7 +275,7 @@ export default function ProblemsPage() {
         </div>
       </header>
 
-      <main className="container px-4 py-8">
+      <main className="px-6 py-8 max-w-[1600px] mx-auto">
         <div className="flex flex-col gap-6">
           {/* Title Section */}
           <div className="flex flex-col gap-2">

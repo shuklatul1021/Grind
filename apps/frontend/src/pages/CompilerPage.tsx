@@ -27,6 +27,8 @@ import {
   Code2,
   ChevronLeft,
   UserIcon,
+  Clock,
+  Filter,
 } from "lucide-react";
 import { useTheme } from "../contexts/ThemeContext";
 import { BACKENDURL, WEBSOCKETURL } from "../utils/urls";
@@ -42,6 +44,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@repo/ui/avatar";
 import type { RootState } from "../state/ReduxStateProvider";
 import { useSelector } from "react-redux";
+import { updateSEO, seoConfigs } from "../utils/seo";
 
 const LANGUAGES = [
   { value: "javascript", label: "JavaScript", version: "Node.js 18.x" },
@@ -52,6 +55,13 @@ const LANGUAGES = [
   { value: "typescript", label: "TypeScript", version: "5.x" },
   { value: "go", label: "Go", version: "1.21.x" },
   { value: "rust", label: "Rust", version: "1.75.x" },
+];
+
+const TIME_FILTERS = [
+  { value: "all", label: "All Time" },
+  { value: "today", label: "Today" },
+  { value: "week", label: "This Week" },
+  { value: "month", label: "This Month" },
 ];
 
 const DEFAULT_CODE = {
@@ -183,6 +193,36 @@ export default function CompilerPage() {
   const [waitingForInput, setWaitingForInput] = useState(false);
   const [wsConnection, setWsConnection] = useState<WebSocket | null>(null);
   const UserProfile = useSelector((state: RootState) => state.userDetails);
+  const [filterLanguage, setFilterLanguage] = useState("all");
+  const [filterTime, setFilterTime] = useState("all");
+
+  const filteredHistory = codeHistory.filter((item) => {
+    const matchesLanguage =
+      filterLanguage === "all" || item.language === filterLanguage;
+
+    let matchesTime = true;
+    if (filterTime !== "all") {
+      const itemDate = new Date(item.createdAt);
+      const now = new Date();
+
+      if (filterTime === "today") {
+        matchesTime = itemDate.toDateString() === now.toDateString();
+      } else if (filterTime === "week") {
+        const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        matchesTime = itemDate >= oneWeekAgo;
+      } else if (filterTime === "month") {
+        const oneMonthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        matchesTime = itemDate >= oneMonthAgo;
+      }
+    }
+
+    return matchesLanguage && matchesTime;
+  });
+
+  // SEO Optimization
+  useEffect(() => {
+    updateSEO(seoConfigs.compiler);
+  }, []);
 
   useEffect(() => {
     try {
@@ -396,36 +436,32 @@ export default function CompilerPage() {
     if (item.output) {
       setOutput(item.output);
     }
+    setIsSidebarOpen(false);
   };
 
   const formatTimeAgo = (date: Date | string) => {
+    if (!date) return "";
     const dateObj = typeof date === "string" ? new Date(date) : date;
-    const now = new Date().getTime();
-    const timestamp = dateObj.getTime();
+    if (isNaN(dateObj.getTime())) return "";
 
-    if (isNaN(timestamp)) return "Unknown";
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - dateObj.getTime()) / 1000);
 
-    const seconds = Math.floor((now - timestamp) / 1000);
+    if (diffInSeconds < 60) return "Just now";
 
-    if (seconds < 60) return "Just now";
+    const diffInMinutes = Math.floor(diffInSeconds / 60);
+    if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
 
-    const minutes = Math.floor(seconds / 60);
-    if (minutes < 60) return `${minutes}m ago`;
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    if (diffInHours < 24) return `${diffInHours}h ago`;
 
-    const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `${hours}h ago`;
+    const diffInDays = Math.floor(diffInHours / 24);
+    if (diffInDays < 7) return `${diffInDays}d ago`;
 
-    const days = Math.floor(hours / 24);
-    if (days < 7) return `${days}d ago`;
-
-    const weeks = Math.floor(days / 7);
-    if (weeks < 4) return `${weeks}w ago`;
-
-    const months = Math.floor(days / 30);
-    if (months < 12) return `${months}mo ago`;
-
-    const years = Math.floor(days / 365);
-    return `${years}y ago`;
+    return dateObj.toLocaleDateString(undefined, {
+      month: "short",
+      day: "numeric",
+    });
   };
 
   const currentLanguage = LANGUAGES.find(
@@ -467,9 +503,9 @@ export default function CompilerPage() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <header className="sticky top-0 z-50 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-16 items-center justify-between px-4">
+        <div className="flex h-16 items-center justify-between px-6 max-w-[1800px] mx-auto">
           <div
-            className="flex cursor-pointer items-center gap-2"
+            className="flex cursor-pointer items-center gap-2 ml-6"
             onClick={() => navigate("/")}
           >
             <SquareChevronRight className="h-6 w-6" />
@@ -500,12 +536,18 @@ export default function CompilerPage() {
             >
               Grind AI
             </Link>
-            {/* <Link
+            <Link
               to="/learning"
               className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"
             >
               Learning
-            </Link> */}
+            </Link>
+            <Link
+              to="/room"
+              className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"
+            >
+              Rooms
+            </Link>
             <Link
               to="/premium"
               className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"
@@ -558,92 +600,148 @@ export default function CompilerPage() {
         </div>
       </header>
 
-      <main className="container flex-1 px-4 py-6 flex flex-col h-[calc(100vh-4rem)]">
+      <main className="flex-1 px-6 py-6 flex flex-col h-[calc(100vh-4rem)] max-w-[1800px] mx-auto w-full">
         <div className="mb-6 flex-none">
           <h1 className="mb-1 text-2xl font-bold">Online Compiler</h1>
           <p className="text-sm text-muted-foreground">
-            Write, run, and test your code in multiple programming languages
+            Using{" "}
+            <span className="font-medium text-foreground">
+              {LANGUAGES.find((l) => l.value === selectedLanguage)?.label ||
+                "JavaScript"}
+            </span>{" "}
+            Compiler - Write, run, and test your code online
           </p>
         </div>
 
         <div className="flex-1 flex gap-4 min-h-0 relative">
-          {!isSidebarOpen && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsSidebarOpen(true)}
-              className="absolute left-4 top-4 z-30 rounded-full h-8 w-8 bg-background border border-border/40 hover:bg-muted"
-            >
-              <History className="h-4 w-4" />
-            </Button>
+          {/* Backdrop overlay when sidebar is open */}
+          {isSidebarOpen && (
+            <div
+              className="fixed inset-0 bg-black/20 backdrop-blur-sm z-10 transition-opacity"
+              onClick={() => setIsSidebarOpen(false)}
+            />
           )}
 
           <div
             className={`${
-              isSidebarOpen ? "w-56" : "w-0"
-            } transition-all duration-300 border-r border-border/40 bg-background flex flex-col overflow-hidden absolute left-0 top-0 bottom-0 z-20 shadow-lg`}
+              isSidebarOpen ? "w-80" : "w-0"
+            } transition-all duration-300 ease-in-out border-r border-border/30 bg-background flex flex-col overflow-hidden fixed left-0 top-16 bottom-0 z-50 shadow-2xl`}
           >
-            <div className="p-4 border-b border-border/40">
-              <div className="flex items-center gap-2 mb-2">
-                <History className="h-5 w-5 text-blue-500" />
-                <h2 className="font-semibold text-sm">Code History</h2>
+            <div className="p-4 border-b border-border/30 bg-gradient-to-br from-blue-500/[0.08] via-cyan-500/[0.05] to-transparent relative overflow-hidden">
+              <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:20px_20px]" />
+              <div className="flex items-center justify-between relative mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 flex items-center justify-center border border-blue-500/20 shadow-lg shadow-blue-500/10">
+                    <History className="h-5 w-5 text-blue-500" />
+                  </div>
+                  <div>
+                    <h2 className="font-bold text-base tracking-tight">
+                      Code History
+                    </h2>
+                    <p className="text-[11px] text-muted-foreground font-medium">
+                      Recent compilations
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setIsSidebarOpen(false)}
+                  className="h-9 w-9 rounded-xl hover:bg-muted/80 transition-all hover:scale-105"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
               </div>
-              <p className="text-xs text-muted-foreground">
-                Your recent compilations
-              </p>
+
+              <div className="flex gap-2 relative">
+                <Select
+                  value={filterLanguage}
+                  onValueChange={setFilterLanguage}
+                >
+                  <SelectTrigger className="h-8 text-[10px] bg-background/50 border-border/40 focus:ring-1 focus:ring-blue-500/20">
+                    <SelectValue placeholder="Language" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all" className="text-[10px]">
+                      All Languages
+                    </SelectItem>
+                    {LANGUAGES.map((lang) => (
+                      <SelectItem
+                        key={lang.value}
+                        value={lang.value}
+                        className="text-[10px]"
+                      >
+                        {lang.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <Select value={filterTime} onValueChange={setFilterTime}>
+                  <SelectTrigger className="h-8 text-[10px] bg-background/50 border-border/40 focus:ring-1 focus:ring-blue-500/20">
+                    <SelectValue placeholder="Time" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {TIME_FILTERS.map((time) => (
+                      <SelectItem
+                        key={time.value}
+                        value={time.value}
+                        className="text-[10px]"
+                      >
+                        {time.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
-            <ScrollArea className="flex-1 p-2">
-              <div className="space-y-2">
-                {codeHistory.length === 0 ? (
-                  <div className="text-center py-8 px-4">
-                    <Code2 className="h-8 w-8 text-muted-foreground mx-auto mb-2 opacity-50" />
-                    <p className="text-xs text-muted-foreground">
-                      No history yet
+            <ScrollArea className="flex-1 p-4">
+              <div className="space-y-2.5">
+                {filteredHistory.length === 0 ? (
+                  <div className="text-center py-16 px-4">
+                    <div className="h-20 w-20 rounded-2xl bg-gradient-to-br from-muted/60 to-muted/30 flex items-center justify-center mx-auto mb-5 border border-border/30 shadow-sm">
+                      <Filter className="h-10 w-10 text-muted-foreground/60" />
+                    </div>
+                    <p className="text-sm font-semibold text-foreground/80 mb-1.5">
+                      No history found
                     </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Run code to see history
+                    <p className="text-xs text-muted-foreground/70 font-medium">
+                      Try adjusting your filters
                     </p>
                   </div>
                 ) : (
-                  codeHistory.map((item) => (
+                  filteredHistory.map((item) => (
                     <div
                       key={item.id}
                       onClick={() => loadHistoryItem(item)}
-                      className="group p-0.5 rounded-lg cursor-pointer transition-all border border-border/30 hover:border-blue-500/60 bg-[#18181b] hover:bg-[#23232a] shadow-sm"
-                      style={{ boxShadow: "0 2px 8px 0 rgba(0,0,0,0.04)" }}
+                      className="group relative p-3 rounded-xl cursor-pointer w-[278px] transition-all duration-200 border border-border/40 hover:border-primary/30 bg-card/50 hover:bg-accent/50 shadow-sm hover:shadow-md active:scale-[0.99]"
                     >
-                      <div className="flex items-center gap-2 px-2 py-2">
-                        <div className="flex flex-col flex-1 min-w-0">
-                          <pre className="text-xs font-mono text-blue-200 bg-[#161618] rounded px-2 py-1 mb-1 whitespace-pre-wrap">
-                            {item.code
-                              .split("\n")
-                              .find(
-                                (line) =>
-                                  line.trim() &&
-                                  !line.trim().startsWith("//") &&
-                                  !line.trim().startsWith("#")
-                              )
-                              ?.trim()
-                              .slice(0, 60) || item.code.slice(0, 60)}
-                          </pre>
-                          <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
-                            <Badge
-                              variant="outline"
-                              className="px-1 py-0.5 text-[10px] font-medium border-blue-400/40 bg-[#22223a] text-blue-300"
-                            >
-                              {
-                                LANGUAGES.find((l) => l.value === item.language)
-                                  ?.label
-                              }
-                            </Badge>
-                            <span className="text-gray-400">
-                              {formatTimeAgo(item.createdAt)}
-                            </span>
-                          </div>
+                      <div className="flex flex-col gap-2">
+                        <div className="flex items-center justify-between">
+                          <Badge
+                            variant="outline"
+                            className="px-2 py-0.5 text-[10px] font-medium border-primary/20 bg-primary/5 text-primary"
+                          >
+                            {
+                              LANGUAGES.find((l) => l.value === item.language)
+                                ?.label
+                            }
+                          </Badge>
+                          <span
+                            className="text-xs text-muted-foreground flex items-center gap-1 shrink-0"
+                            title={new Date(item.createdAt).toLocaleString()}
+                          >
+                            <Clock className="h-3 w-3 opacity-70" />
+                            {formatTimeAgo(item.createdAt)}
+                          </span>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <History className="h-4 w-4 text-blue-400 opacity-70" />
+
+                        <div className="relative rounded-md bg-muted/50 border border-border/20 p-2 group-hover:bg-muted/70 transition-colors">
+                          <pre className="text-[10px] font-mono leading-relaxed text-muted-foreground line-clamp-3 overflow-hidden">
+                            {item.code.trim()}
+                          </pre>
+                          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-muted/10 pointer-events-none" />
                         </div>
                       </div>
                     </div>
@@ -651,29 +749,18 @@ export default function CompilerPage() {
                 )}
               </div>
             </ScrollArea>
-
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsSidebarOpen(false)}
-              className="absolute right-2 top-2 rounded-full h-8 w-8 bg-muted hover:bg-muted/80 z-10"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
           </div>
 
           <div
             className={`flex-1 flex gap-4 min-h-0 ${layout === "right" ? "flex-row" : "flex-col"}`}
           >
             <Card
-              className={`border-border/40 flex flex-col shadow-sm ${layout === "right" ? "w-[65%]" : "w-full flex-1"}`}
+              className={`border-border/40 flex flex-col shadow-lg overflow-hidden ${layout === "right" ? "w-[60%]" : "w-full flex-1"}`}
             >
               <CardHeader className="py-3 px-4 border-b border-border/40">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex items-center gap-2">
-                    <CardTitle className="text-base ml-[40px]">
-                      Code Editor
-                    </CardTitle>
+                    <CardTitle className="text-base">Code Editor</CardTitle>
                     {currentLanguage && (
                       <Badge
                         variant="secondary"
@@ -684,6 +771,18 @@ export default function CompilerPage() {
                     )}
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                      className="h-8 px-3 gap-2"
+                    >
+                      <History className="h-3.5 w-3.5" />
+                      History
+                    </Button>
+
+                    <div className="h-4 w-px bg-border/60" />
+
                     <Select
                       value={selectedLanguage}
                       onValueChange={handleLanguageChange}
@@ -780,22 +879,21 @@ export default function CompilerPage() {
                   </Button>
                 </div>
                 <div
-                  className={`flex-1 overflow-x-auto ${layout === "bottom" ? "h-[450px]" : "h-[300px]"}`}
-                  style={{ minWidth: 0 }}
+                  className="flex-1 overflow-hidden"
+                  style={{ minHeight: layout === "bottom" ? "600px" : "500px" }}
                 >
-                  <div className="w-full h-full" style={{ minWidth: "100%" }}>
-                    <CodeEditor
-                      code={code}
-                      setCode={setCode}
-                      language={selectedLanguage}
-                    />
-                  </div>
+                  <CodeEditor
+                    code={code}
+                    setCode={setCode}
+                    language={selectedLanguage}
+                  />
                 </div>
               </CardContent>
             </Card>
 
             <Card
-              className={`border-border/40 flex flex-col shadow-sm ${layout === "right" ? "w-[50%]" : "w-full h-[300px]"}`}
+              className={`border-border/40 flex flex-col shadow-lg overflow-hidden ${layout === "right" ? "w-[40%]" : "w-full"}`}
+              style={{ minHeight: layout === "bottom" ? "300px" : "auto" }}
             >
               <CardHeader className="py-3 px-4 border-b border-border/40 bg-muted/20">
                 <CardTitle className="text-base">Output</CardTitle>

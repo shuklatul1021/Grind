@@ -276,7 +276,6 @@ export default function CodeEditor({
   const gutterRef = useRef<HTMLPreElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
-  // Auto-suggest state
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [suggestionIndex, setSuggestionIndex] = useState(0);
@@ -575,7 +574,10 @@ export default function CodeEditor({
       style={{ backgroundColor: theme === "dark" ? "#1e1e1e" : "#ffffff" }}
     >
       <style>{theme === "dark" ? vsCodeDarkTheme : vsCodeLightTheme}</style>
-      <div className="flex flex-1 overflow-hidden relative">
+      <div
+        className="flex flex-1 overflow-hidden relative"
+        style={{ maxHeight: "calc(100vh - 200px)" }}
+      >
         {/* Gutter */}
         <div
           className="select-none text-right overflow-hidden shrink-0 z-10 transition-colors duration-200"
@@ -588,7 +590,7 @@ export default function CodeEditor({
         >
           <pre
             ref={gutterRef}
-            className="m-0 pt-3 pb-3 pr-3 text-[14px] leading-[1.6] font-mono bg-transparent"
+            className="m-0 pt-3 pb-3 pr-3 text-[14px] leading-[1.6] font-mono bg-transparent overflow-hidden"
             style={{
               fontFamily:
                 '"JetBrains Mono", "Fira Code", Consolas, Monaco, "Andale Mono", "Ubuntu Mono", monospace',
@@ -605,7 +607,9 @@ export default function CodeEditor({
               '"JetBrains Mono", "Fira Code", Consolas, Monaco, "Andale Mono", "Ubuntu Mono", monospace',
             whiteSpace: "pre",
             overflowX: "auto",
+            overflowY: "auto",
             minWidth: 0,
+            height: "100%",
           }}
         >
           <Editor
@@ -623,7 +627,8 @@ export default function CodeEditor({
               lineHeight: "1.6",
               whiteSpace: "pre",
               overflowX: "auto",
-              minWidth: 0,
+              minWidth: "fit-content",
+              width: "100%",
             }}
             className="editor-container"
           />

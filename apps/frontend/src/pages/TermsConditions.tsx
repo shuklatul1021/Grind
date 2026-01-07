@@ -41,7 +41,7 @@ export default function TermsAndConditions() {
             Terms and Conditions
           </h1>
           <p className="text-muted-foreground">
-            Last updated: November 24, 2025
+            Last updated: January 1, 2026
           </p>
         </div>
         <div className="space-y-8 text-left">

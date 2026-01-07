@@ -148,7 +148,7 @@ export default function ContestsPage() {
       <header className="sticky top-0 z-50 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center justify-between px-4">
           <div
-            className="flex cursor-pointer items-center gap-2"
+            className="flex cursor-pointer items-center gap-2 ml-6"
             onClick={() => navigate('/')}
           >
             <SquareChevronRight className="h-6 w-6" />
@@ -179,18 +179,18 @@ export default function ContestsPage() {
             >
               Grind AI
             </Link>
-            {/* <Link
+            <Link
               to="/learning"
               className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"
             >
               Learning
-            </Link> */}
-            {/* <Link 
+            </Link>
+            <Link 
               to="/room" 
               className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"
             >
               Rooms
-            </Link> */}
+            </Link>
             <Link 
               to="/premium" 
               className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"

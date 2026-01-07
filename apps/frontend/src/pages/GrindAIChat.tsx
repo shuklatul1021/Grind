@@ -855,8 +855,15 @@ export default function GrindAIChat() {
 
   useEffect(() => {
     const currentSessionExists = sessions.find((s) => s.id === id);
-    const chatExistsInList = userAllChats.some((chat) => chat.id === id);
-    if (userAllChats.length === 0 || (id && !chatExistsInList)) {
+    const chatExistsInList =
+      Array.isArray(userAllChats) && userAllChats.length > 0
+        ? userAllChats.some((chat) => chat?.id === id)
+        : false;
+    if (
+      !Array.isArray(userAllChats) ||
+      userAllChats.length === 0 ||
+      (id && !chatExistsInList)
+    ) {
       getUserChats();
     }
 
@@ -877,9 +884,13 @@ export default function GrindAIChat() {
       currentSessionExists &&
       !hasProcessedPrompt.current
     ) {
-      const hasUserMessage = currentSessionExists.messages.some(
-        (msg) => msg.role === "user" && msg.content === userFirstPrompt
-      );
+      const hasUserMessage =
+        Array.isArray(currentSessionExists.messages) &&
+        currentSessionExists.messages.length > 0
+          ? currentSessionExists.messages.some(
+              (msg) => msg.role === "user" && msg.content === userFirstPrompt
+            )
+          : false;
 
       if (hasUserMessage) {
         hasProcessedPrompt.current = true;
@@ -943,7 +954,10 @@ export default function GrindAIChat() {
       return;
     }
 
-    const existingSession = userAllChats.find((chat) => chat?.id === id);
+    const existingSession =
+      Array.isArray(userAllChats) && userAllChats.length > 0
+        ? userAllChats.find((chat) => chat?.id === id)
+        : undefined;
 
     if (
       existingSession &&
@@ -1028,7 +1042,7 @@ export default function GrindAIChat() {
       <header className="sticky top-0 z-50 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center justify-between px-4">
           <div
-            className="flex cursor-pointer items-center gap-2"
+            className="flex cursor-pointer items-center gap-2 ml-6"
             onClick={() => navigate("/")}
           >
             <SquareChevronRight className="h-6 w-6" />
@@ -1059,12 +1073,18 @@ export default function GrindAIChat() {
             >
               Grind AI
             </Link>
-            {/* <Link
+            <Link
               to="/learning"
               className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"
             >
               Learning
-            </Link> */}
+            </Link>
+            <Link 
+              to="/room" 
+              className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"
+            >
+              Rooms
+            </Link>
             <Link
               to="/premium"
               className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"
@@ -1123,18 +1143,6 @@ export default function GrindAIChat() {
           } transition-all duration-300 border-r border-border/40 bg-background/95 backdrop-blur flex flex-col overflow-hidden relative`}
         >
           <div className="p-4 border-b border-border/40">
-            <div className="flex items-center gap-2 mb-4 ">
-              <div className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-500/20 to-cyan-500/20 flex items-center justify-center">
-                <SquareChevronRight className="h-4 w-4 text-blue-500" />
-              </div>
-              <div className="text-left">
-                <div className="font-bold text-sm">Grind AI</div>
-                <div className="text-xs text-muted-foreground">
-                  Your Coding Assistant
-                </div>
-              </div>
-            </div>
-
             <Button
               onClick={HandleNewChat}
               className="w-full gap-2"
@@ -1147,7 +1155,7 @@ export default function GrindAIChat() {
 
           <ScrollArea className="flex-1 p-2">
             <div className="space-y-2">
-              {userAllChats.length === 0 ? (
+              {!Array.isArray(userAllChats) || userAllChats.length === 0 ? (
                 <div className="text-center py-8 px-4">
                   <MessageSquare className="h-8 w-8 text-muted-foreground mx-auto mb-2 opacity-50" />
                   <p className="text-xs text-muted-foreground">
@@ -1331,7 +1339,9 @@ export default function GrindAIChat() {
                   </p>
                 </div>
               </div>
-            ) : !currentSession?.messages ||
+            ) : !currentSession ||
+              !currentSession.messages ||
+              !Array.isArray(currentSession.messages) ||
               currentSession.messages.length === 0 ? (
               <div className="h-full flex items-center justify-center"></div>
             ) : (
@@ -1396,33 +1406,30 @@ export default function GrindAIChat() {
               </div>
             )}
           </ScrollArea>
-
-          <div className="border-t border-border/40 bg-background/95 backdrop-blur p-4">
-            <div className="max-w-4xl mx-auto">
-              <div className="relative flex items-center gap-2">
-                <Input
-                  ref={inputRef}
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  placeholder="Ask Grind AI anything about coding..."
-                  className="pr-12 h-12 text-base rounded-xl"
-                  disabled={isLoading}
-                />
-                <Button
-                  onClick={handleSendMessage}
-                  disabled={!input.trim() || isLoading}
-                  size="icon"
-                  className="absolute right-2 h-9 w-9 rounded-lg"
-                >
-                  <Send className="h-4 w-4" />
-                </Button>
-              </div>
-              <p className="text-xs text-muted-foreground text-center mt-3">
-                Grind AI can make mistakes. Consider checking important
-                information.
-              </p>
+          <div className="max-w-4xl mx-auto">
+            <div className="relative flex items-center gap-2">
+              <Input
+                ref={inputRef}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="Ask Grind AI anything about coding..."
+                className="pr-12 pb-[50px]  h-[90px] text-base rounded-xl w-screen "
+                disabled={isLoading}
+              />
+              <Button
+                onClick={handleSendMessage}
+                disabled={!input.trim() || isLoading}
+                size="icon"
+                className="absolute right-2 h-9 w-9 rounded-lg"
+              >
+                <Send className="h-4 w-4" />
+              </Button>
             </div>
+            <p className="text-xs text-muted-foreground text-center mt-3">
+              Grind AI can make mistakes. Consider checking important
+              information.
+            </p>
           </div>
         </div>
       </div>

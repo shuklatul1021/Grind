@@ -783,25 +783,25 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
               {
-                name: "Sarah Chen",
-                role: "Software Engineer at Google",
+                name: "Priya Sharma",
+                role: "CS Student",
                 content:
                   "Grind was instrumental in my interview prep. The AI hints are a game changer - they help you learn without giving away the answer.",
-                avatar: "SC",
+                avatar: "PS",
               },
               {
-                name: "Michael Ross",
-                role: "Frontend Dev at Vercel",
+                name: "Arjun Patel",
+                role: "CS Student",
                 content:
                   "The UI is incredibly clean and the editor experience is top-notch. It feels just like VS Code, which makes practicing so much more comfortable.",
-                avatar: "MR",
+                avatar: "AP",
               },
               {
-                name: "David Kim",
+                name: "Rohan Kumar",
                 role: "CS Student",
                 content:
                   "I've tried LeetCode and HackerRank, but Grind's curated problem sets and learning paths are superior. Highly recommend!",
-                avatar: "DK",
+                avatar: "RK",
               },
             ].map((testimonial, i) => (
               <Card key={i} className="bg-muted/5 border-border/40">

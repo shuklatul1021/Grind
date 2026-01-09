@@ -79,12 +79,10 @@ export function VerifyOtp() {
     }
   };
   return (
-    <div className="min-h-screen bg-[#050505] flex flex-col relative overflow-hidden">
-      {/* Background Gradients */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-zinc-900/50 via-[#050505] to-[#050505]" />
-      <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:60px_60px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_70%,transparent_100%)]" />
+    <div className="min-h-screen bg-background flex flex-col relative overflow-hidden">
+      <div className={`absolute inset-0 ${theme === "dark" ? "bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-zinc-900/50 via-background to-background" : "bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-gray-100/50 via-background to-background"}`} />
+      <div className={`absolute inset-0 bg-[size:60px_60px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_70%,transparent_100%)] ${theme === "dark" ? "bg-grid-white/[0.02]" : "bg-grid-black/[0.02]"}`} />
       <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-96 h-96 bg-primary/10 rounded-full blur-3xl opacity-30" />
-
 
       <header className="fixed top-0 left-0 right-0 z-50 border-b border-border/40 bg-background/80 backdrop-blur-xl">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between max-w-7xl">
@@ -92,7 +90,7 @@ export function VerifyOtp() {
             className="flex items-center gap-2 font-bold text-lg tracking-tight cursor-pointer hover:opacity-80 transition-opacity"
             onClick={() => navigate("/")}
           >
-            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary text-primary-foreground">
+            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-black text-white">
               <SquareChevronRight className="h-5 w-5" />
             </div>
             <span>Grind</span>
@@ -140,30 +138,30 @@ export function VerifyOtp() {
                   <InputOTPGroup>
                     <InputOTPSlot
                       index={0}
-                      className="h-12 w-10 sm:h-14 sm:w-12 text-xl sm:text-2xl border-white/30 bg-background/50 focus:ring-primary/50 transition-all"
+                      className={`h-12 w-10 sm:h-14 sm:w-12 text-xl sm:text-2xl ${ theme === "dark" ? "border-white/30" : "border-black/30"} bg-background/50 focus:ring-primary/50 transition-all`}
                     />
                     <InputOTPSlot
                       index={1}
-                      className="h-12 w-10 sm:h-14 sm:w-12 text-xl sm:text-2xl border-white/30 bg-background/50 focus:ring-primary/50 transition-all"
+                      className={`h-12 w-10 sm:h-14 sm:w-12 text-xl sm:text-2xl ${ theme === "dark" ? "border-white/30" : "border-black/30"} bg-background/50 focus:ring-primary/50 transition-all`}
                     />
                     <InputOTPSlot
                       index={2}
-                      className="h-12 w-10 sm:h-14 sm:w-12 text-xl sm:text-2xl border-white/30 bg-background/50 focus:ring-primary/50 transition-all"
+                      className={`h-12 w-10 sm:h-14 sm:w-12 text-xl sm:text-2xl ${ theme === "dark" ? "border-white/30" : "border-black/30"} bg-background/50 focus:ring-primary/50 transition-all`}
                     />
                   </InputOTPGroup>
                   <InputOTPSeparator className="w-2 mt-4 opacity-50" />
                   <InputOTPGroup>
                     <InputOTPSlot
                       index={3}
-                      className="h-12 w-10 sm:h-14 sm:w-12 text-xl sm:text-2xl border-white/30 bg-background/50 focus:ring-primary/50 transition-all"
+                      className={`h-12 w-10 sm:h-14 sm:w-12 text-xl sm:text-2xl ${ theme === "dark" ? "border-white/30" : "border-black/30"} bg-background/50 focus:ring-primary/50 transition-all`}
                     />
                     <InputOTPSlot
                       index={4}
-                      className="h-12 w-10 sm:h-14 sm:w-12 text-xl sm:text-2xl border-white/30 bg-background/50 focus:ring-primary/50 transition-all"
+                      className={`h-12 w-10 sm:h-14 sm:w-12 text-xl sm:text-2xl ${ theme === "dark" ? "border-white/30" : "border-black/30"} bg-background/50 focus:ring-primary/50 transition-all`}
                     />
                     <InputOTPSlot
                       index={5}
-                      className="h-12 w-10 sm:h-14 sm:w-12 text-xl sm:text-2xl border-white/30 bg-background/50 focus:ring-primary/50 transition-all"
+                      className={`h-12 w-10 sm:h-14 sm:w-12 text-xl sm:text-2xl ${ theme === "dark" ? "border-white/30" : "border-black/30"} bg-background/50 focus:ring-primary/50 transition-all`}
                     />
                   </InputOTPGroup>
                 </div>

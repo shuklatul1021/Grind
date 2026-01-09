@@ -8,7 +8,6 @@ import {
   TrendingUp,
   Target,
   ArrowRight,
-  CheckCircle2,
   BookOpen,
   BarChart3,
   Lightbulb,

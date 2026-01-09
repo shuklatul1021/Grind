@@ -64,7 +64,6 @@ export default function PremiumPage() {
         "Comprehensive data structures and algorithms notes, cheat sheets, and visual explanations for every topic.",
       color: "from-purple-500 to-pink-500",
       badge: "Essential",
-      link : "/premium/dsa-notes",
     },
     {
       icon: <Trophy className="h-8 w-8" />,
@@ -73,7 +72,6 @@ export default function PremiumPage() {
         "Access 1000+ exclusive FAANG-level problems with detailed solutions, hints, and multiple approaches.",
       color: "from-yellow-500 to-orange-500",
       badge: "Exclusive",
-      link : "/premium/premium-questions",
     },
     {
       icon: <Code2 className="h-8 w-8" />,
@@ -82,7 +80,6 @@ export default function PremiumPage() {
         "Priority compilation queue, faster execution, unlimited runs, and ability to save unlimited code snippets.",
       color: "from-green-500 to-emerald-500",
       badge: "Pro",
-      link : "/premium/personal-compiler",
     },
     {
       icon: <Sparkles className="h-8 w-8" />,
@@ -123,7 +120,6 @@ export default function PremiumPage() {
         "Get your resume reviewed and optimized by FAANG engineers to increase your interview chances.",
       color: "from-violet-500 to-purple-500",
       badge: "Career",
-      link : "/premium/resume",
     },
     {
       icon: <Award className="h-8 w-8" />,
@@ -132,7 +128,6 @@ export default function PremiumPage() {
         "Participate in premium contests with cash prizes, company sponsorships, and direct interview opportunities.",
       color: "from-pink-500 to-rose-500",
       badge: "Contest",
-      link : "/premium/exclusive-contests",
     },
     {
       icon: <Calendar className="h-8 w-8" />,
@@ -141,7 +136,6 @@ export default function PremiumPage() {
         "Structured 30/60/90 day interview prep plans, mock interviews, and company-specific question sets.",
       color: "from-teal-500 to-green-500",
       badge: "Interview",
-      link : "/premium/interview-prep",
     },
     {
       icon: <Shield className="h-8 w-8" />,
@@ -193,18 +187,12 @@ export default function PremiumPage() {
             >
               Grind AI
             </Link>
-            <Link
+            {/* <Link
               to="/learning"
               className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"
             >
               Learning
-            </Link>
-            <Link 
-              to="/room" 
-              className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"
-            >
-              Rooms
-            </Link>
+            </Link> */}
             <Link
               to="/premium"
               className="px-4 py-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 text-white text-base font-medium transition-all hover:from-blue-600 hover:to-purple-600 hover:text-black"
@@ -279,7 +267,7 @@ export default function PremiumPage() {
                 key={index}
                 className="border-border/40 shadow-sm hover:shadow-lg transition-all relative overflow-hidden group cursor-pointer"
               >
-                {/* Lock Overlay
+                {/* Lock Overlay */}
                 <div className="absolute inset-0 bg-gradient-to-br from-background/95 to-background/90 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center z-10">
                   <div className="text-center transform scale-95 group-hover:scale-100 transition-transform duration-300">
                     <Lock className="h-10 w-10 text-yellow-500 mx-auto mb-2" />
@@ -298,9 +286,9 @@ export default function PremiumPage() {
                       Upgrade Now
                     </Button>
                   </div>
-                </div> */}
+                </div>
 
-                <CardHeader className="pb-3" onClick={()=> navigate(`${feature.link || ""}`)}>
+                <CardHeader className="pb-3">
                   <div className="flex items-start justify-between mb-3">
                     <div
                       className={`inline-flex items-center justify-center w-14 h-14 rounded-xl bg-gradient-to-br ${feature.color} shadow-lg`}
@@ -362,10 +350,6 @@ export default function PremiumPage() {
                 <div className="flex items-center gap-1">
                   <CheckCircle2 className="h-4 w-4 text-green-500" />
                   <span>Cancel Anytime</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <CheckCircle2 className="h-4 w-4 text-green-500" />
-                  <span>7-Day Money Back</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <CheckCircle2 className="h-4 w-4 text-green-500" />

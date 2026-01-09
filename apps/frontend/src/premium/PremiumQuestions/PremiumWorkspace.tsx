@@ -41,7 +41,6 @@ import {
   Zap,
   Target,
   Share2,
-  Download,
 } from "lucide-react";
 import {
   Select,
@@ -225,21 +224,21 @@ const TEST_CASES = [
     input: `["FileSystem", "ls", "mkdir", "ls"]
 [[], ["/"], ["/a/b/c"], ["/"]]`,
     expected: `[null, [], null, ["a"]]`,
-    passed: null,
+    passed: null as boolean | null,
   },
   {
     id: 2,
     input: `["FileSystem", "mkdir", "addContentToFile", "readContentFromFile"]
 [[], ["/a/b/c"], ["/a/b/c/d", "hello world"], ["/a/b/c/d"]]`,
     expected: `[null, null, null, "hello world"]`,
-    passed: null,
+    passed: null as boolean | null,
   },
   {
     id: 3,
     input: `["FileSystem", "ls", "mkdir", "addContentToFile", "ls", "readContentFromFile"]
 [[], ["/"], ["/a/b/c"], ["/a/b/c/d", "hello"], ["/"], ["/a/b/c/d"]]`,
     expected: `[null, [], null, null, ["a"], "hello"]`,
-    passed: null,
+    passed: null as boolean | null,
   },
 ];
 
@@ -322,7 +321,7 @@ export function PremiumWorkspace() {
     setIsRunning(true);
     // Simulate code execution
     setTimeout(() => {
-      const newResults = testResults.map((test, idx) => ({
+      const newResults = testResults.map((test) => ({
         ...test,
         passed: Math.random() > 0.3, // Random pass/fail for demo
       }));

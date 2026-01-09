@@ -85,7 +85,7 @@ const PRACTICE_MCQS = [
 
 export default function NetworksPage() {
   const navigate = useNavigate();
-  const [selectedChapter, setSelectedChapter] = useState<string | null>(null);
+  const [, setSelectedChapter] = useState<string | null>(null);
 
   return (
     <div className="min-h-screen bg-background">

@@ -4,9 +4,6 @@ import { Button } from "@repo/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
 } from "@repo/ui/card";
 import { Badge } from "@repo/ui/badge";
 import { Input } from "@repo/ui/input";
@@ -33,7 +30,6 @@ import {
   Star,
   Lightbulb,
   CheckCircle,
-  AlertCircle,
   ChevronRight,
   BookOpen,
   FileCode,
@@ -743,7 +739,7 @@ export function PremiumQuestions() {
 
             <TabsContent value="trending" className="mt-0">
               <div className="space-y-4">
-                {filteredProblems.slice(0, 5).map((problem, idx) => (
+                {filteredProblems.slice(0, 5).map((problem) => (
                   <Card
                     key={problem.id}
                     className="group border-border/40 bg-card/50 backdrop-blur hover:border-blue-500/50 hover:shadow-lg transition-all cursor-pointer"

@@ -1073,7 +1073,7 @@ export default function GrindAIChat() {
             >
               Grind AI
             </Link>
-            <Link
+            {/* <Link
               to="/learning"
               className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"
             >
@@ -1084,7 +1084,7 @@ export default function GrindAIChat() {
               className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"
             >
               Rooms
-            </Link>
+            </Link> */}
             <Link
               to="/premium"
               className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"
@@ -1288,7 +1288,7 @@ export default function GrindAIChat() {
                       <Button
                         size="sm"
                         className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white"
-                        onClick={() => navigate("/pricing")}
+                        onClick={() => navigate("/premium/pricing")}
                       >
                         <Zap className="h-3 w-3 mr-2" />
                         Upgrade Plan

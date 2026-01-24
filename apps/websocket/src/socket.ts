@@ -10,8 +10,8 @@ socket.on("connection", (ws) => {
   let shell: any = null;
   let commandProcess: any = null;
 
-  const RATE_LIMIT = 5; // max 5 'run' messages
-  const WINDOW_MS = 60 * 1000; // per 1 minute
+  const RATE_LIMIT = 5; 
+  const WINDOW_MS = 60 * 1000; 
   let runTimestamps: number[] = [];
 
   function cleanup() {

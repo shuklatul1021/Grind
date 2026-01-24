@@ -187,12 +187,18 @@ export default function PremiumPage() {
             >
               Grind AI
             </Link>
-            {/* <Link
+            <Link
               to="/learning"
               className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"
             >
               Learning
-            </Link> */}
+            </Link>
+            <Link 
+              to="/room" 
+              className="px-4 py-2 rounded-full text-sm font-medium text-muted-foreground transition-all hover:bg-muted"
+            >
+              Rooms
+            </Link>
             <Link
               to="/premium"
               className="px-4 py-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 text-white text-base font-medium transition-all hover:from-blue-600 hover:to-purple-600 hover:text-black"

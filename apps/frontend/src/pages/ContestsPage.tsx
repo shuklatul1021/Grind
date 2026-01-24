@@ -179,7 +179,7 @@ export default function ContestsPage() {
             >
               Grind AI
             </Link>
-            {/* <Link
+            <Link
               to="/learning"
               className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"
             >
@@ -190,7 +190,7 @@ export default function ContestsPage() {
               className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"
             >
               Rooms
-            </Link> */}
+            </Link>
             <Link 
               to="/premium" 
               className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"

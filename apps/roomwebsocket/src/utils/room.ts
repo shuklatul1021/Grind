@@ -6,7 +6,7 @@ export class Room {
   constructor(roomConfig: RoomData) {
     this.roomConfig = roomConfig;
   }
-
+ 
   // ============================================
   // GETTERS
   // ============================================

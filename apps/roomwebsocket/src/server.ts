@@ -4,20 +4,17 @@ import { CreateRoomID } from "./utils/createroom.js";
 import jwt, { type JwtPayload } from "jsonwebtoken";
 import { Room } from "./utils/room.js";
 import type { RoomData, RoomUser } from "./types/type.js";
+import { prisma } from "@repo/db/DatabaseClient";
+
 
 const wss = new WebSocketServer({ port: 5050 });
-
-// ============================================
-// IN-MEMORY STATE (WILL MOVE TO REDIS LATER)
-// ============================================
-
-// Map of socketId -> WebSocket connection (NOT stored in Redis)
+/**
+ * Todo:
+ * Put Inside DB Radis As Well As 
+ */
 const socketConnections = new Map<string, WebSocket>();
-
-// Map of roomId -> Room instance (will be moved to Redis)
 const roomsMap = new Map<string, Room>();
 
-// Map of socketId -> { userId, roomId, role, socketId }
 const userSessionsMap = new Map<
   string,
   {
@@ -30,12 +27,7 @@ const userSessionsMap = new Map<
   }
 >();
 
-// JWT Secret (should match backend)
 const JWT_SECRET = process.env.USER_AUTH_JSON_WEB_TOKEN || "OnlyGrindAdminAuth";
-
-// ============================================
-// UTILITY FUNCTIONS
-// ============================================
 
 /**
  * Authenticate user from JWT token
@@ -112,7 +104,7 @@ function notifyHost(roomId: string, message: any) {
 /**
  * CREATE ROOM - Host creates a new proctored room
  */
-function handleCreateRoom(data: any, ws: WebSocket, socketId: string) {
+async function handleCreateRoom(data: any, ws: WebSocket, socketId: string) {
   try {
     const { token, roomname, maxGuests, question, duration, isPublic } = data;
 
@@ -159,9 +151,25 @@ function handleCreateRoom(data: any, ws: WebSocket, socketId: string) {
       connectionTime: Date.now(),
     });
 
-    // TODO: Store in DB
-    // await db.room.create({ data: { roomId, hostId: user.userId, ...roomConfig } });
-    console.log(`[DB] TODO: Store room ${roomId} in database`);
+    //TODO: Edit The Erorr Handing Page
+
+    await prisma.room.create({
+      data: {
+        roomId,
+        hostId: user.userId,
+        roomname,
+        maxGuests: parseInt(maxGuests) || 10,
+        question,
+        duration: parseInt(duration) || 60,
+        isPublic: isPublic || false,
+        connectedCount: 0,
+        roomStatus: "WAITING",
+        // endedAt : duration * 60 + Date.now().toLocaleString(),
+      },
+    });
+
+
+    console.log(`[DB] Store room ${roomId} in database`);
 
     // Send success response to host
     sendToSocket(socketId, {
@@ -176,7 +184,7 @@ function handleCreateRoom(data: any, ws: WebSocket, socketId: string) {
       },
     });
 
-    console.log(`✅ Room created: ${roomId} by host ${user.userId}`);
+    console.log(`Room created: ${roomId} by host ${user.userId}`);
   } catch (err) {
     console.error("Error creating room:", err);
     sendToSocket(socketId, {
@@ -189,7 +197,7 @@ function handleCreateRoom(data: any, ws: WebSocket, socketId: string) {
 /**
  * JOIN ROOM - Participant requests to join room
  */
-function handleJoinRoom(data: any, ws: WebSocket, socketId: string) {
+async function handleJoinRoom(data: any, ws: WebSocket, socketId: string) {
   try {
     const { token, roomId } = data;
 
@@ -257,7 +265,7 @@ function handleJoinRoom(data: any, ws: WebSocket, socketId: string) {
       userId: user.userId,
       username: user.username || "Participant",
       socketId,
-      isConnected: false, // Not connected until approved
+      isConnected: false,
       isReady: false,
       hasJoined: false,
       isFullscreen: false,
@@ -299,13 +307,26 @@ function handleJoinRoom(data: any, ws: WebSocket, socketId: string) {
       roomId,
     });
 
-    // TODO: Store join attempt in DB
-    // await db.roomJoinAttempt.create({ data: { roomId, userId: user.userId, status: 'PENDING' } });
+    await prisma.roomParticipant.create({
+      data: {
+        roomId,
+        userId: user.userId,
+        username: user.username || "Participant",
+        isConnected: false,
+        isReady: false,
+        hasJoined: false,
+        isFullscreen: false,
+        isTabFocused: true,
+        state: "ACTIVE",
+        violationCount: 0,
+        hasSubmitted: false,
+      },
+    });
     console.log(
       `[DB] TODO: Store join attempt for user ${user.userId} in room ${roomId}`,
     );
 
-    console.log(`📥 User ${user.userId} requested to join room ${roomId}`);
+    console.log(`User ${user.userId} requested to join room ${roomId}`);
   } catch (err) {
     console.error("Error joining room:", err);
     sendToSocket(socketId, {
@@ -318,7 +339,7 @@ function handleJoinRoom(data: any, ws: WebSocket, socketId: string) {
 /**
  * APPROVE JOIN - Host approves participant join request
  */
-function handleApproveJoin(data: any, ws: WebSocket, socketId: string) {
+async function handleApproveJoin(data: any, ws: WebSocket, socketId: string) {
   try {
     const { roomId, userId, approve } = data;
 
@@ -353,7 +374,6 @@ function handleApproveJoin(data: any, ws: WebSocket, socketId: string) {
       user.hasJoined = true;
       room.incrementConnectedCount();
 
-      // Notify participant they are approved
       sendToSocket(user.socketId, {
         type: "JOIN_APPROVED",
         data: {
@@ -379,13 +399,23 @@ function handleApproveJoin(data: any, ws: WebSocket, socketId: string) {
         user.socketId,
       );
 
-      // TODO: Update in DB
-      // await db.roomUser.update({ where: { userId_roomId: { userId, roomId } }, data: { status: 'APPROVED' } });
+      await prisma.roomParticipant.update({
+        data: {
+          isConnected: true,
+          hasJoined: true,
+          joinedAt: new Date().toLocaleString(),
+        },
+        where: {
+          roomId_userId: {
+            roomId,
+            userId,
+          },
+        },
+      });
       console.log(
-        `[DB] TODO: Update user ${userId} approval status in room ${roomId}`,
+        `Update user ${userId} approval status in room ${roomId}`,
       );
-
-      console.log(`✅ User ${userId} approved to join room ${roomId}`);
+      console.log(`User ${userId} approved to join room ${roomId}`);
     } else {
       // Reject user entry
       sendToSocket(user.socketId, {
@@ -710,7 +740,7 @@ function handleTabFocus(data: any, ws: WebSocket, socketId: string) {
       },
     });
 
-    console.log(`✅ Tab focused: User ${userId} in room ${roomId}`);
+    console.log(`Tab focused: User ${userId} in room ${roomId}`);
   } catch (err) {
     console.error("Error handling tab focus:", err);
   }
@@ -796,7 +826,7 @@ function handleSubmitCode(data: any, ws: WebSocket, socketId: string) {
       `[DB] TODO: Store submission for user ${userId} in room ${roomId}`,
     );
 
-    console.log(`📝 User ${userId} submitted code in room ${roomId}`);
+    console.log(`User ${userId} submitted code in room ${roomId}`);
   } catch (err) {
     console.error("Error handling submit code:", err);
     sendToSocket(socketId, {
@@ -864,7 +894,7 @@ function handleKickUser(data: any, ws: WebSocket, socketId: string) {
       `[DB] TODO: Store kick event for user ${userId} in room ${roomId}`,
     );
 
-    console.log(`🚫 User ${userId} kicked from room ${roomId}`);
+    console.log(`User ${userId} kicked from room ${roomId}`);
   } catch (err) {
     console.error("Error kicking user:", err);
     sendToSocket(socketId, {
@@ -1024,10 +1054,9 @@ function handleMessage(
   socketId: string,
 ) {
   try {
-    console.log(`📨 Message received: ${messageType} from ${socketId}`);
+    console.log(`Message received: ${messageType} from ${socketId}`);
 
     switch (messageType) {
-      // Room Management
       case "CREATE_ROOM":
         handleCreateRoom(data, ws, socketId);
         break;
@@ -1109,7 +1138,7 @@ wss.on("connection", (ws: WebSocket) => {
   // Store connection in map
   socketConnections.set(socketId, ws);
 
-  console.log(`✅ New connection: ${socketId}`);
+  console.log(`New connection: ${socketId}`);
 
   // Send connection confirmation
   ws.send(
@@ -1134,6 +1163,7 @@ wss.on("connection", (ws: WebSocket) => {
           }),
         );
       }
+      console.log("Message type:", parsedData);
 
       handleMessage(messageType, parsedData, ws, socketId);
     } catch (err) {
@@ -1149,7 +1179,7 @@ wss.on("connection", (ws: WebSocket) => {
 
   // Handle connection close
   ws.on("close", () => {
-    console.log(`❌ Connection closed: ${socketId}`);
+    console.log(`Connection closed: ${socketId}`);
 
     // Get user session
     const session = userSessionsMap.get(socketId);
@@ -1209,8 +1239,5 @@ setInterval(() => {
   });
 }, 30000);
 
-console.log("🚀 WebSocket server is running on ws://localhost:5050");
-console.log("📡 Ready to accept room connections...");
-console.log(
-  "⚠️  Note: Room state is in-memory. Will migrate to Redis for production.",
-);
+console.log("WebSocket server is running on ws://localhost:5050");
+console.log("Ready to accept room connections...");

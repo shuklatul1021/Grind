@@ -1,4 +1,3 @@
-// SEO Helper Functions for Dynamic Meta Tags
 
 interface SEOConfig {
   title: string;

@@ -1,0 +1,30 @@
+High-Priority Features Hosts Would Love
+1. Live Code Preview 👁️
+Watch participants' code in real-time as they type. See their progress without them knowing.
+
+2. Announcement/Broadcast System 📢
+Send instant messages to all participants (hints, time warnings, announcements).
+
+3. Participant Ranking/Leaderboard 🏆
+Real-time leaderboard showing who submitted fastest, code quality scores.
+
+4. Extend Time ⏰
+Ability to add more time mid-session if needed.
+
+5. Pause Room ⏸️
+Pause the timer for all participants (bathroom break, technical issues).
+
+6. Download Results/Export 📊
+Export all submissions, violation logs, and statistics as CSV/PDF.
+
+7. Participant Activity Timeline 📈
+Visual timeline showing each participant's actions (joined, started coding, violations, submitted).
+
+8. Auto-Kick Settings 🚫
+Set automatic kick after X violations.
+
+9. Chat/Q&A Panel 💬
+Allow participants to ask questions privately to host.
+
+10. Sound Alerts 🔔
+Audio notifications for violations, joins, submissions

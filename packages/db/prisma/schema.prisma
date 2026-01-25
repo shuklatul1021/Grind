@@ -6,7 +6,7 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
-
+ 
 model User {
   id                          String                      @id @default(uuid())
   username                    String?                     @unique
@@ -32,6 +32,10 @@ model User {
 
   AssistantMessage            ChatMessages[]
   CompileCode                 CompilerCodeHistory[]
+
+  hostedRooms                 Room[]            @relation("RoomHost")
+  roomParticipations          RoomParticipant[]
+
   createdAt                   DateTime                    @default(now())
   updatedAt                   DateTime                    @updatedAt()
 }
@@ -110,6 +114,7 @@ model Challenges {
   submittions                 Submittion[]
   examples                    Example[]
   testcase                    TestCase[]
+  learningTopics              LearningTopicChallenge[]
   createdAt                   DateTime                      @default(now())
   updatedAt                   DateTime                      @updatedAt()
 }
@@ -174,72 +179,189 @@ model UserFeedback {
 }
 
 model LearningCategory {
-  id          String   @id @default(uuid())
-  name        String   @unique
-  slug        String   @unique
-  description String?
-  order       Int?
+  id                          String   @id @default(uuid())
+  name                        String   @unique
+  slug                        String   @unique
+  description                 String?
+  order                       Int?
 
-  modules     LearningModule[]
+  modules                     LearningModule[]  
 
-  createdAt   DateTime @default(now())
+  createdAt                   DateTime                    @default(now())
 }
 
 model LearningModule {
-  id          String   @id @default(uuid())
-  categoryId  String
-  title       String
-  slug        String   @unique
-  description String?
-  icon        String?
-  order       Int?
+  id                          String   @id @default(uuid())
+  categoryId                  String
+  title                       String
+  slug                        String   @unique
+  description                 String?
+  icon                        String?
+  order                       Int?
 
-  category    LearningCategory @relation(fields: [categoryId], references: [id])
-  sections    LearningSection[]
+  category                    LearningCategory @relation(fields: [categoryId], references: [id])
+  sections                    LearningSection[]
 
-  createdAt   DateTime @default(now())
+  createdAt                   DateTime                    @default(now())
 }
 
 model LearningSection {
-  id        String   @id @default(uuid())
-  moduleId String
-  title     String
-  order     Int?
+  id                          String   @id @default(uuid())
+  moduleId                    String
+  title                       String
+  order                       Int?
 
-  module    LearningModule @relation(fields: [moduleId], references: [id])
-  topics    LearningTopic[]
+  module                      LearningModule @relation(fields: [moduleId], references: [id])
+  topics                      LearningTopic[]
 
-  createdAt DateTime @default(now())
+  createdAt                   DateTime                    @default(now())
 }
 
 model LearningTopic {
-  id          String   @id @default(uuid())
-  sectionId  String
-  title       String
-  slug        String   @unique
-  description String?
-  difficulty  DifficultyLevel?
-  order       Int?
+  id                          String   @id @default(uuid())
+  sectionId                   String
+  title                       String
+  slug                        String   @unique
+  description                 String?
+  difficulty                  DifficultyLevel?
+  order                       Int?
 
-  section     LearningSection @relation(fields: [sectionId], references: [id])
-  contents    LearningContent[]
-  challenges  LearningTopicChallenge[]
+  section                     LearningSection @relation(fields: [sectionId], references: [id])
+  contents                    LearningContent[]
+  challenges                  LearningTopicChallenge[]
 
-  createdAt   DateTime @default(now())
+  createdAt                   DateTime                    @default(now())
 }
 
 model LearningContent {
-  id        String   @id @default(uuid())
-  topicId  String
-  type      ContentType
-  title     String
-  body      String   // Markdown / HTML
-  duration  Int?
+  id                          String   @id @default(uuid())
+  topicId                     String
+  type                        ContentType
+  title                       String  
+  body                        String  
+  duration                    Int?
 
-  topic     LearningTopic @relation(fields: [topicId], references: [id])
+  topic                       LearningTopic @relation(fields: [topicId], references: [id])
 
-  createdAt DateTime @default(now())
+  createdAt                   DateTime                    @default(now())
 }
+
+model LearningTopicChallenge {
+  id                          String   @id @default(uuid())
+  topicId                     String
+  challengeId                 String
+  order                       Int?
+
+  topic                       LearningTopic @relation(fields: [topicId], references: [id])
+  challenge                   Challenges   @relation(fields: [challengeId], references: [id])
+}
+
+
+
+model Room {
+  id                          String       @id @default(cuid())
+  roomId                      String       @unique 
+  roomname                    String
+  hostId                      String
+  host                        User         @relation("RoomHost", fields: [hostId], references: [id])
+  maxGuests                   Int          @default(10)
+  connectedCount              Int          @default(0)
+  roomStatus                  RoomStatus   @default(WAITING)
+  question                    String       
+  isPublic                    Boolean      @default(true)
+  duration                    Int        
+  createdAt                   DateTime     @default(now())
+  startedAt                   DateTime?
+  endedAt                     DateTime?
+  
+  participants                RoomParticipant[]
+  violations                  RoomViolation[]
+  submissions                 RoomSubmission[]
+  
+  @@index([hostId])
+  @@index([roomStatus])
+  @@index([createdAt])
+}
+
+model RoomParticipant {
+  id                          String              @id @default(cuid())
+  roomId                      String
+  room                        Room                @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  userId                      String
+  user                        User                @relation(fields: [userId], references: [id])
+  username                    String
+  state                       ParticipantState    @default(PENDING)
+  isConnected                 Boolean             @default(false)
+  isReady                     Boolean             @default(false)
+  hasJoined                   Boolean             @default(false)
+  isFullscreen                Boolean             @default(false)
+  isTabFocused                Boolean             @default(true)
+  violationCount              Int                 @default(0)
+  lastViolationReason         ViolationType?
+  hasSubmitted                Boolean             @default(false)
+  submissionTime              DateTime?
+  joinedAt                    DateTime            @default(now())
+  lastActivityAt              DateTime            @default(now())
+  
+  violations                  RoomViolation[]
+  submissions                 RoomSubmission[]
+  
+  @@unique([roomId, userId])
+  @@index([roomId])
+  @@index([userId])
+  @@index([state])
+}
+
+model RoomViolation {
+  id                          String        @id @default(cuid())
+  roomId                      String
+  room                        Room          @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  participantId               String
+  participant                 RoomParticipant @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  violationType               ViolationType
+  count                       Int           @default(1)
+  createdAt                   DateTime      @default(now())
+  
+  @@index([roomId])
+  @@index([participantId])
+}
+
+model RoomSubmission {
+  id                          String        @id @default(cuid())
+  roomId                      String
+  room                        Room          @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  participantId               String
+  participant                 RoomParticipant @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  code                        String        @db.Text
+  language                    String
+  submittedAt                 DateTime      @default(now())
+  
+  @@index([roomId])
+  @@index([participantId])
+}
+
+enum RoomStatus {
+  WAITING
+  LIVE
+  ENDED
+}
+
+enum ParticipantState {
+  PENDING           
+  ACTIVE            
+  KICKED            
+  PENDING_REJOIN    
+  REJOIN_APPROVED   
+  SUBMITTED         
+}
+
+enum ViolationType {
+  FULLSCREEN_EXIT
+  TAB_SWITCH
+  DISCONNECT
+}
+
+
 
 enum ContentType {
   ARTICLE

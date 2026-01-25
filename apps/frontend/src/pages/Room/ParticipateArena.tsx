@@ -24,6 +24,7 @@ import {
   Terminal as TerminalIcon,
   Maximize2,
   AlertTriangle,
+  Loader2,
   Send,
   Shield,
   Languages,
@@ -99,6 +100,7 @@ export default function ParticipateArena() {
   const [showJoinWarning, setShowJoinWarning] = useState(true);
   const [hasJoined, setHasJoined] = useState(false);
   const [isLegitimateExit, setIsLegitimateExit] = useState(false);
+  const [isWaitingForStart, setIsWaitingForStart] = useState(true);
 
   // WebSocket connection
   const {
@@ -123,11 +125,16 @@ export default function ParticipateArena() {
       setRoomQuestion(data.question || "");
       setRoomName(data.roomname || "");
       setRoomStatus(data.roomStatus || "WAITING");
+      // If room is already LIVE, exit waiting state
+      if (data.roomStatus === "LIVE") {
+        setIsWaitingForStart(false);
+      }
     },
     onRoomStarted: (data) => {
       console.log("Room started:", data);
-      toast.success("Room has started!");
+      toast.success("The host has started the session! Good luck!");
       setRoomStatus("LIVE");
+      setIsWaitingForStart(false); // Now show coding area
     },
     onRoomEnded: (message) => {
       console.log("Room ended:", message);
@@ -160,16 +167,16 @@ export default function ParticipateArena() {
     }
   }, [isConnected, roomId, getRoomStatus]);
 
-  // Timer effect
+  // Timer effect - only start when room is LIVE
   useEffect(() => {
-    if (hasJoined) {
+    if (hasJoined && roomStatus === "LIVE") {
       const timer = setInterval(() => {
         setElapsedTime((prev) => prev + 1);
       }, 1000);
 
       return () => clearInterval(timer);
     }
-  }, [hasJoined]);
+  }, [hasJoined, roomStatus]);
 
   const exitFullscreen = useCallback(async () => {
     try {
@@ -539,6 +546,168 @@ export default function ParticipateArena() {
     );
   }
 
+  // Show waiting screen after fullscreen enabled but before room starts
+  if (hasJoined && isWaitingForStart) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <Card className="max-w-2xl w-full border-2 border-border/50 shadow-2xl">
+          <CardHeader className="text-center pb-4">
+            <div className="mx-auto mb-4 p-4 rounded-full bg-gradient-to-br from-green-500/20 to-blue-500/20 w-20 h-20 flex items-center justify-center">
+              <Loader2 className="h-10 w-10 text-green-500 animate-spin" />
+            </div>
+            <CardTitle className="text-2xl mb-2">Waiting for Host</CardTitle>
+            <p className="text-muted-foreground">
+              You're all set! Waiting for the host to start the session...
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="space-y-4">
+              {/* Connection Status */}
+              <div className="flex items-center justify-center gap-2 p-3 rounded-lg bg-green-500/10 border border-green-500/20">
+                <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse"></div>
+                <span className="text-sm text-green-500 font-medium">
+                  {isFullscreen ? "Fullscreen Active" : "Waiting..."}
+                </span>
+                <span className="text-sm text-muted-foreground">•</span>
+                <span className={`text-sm font-medium ${isConnected ? "text-green-500" : "text-red-500"}`}>
+                  {isConnected ? "Connected" : "Disconnected"}
+                </span>
+              </div>
+
+              {/* Room Details */}
+              <div className="p-4 rounded-lg bg-muted/50 border border-border">
+                <h3 className="font-semibold mb-3 text-sm">Room Details:</h3>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Room Name:</span>
+                    <span className="font-medium">
+                      {roomName || mockUserData.roomName}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Room ID:</span>
+                    <code className="font-mono font-medium">
+                      {roomId || mockUserData.roomId}
+                    </code>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Status:</span>
+                    <Badge variant="outline" className="gap-1">
+                      <Clock className="h-3 w-3" />
+                      Waiting for Host
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+
+              {/* Question Preview */}
+              {roomQuestion && (
+                <div className="p-4 rounded-lg bg-blue-500/5 border border-blue-500/20">
+                  <h3 className="font-semibold mb-2 text-sm flex items-center gap-2">
+                    <AlertTriangle className="h-4 w-4 text-blue-500" />
+                    Question Preview:
+                  </h3>
+                  <p className="text-sm text-muted-foreground line-clamp-3">
+                    {roomQuestion}
+                  </p>
+                </div>
+              )}
+
+              {/* Instructions */}
+              <div className="p-4 rounded-lg border border-border/40">
+                <p className="text-sm text-muted-foreground text-center">
+                  Stay in fullscreen mode. The coding area will appear automatically when the host starts the session.
+                </p>
+              </div>
+            </div>
+
+            {/* Exit Button */}
+            <Button
+              variant="outline"
+              onClick={() => setShowExitPrompt(true)}
+              className="w-full"
+            >
+              <LogOut className="h-4 w-4 mr-2" />
+              Leave Room (Ctrl+E)
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Exit Prompt Dialog */}
+        <AlertDialog open={showExitPrompt} onOpenChange={setShowExitPrompt}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Leave Room?</AlertDialogTitle>
+              <AlertDialogDescription className="space-y-3">
+                <p>Are you sure you want to leave before the session starts?</p>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">
+                    Type "exit" to confirm:
+                  </label>
+                  <input
+                    type="text"
+                    value={exitInput}
+                    onChange={(e) => setExitInput(e.target.value)}
+                    className="w-full px-3 py-2 border border-border rounded-md bg-background"
+                    placeholder="Type exit..."
+                    autoFocus
+                  />
+                </div>
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => setExitInput("")}>
+                Cancel
+              </AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleExitConfirm}
+                className="bg-red-500 hover:bg-red-600"
+              >
+                Confirm Exit
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        {/* Fullscreen Warning Dialog */}
+        <AlertDialog
+          open={showFullscreenWarning}
+          onOpenChange={setShowFullscreenWarning}
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle className="flex items-center gap-2 text-red-500">
+                <AlertTriangle className="h-6 w-6" />
+                Fullscreen Violation Detected!
+              </AlertDialogTitle>
+              <AlertDialogDescription className="space-y-3">
+                <p>
+                  You have exited fullscreen mode. This is violation #
+                  {fullscreenViolations}.
+                </p>
+                <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20">
+                  <p className="text-sm font-semibold text-red-500">
+                    Warning: After 3 violations, you will be automatically kicked
+                    from the room.
+                  </p>
+                </div>
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogAction
+                onClick={handleReenterFullscreen}
+                className="bg-blue-500 hover:bg-blue-600"
+              >
+                <Maximize2 className="h-4 w-4 mr-2" />
+                Return to Fullscreen
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
+    );
+  }
+
   return (
     <div
       ref={containerRef}
@@ -737,13 +906,12 @@ export default function ParticipateArena() {
                       ].map((test, idx) => (
                         <Card
                           key={idx}
-                          className={`border-border/40 ${
-                            test.status === "passed"
-                              ? "border-green-500/20 bg-green-500/5"
-                              : test.status === "failed"
-                                ? "border-red-500/20 bg-red-500/5"
-                                : "border-border/40"
-                          }`}
+                          className={`border-border/40 ${test.status === "passed"
+                            ? "border-green-500/20 bg-green-500/5"
+                            : test.status === "failed"
+                              ? "border-red-500/20 bg-red-500/5"
+                              : "border-border/40"
+                            }`}
                         >
                           <CardContent className="p-3">
                             <div className="flex items-center justify-between mb-2">

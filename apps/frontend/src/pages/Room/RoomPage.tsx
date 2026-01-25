@@ -63,7 +63,7 @@ export default function RoomsPage() {
   // Join Room State
   const [roomCode, setRoomCode] = useState("");
 
-  // WebSocket connection - autoConnect is now false, we connect manually
+
   const { isConnected, createRoom, joinRoom, connect } =
     useRoomWebSocket({
       onConnected: (socketId) => {

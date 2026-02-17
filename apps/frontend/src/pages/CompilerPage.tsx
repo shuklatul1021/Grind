@@ -373,7 +373,7 @@ export default function CompilerPage() {
 
       const data = await response.json();
 
-      if (data.output != "") {
+      if (data.output != "\n✓ Code Execution Completed") {
         setOutput(data.output);
       } else {
         setOutput(data.error);

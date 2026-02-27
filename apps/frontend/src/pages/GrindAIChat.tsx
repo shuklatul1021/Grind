@@ -1040,7 +1040,7 @@ export default function GrindAIChat() {
   return (
     <div className="flex h-screen bg-background flex-col overflow-hidden">
       <header className="sticky top-0 z-50 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-16 items-center justify-between px-4">
+        <div className="flex h-16 items-center justify-between px-6 max-w-[1600px] mx-auto">
           <div
             className="flex cursor-pointer items-center gap-2 ml-6"
             onClick={() => navigate("/")}

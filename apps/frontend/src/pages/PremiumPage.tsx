@@ -154,7 +154,7 @@ export default function PremiumPage() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <header className="sticky top-0 z-50 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-16 items-center justify-between px-4">
+        <div className="flex h-16 items-center justify-between px-6 max-w-[1600px] mx-auto">
           <div
             className="flex cursor-pointer items-center gap-2"
             onClick={() => navigate("/")}
@@ -248,7 +248,7 @@ export default function PremiumPage() {
         </div>
       </header>
 
-      <main className="container flex-1 px-4 py-6 flex flex-col">
+      <main className="container mx-auto flex-1 px-4 py-6 flex flex-col">
         {/* Hero Section */}
         <div className="mb-8 text-center">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-yellow-500/20 to-orange-500/20 mb-4 relative">

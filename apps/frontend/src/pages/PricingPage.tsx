@@ -67,7 +67,7 @@ export default function PricingPage() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <header className="sticky top-0 z-50 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-16 items-center justify-between px-4">
+        <div className="flex h-16 items-center justify-between px-6 max-w-[1600px] mx-auto">
           <div className="container flex h-16 items-center justify-between px-4">
             <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/')}>
               <SquareChevronRight className="h-6 w-6" />
@@ -81,7 +81,7 @@ export default function PricingPage() {
         </div>
       </header>
 
-      <main className="container flex-1 px-4 py-16">
+      <main className="container mx-auto flex-1 px-4 py-16">
         <div className="mx-auto max-w-6xl">
           <div className="text-center mb-16">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 text-blue-500 text-sm font-medium mb-6">

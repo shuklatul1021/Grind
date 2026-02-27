@@ -146,7 +146,7 @@ export default function ContestsPage() {
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-50 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-16 items-center justify-between px-4">
+        <div className="flex h-16 items-center justify-between px-6 max-w-[1600px] mx-auto">
           <div
             className="flex cursor-pointer items-center gap-2 ml-6"
             onClick={() => navigate('/')}
@@ -236,7 +236,7 @@ export default function ContestsPage() {
         </div>
       </header>
 
-      <main className="container px-4 py-8">
+      <main className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="mb-2 text-3xl font-bold">Contests</h1>
           <p className="text-muted-foreground">

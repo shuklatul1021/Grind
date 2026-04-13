@@ -28,8 +28,6 @@ import {
   ArrowLeft,
   ExternalLink,
   Loader2,
-  Code2,
-  CheckCircle2,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@repo/ui/avatar";
 import { BACKENDURL } from "../utils/urls";

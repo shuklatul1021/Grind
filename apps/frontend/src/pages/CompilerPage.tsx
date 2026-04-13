@@ -4,7 +4,6 @@ import { Button } from "@repo/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@repo/ui/card";
 import { Badge } from "@repo/ui/badge";
 import { ScrollArea } from "@repo/ui/scroll-area";
-import { Textarea } from "@repo/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -200,7 +199,7 @@ export default function CompilerPage() {
   const [layout, setLayout] = useState<"bottom" | "right">("right");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [codeHistory, setCodeHistory] = useState<CodeHistory[]>([]);
-  const [userInput, setUserInput] = useState("");
+  const [userInput,] = useState("");
   const UserProfile = useSelector((state: RootState) => state.userDetails);
   const [filterLanguage, setFilterLanguage] = useState("all");
   const [filterTime, setFilterTime] = useState("all");
@@ -539,7 +538,7 @@ export default function CompilerPage() {
   const currentLanguage = LANGUAGES.find(
     (lang) => lang.value === selectedLanguage,
   );
-  const expectsInput = detectsInput(code, selectedLanguage);
+  // const expectsInput = detectsInput(code, selectedLanguage);
   const executionBadgeClass =
     executionStatus === "queued"
       ? "border-amber-500/30 bg-amber-500/10 text-amber-600"

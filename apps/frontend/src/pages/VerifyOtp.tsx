@@ -1,5 +1,5 @@
 import { Button } from "@repo/ui/button";
-import { SquareChevronRight, Loader2, ArrowLeft, Mail, ShieldCheck } from "lucide-react";
+import { Loader2, ArrowLeft, Mail, ShieldCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import {
   InputOTP,

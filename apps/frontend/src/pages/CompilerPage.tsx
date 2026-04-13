@@ -159,27 +159,27 @@ const EXECUTION_STATUS_LABELS: Record<CompilerExecutionState, string> = {
   failed: "Failed",
 };
 
-function detectsInput(code: string, language: string): boolean {
-  const inputPatterns: Record<string, RegExp[]> = {
-    python: [/input\s*\(/],
-    javascript: [/readline\s*\(/, /prompt\s*\(/],
-    typescript: [/readline\s*\(/, /prompt\s*\(/],
-    java: [
-      /Scanner\s*\(/,
-      /BufferedReader/,
-      /\.nextLine\(/,
-      /\.nextInt\(/,
-      /\.next\(/,
-    ],
-    cpp: [/cin\s*>>/, /scanf\s*\(/, /getline\s*\(/],
-    c: [/scanf\s*\(/, /gets\s*\(/, /fgets\s*\(/],
-    go: [/fmt\.Scan/, /bufio\.NewReader/, /reader\.ReadString/],
-    rust: [/std::io::stdin/, /read_line/],
-  };
+// function detectsInput(code: string, language: string): boolean {
+//   const inputPatterns: Record<string, RegExp[]> = {
+//     python: [/input\s*\(/],
+//     javascript: [/readline\s*\(/, /prompt\s*\(/],
+//     typescript: [/readline\s*\(/, /prompt\s*\(/],
+//     java: [
+//       /Scanner\s*\(/,
+//       /BufferedReader/,
+//       /\.nextLine\(/,
+//       /\.nextInt\(/,
+//       /\.next\(/,
+//     ],
+//     cpp: [/cin\s*>>/, /scanf\s*\(/, /getline\s*\(/],
+//     c: [/scanf\s*\(/, /gets\s*\(/, /fgets\s*\(/],
+//     go: [/fmt\.Scan/, /bufio\.NewReader/, /reader\.ReadString/],
+//     rust: [/std::io::stdin/, /read_line/],
+//   };
 
-  const patterns = inputPatterns[language] || [];
-  return patterns.some((pattern) => pattern.test(code));
-}
+//   const patterns = inputPatterns[language] || [];
+//   return patterns.some((pattern) => pattern.test(code));
+// }
 
 export default function CompilerPage() {
   const navigate = useNavigate();

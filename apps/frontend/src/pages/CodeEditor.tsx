@@ -17,7 +17,7 @@ import { KEYWORDS } from "../format/ResponseFormatter";
 // Helper to get caret coordinates
 const getCaretCoordinates = (
   element: HTMLTextAreaElement,
-  position: number
+  position: number,
 ) => {
   const div = document.createElement("div");
   const style = window.getComputedStyle(element);
@@ -321,7 +321,7 @@ export default function CodeEditor({
 
   const lines = code ? code.split("\n") : [""];
   const lineNumbers = Array.from({ length: lines.length }, (_, i) =>
-    String(i + 1)
+    String(i + 1),
   ).join("\n");
 
   const handleValueChange = (newCode: string) => {
@@ -338,7 +338,7 @@ export default function CodeEditor({
       const langKeywords =
         KEYWORDS[language || "javascript"] || KEYWORDS["javascript"];
       const filtered = langKeywords.filter(
-        (k) => k.startsWith(lastWord) && k !== lastWord
+        (k) => k.startsWith(lastWord) && k !== lastWord,
       );
 
       if (filtered.length > 0) {
@@ -368,7 +368,7 @@ export default function CodeEditor({
     const textAfterCursor = code.substring(selectionStart);
     const newTextBefore = textBeforeCursor.substring(
       0,
-      textBeforeCursor.length - currentWord.length
+      textBeforeCursor.length - currentWord.length,
     );
 
     const newCode = newTextBefore + suggestion + textAfterCursor;
@@ -398,7 +398,7 @@ export default function CodeEditor({
 
   useEffect(() => {
     const textarea = document.getElementById(
-      "code-editor"
+      "code-editor",
     ) as HTMLTextAreaElement;
     if (!textarea) return;
 
@@ -415,7 +415,7 @@ export default function CodeEditor({
         if (e.key === "ArrowUp") {
           e.preventDefault();
           setSuggestionIndex(
-            (prev) => (prev - 1 + suggestions.length) % suggestions.length
+            (prev) => (prev - 1 + suggestions.length) % suggestions.length,
           );
           return;
         }
@@ -447,7 +447,7 @@ export default function CodeEditor({
 
         requestAnimationFrame(() => {
           const newTextarea = document.getElementById(
-            "code-editor"
+            "code-editor",
           ) as HTMLTextAreaElement;
           if (newTextarea) {
             newTextarea.selectionStart = newTextarea.selectionEnd =
@@ -474,7 +474,7 @@ export default function CodeEditor({
 
         requestAnimationFrame(() => {
           const newTextarea = document.getElementById(
-            "code-editor"
+            "code-editor",
           ) as HTMLTextAreaElement;
           if (newTextarea) {
             newTextarea.selectionStart = newTextarea.selectionEnd =
@@ -520,7 +520,7 @@ export default function CodeEditor({
 
         requestAnimationFrame(() => {
           const newTextarea = document.getElementById(
-            "code-editor"
+            "code-editor",
           ) as HTMLTextAreaElement;
           if (newTextarea) {
             newTextarea.selectionStart = newTextarea.selectionEnd =
@@ -544,7 +544,7 @@ export default function CodeEditor({
 
         requestAnimationFrame(() => {
           const newTextarea = document.getElementById(
-            "code-editor"
+            "code-editor",
           ) as HTMLTextAreaElement;
           if (newTextarea) {
             newTextarea.selectionStart = newTextarea.selectionEnd =
@@ -576,7 +576,7 @@ export default function CodeEditor({
       <style>{theme === "dark" ? vsCodeDarkTheme : vsCodeLightTheme}</style>
       <div
         className="flex flex-1 overflow-hidden relative"
-        style={{ maxHeight: "calc(100vh - 200px)" }}
+        style={{ height: "100%" }}
       >
         {/* Gutter */}
         <div

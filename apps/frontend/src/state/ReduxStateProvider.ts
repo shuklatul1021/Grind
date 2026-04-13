@@ -1,6 +1,12 @@
 import { createSlice, configureStore } from "@reduxjs/toolkit";
 import type { UserInterface } from "../types/problem";
 
+interface AuthState {
+  isAuthenticated: boolean;
+  user: any | null;
+  loading: boolean;
+}
+
 const User2FAAuthanticationSlice = createSlice({
   name: "User2FAAuthantication",
   initialState: {
@@ -51,7 +57,30 @@ const UserDetailsSlice = createSlice({
   },
   reducers: {
     setUserDetails: (state, action) => {
-      state.user = action.payload;
+      state.user = {
+        ...state.user,
+        ...action.payload,
+        social: {
+          ...state.user.social,
+          ...(action.payload.social ?? {}),
+        },
+      };
+    },
+  },
+});
+
+const UserAuthSlice = createSlice({
+  name: "userAuth",
+  initialState: {
+    isAuthenticated: false,
+    user: null,
+    loading: true,
+  } as AuthState,
+  reducers: {
+    setUserAuthState: (state, action) => {
+      state.isAuthenticated = action.payload.isAuthenticated;
+      state.user = action.payload.user;
+      state.loading = action.payload.loading;
     },
   },
 });
@@ -117,6 +146,7 @@ const IsUserFirstChatSlice = createSlice({
 });
 
 export const { setUserDetails } = UserDetailsSlice.actions;
+export const { setUserAuthState } = UserAuthSlice.actions;
 export const { setReduxProblems } = ProblemsSlice.actions;
 export const { setReduxContests } = ContestSlice.actions;
 export const { setAuthData } = User2FAAuthanticationSlice.actions;
@@ -127,6 +157,7 @@ export const { setIsUserFirstChat } = IsUserFirstChatSlice.actions;
 
 export const store = configureStore({
   reducer: {
+    userAuth: UserAuthSlice.reducer,
     userDetails: UserDetailsSlice.reducer,
     problems: ProblemsSlice.reducer,
     contests: ContestSlice.reducer,

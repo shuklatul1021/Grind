@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { useNavigate, Link, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@repo/ui/button";
+import { Badge } from "@repo/ui/badge";
 import { Input } from "@repo/ui/input";
 import { ScrollArea } from "@repo/ui/scroll-area";
 import {
@@ -22,15 +23,11 @@ import {
   User,
   Trash2,
   SquareChevronRight,
-  Sun,
-  Moon,
-  LogOut,
   ChevronLeft,
   ChevronRight,
   Copy,
   Check,
   Zap,
-  UserIcon,
 } from "lucide-react";
 import type { RootState } from "../state/ReduxStateProvider";
 import { useSelector, useDispatch } from "react-redux";
@@ -42,14 +39,7 @@ import {
   setUserCreditDetails,
   setUserPrompt,
 } from "../state/ReduxStateProvider";
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-} from "@repo/ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "@repo/ui/avatar";
+import MainSideNav from "../components/MainSideNav";
 
 const FormattedMessage = ({ content }: { content: string }) => {
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
@@ -76,7 +66,7 @@ const FormattedMessage = ({ content }: { content: string }) => {
             className="text-lg font-semibold mt-8 mb-4 text-foreground text-left tracking-tight"
           >
             {line.replace("### ", "").trim()}
-          </h3>
+          </h3>,
         );
         i++;
       } else if (line.trim().startsWith("## ")) {
@@ -86,7 +76,7 @@ const FormattedMessage = ({ content }: { content: string }) => {
             className="text-xl font-semibold mt-10 mb-4 text-foreground text-left tracking-tight"
           >
             {line.replace("## ", "").trim()}
-          </h2>
+          </h2>,
         );
         i++;
       } else if (line.trim().startsWith("# ")) {
@@ -96,7 +86,7 @@ const FormattedMessage = ({ content }: { content: string }) => {
             className="text-2xl font-semibold mt-12 mb-5 text-foreground text-left tracking-tight"
           >
             {line.replace("# ", "").trim()}
-          </h1>
+          </h1>,
         );
         i++;
       } else if (line.trim().match(/^[*-]\s/)) {
@@ -108,17 +98,17 @@ const FormattedMessage = ({ content }: { content: string }) => {
 
           itemText = itemText.replace(
             /^\*\*([^*:]+):\*\*\s*/,
-            '<strong class="font-medium text-foreground">$1:</strong> '
+            '<strong class="font-medium text-foreground">$1:</strong> ',
           );
 
           itemText = itemText.replace(
             /\*\*([^*]+)\*\*/g,
-            '<strong class="font-medium text-foreground">$1</strong>'
+            '<strong class="font-medium text-foreground">$1</strong>',
           );
 
           itemText = itemText.replace(
             /`([^`]+)`/g,
-            '<code class="inline-flex items-center bg-zinc-950 dark:bg-black text-emerald-400 px-3 py-1.5 rounded-lg text-[13px] font-mono border border-zinc-700 dark:border-zinc-800 shadow-lg font-semibold">$1</code>'
+            '<code class="inline-flex items-center bg-zinc-950 dark:bg-black text-emerald-400 px-3 py-1.5 rounded-lg text-[13px] font-mono border border-zinc-700 dark:border-zinc-800 shadow-lg font-semibold">$1</code>',
           );
 
           listItems.push(
@@ -133,14 +123,14 @@ const FormattedMessage = ({ content }: { content: string }) => {
                 className="flex-1 text-foreground/85 leading-relaxed"
                 dangerouslySetInnerHTML={{ __html: itemText }}
               />
-            </li>
+            </li>,
           );
           i++;
         }
         elements.push(
           <ul key={key++} className="my-5 space-y-0 text-left pl-1">
             {listItems}
-          </ul>
+          </ul>,
         );
       } else if (line.trim().match(/^\d+\./)) {
         const listItems: React.JSX.Element[] = [];
@@ -149,11 +139,11 @@ const FormattedMessage = ({ content }: { content: string }) => {
           let content = lines[i].replace(/^\s*\d+\.\s*/, "").trim();
           content = content.replace(
             /\*\*([^*]+)\*\*/g,
-            '<strong class="font-medium text-foreground">$1</strong>'
+            '<strong class="font-medium text-foreground">$1</strong>',
           );
           content = content.replace(
             /`([^`]+)`/g,
-            '<code class="inline-flex items-center bg-zinc-950 dark:bg-black text-emerald-400 px-3 py-1.5 rounded-lg text-[13px] font-mono border border-zinc-700 dark:border-zinc-800 shadow-lg font-semibold">$1</code>'
+            '<code class="inline-flex items-center bg-zinc-950 dark:bg-black text-emerald-400 px-3 py-1.5 rounded-lg text-[13px] font-mono border border-zinc-700 dark:border-zinc-800 shadow-lg font-semibold">$1</code>',
           );
 
           listItems.push(
@@ -165,7 +155,7 @@ const FormattedMessage = ({ content }: { content: string }) => {
                 className="flex-1 text-foreground/85 leading-relaxed"
                 dangerouslySetInnerHTML={{ __html: content }}
               />
-            </li>
+            </li>,
           );
           num++;
           i++;
@@ -173,7 +163,7 @@ const FormattedMessage = ({ content }: { content: string }) => {
         elements.push(
           <ol key={key++} className="my-5 space-y-0 text-left pl-1">
             {listItems}
-          </ol>
+          </ol>,
         );
       } else if (line.trim().startsWith("```")) {
         let codeBlock = "";
@@ -217,7 +207,7 @@ const FormattedMessage = ({ content }: { content: string }) => {
                 {codeBlock.trim()}
               </code>
             </pre>
-          </div>
+          </div>,
         );
       } else if (line.trim().length > 0) {
         let formattedLine = line;
@@ -231,26 +221,26 @@ const FormattedMessage = ({ content }: { content: string }) => {
               className="font-mono text-[13px] text-foreground/70 leading-tight my-1"
             >
               {line}
-            </pre>
+            </pre>,
           );
         } else {
           formattedLine = formattedLine.replace(/^-\s*/, "");
 
           formattedLine = formattedLine.replace(
             /\*\*([^*:]+):\*\*/g,
-            '<strong class="font-medium text-foreground">$1:</strong>'
+            '<strong class="font-medium text-foreground">$1:</strong>',
           );
           formattedLine = formattedLine.replace(
             /\*\*([^*]+)\*\*/g,
-            '<strong class="font-medium text-foreground">$1</strong>'
+            '<strong class="font-medium text-foreground">$1</strong>',
           );
           formattedLine = formattedLine.replace(
             /\*([^*]+)\*/g,
-            '<em class="italic text-foreground/80">$1</em>'
+            '<em class="italic text-foreground/80">$1</em>',
           );
           formattedLine = formattedLine.replace(
             /`([^`]+)`/g,
-            '<code class="inline-flex items-center bg-zinc-950 dark:bg-black text-emerald-400 px-3 py-1.5 rounded-lg text-[13px] font-mono border border-zinc-700 dark:border-zinc-800 shadow-lg font-semibold">$1</code>'
+            '<code class="inline-flex items-center bg-zinc-950 dark:bg-black text-emerald-400 px-3 py-1.5 rounded-lg text-[13px] font-mono border border-zinc-700 dark:border-zinc-800 shadow-lg font-semibold">$1</code>',
           );
 
           elements.push(
@@ -258,7 +248,7 @@ const FormattedMessage = ({ content }: { content: string }) => {
               key={key++}
               className="mb-4 leading-7 text-foreground/85 text-left text-[15px]"
               dangerouslySetInnerHTML={{ __html: formattedLine }}
-            />
+            />,
           );
         }
         i++;
@@ -300,7 +290,7 @@ const cleanXMLResponse = (xmlText: string): string => {
       matches.forEach((match) => {
         const content = match.replace(
           new RegExp(`<\\/?${tag}[^>]*>`, "gi"),
-          ""
+          "",
         );
 
         let sectionTitle = "";
@@ -358,7 +348,7 @@ export default function GrindAIChat() {
   // For smooth streaming
   const [streamingMessage, setStreamingMessage] = useState<string>("");
   const [streamingMessageId, setStreamingMessageId] = useState<string | null>(
-    null
+    null,
   );
   const [pageLoading, setPageLoading] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -371,15 +361,15 @@ export default function GrindAIChat() {
   const [gettingUserLatestCreditLoading, setGettingUserLatestCreditLoading] =
     useState(false);
   const userFirstPrompt = useSelector(
-    (state: RootState) => state.userPrompts.prompt
+    (state: RootState) => state.userPrompts.prompt,
   );
 
   const userAllChats = useSelector(
-    (state: RootState) => state.userAllChats.allchats
+    (state: RootState) => state.userAllChats.allchats,
   );
 
   const GetUserCreditDetails = useSelector(
-    (state: RootState) => state.userCreditDetails
+    (state: RootState) => state.userCreditDetails,
   );
 
   const currentSession = sessions.find((s) => s.id === id);
@@ -399,7 +389,7 @@ export default function GrindAIChat() {
           setUserCreditDetails({
             aicredit: data.credit,
             maxcredit: data.maxcredit,
-          })
+          }),
         );
       } else {
         toast({
@@ -440,8 +430,8 @@ export default function GrindAIChat() {
                   ...session,
                   messages: [...session.messages, aiMessage],
                 }
-              : session
-          )
+              : session,
+          ),
         );
         setStreamingMessage("");
         setStreamingMessageId(aiMessageId);
@@ -482,13 +472,13 @@ export default function GrindAIChat() {
                             messages: session.messages.map((msg) =>
                               msg.id === aiMessageId
                                 ? { ...msg, content: finalCleanedText }
-                                : msg
+                                : msg,
                             ),
                           }
-                        : session
+                        : session,
                     );
                     const updatedSession = updatedSessions.find(
-                      (s) => s.id === id
+                      (s) => s.id === id,
                     );
                     if (updatedSession) {
                       fetch(`${BACKENDURL}/grindai/update-chat/${id}`, {
@@ -531,11 +521,11 @@ export default function GrindAIChat() {
                             messages: session.messages.map((msg) =>
                               msg.id === aiMessageId
                                 ? { ...msg, content: cleaned }
-                                : msg
+                                : msg,
                             ),
                           }
-                        : session
-                    )
+                        : session,
+                    ),
                   );
                 }
                 if (data.error) {
@@ -555,11 +545,11 @@ export default function GrindAIChat() {
                 ? {
                     ...session,
                     messages: session.messages.filter(
-                      (msg) => msg.id !== aiMessageId
+                      (msg) => msg.id !== aiMessageId,
                     ),
                   }
-                : session
-            )
+                : session,
+            ),
           );
         }
       } catch (e) {
@@ -572,7 +562,7 @@ export default function GrindAIChat() {
         setIsLoading(false);
       }
     },
-    [id, sessions, setSessions]
+    [id, sessions, setSessions],
   );
 
   async function getUserDetails() {
@@ -590,7 +580,7 @@ export default function GrindAIChat() {
           setUserCreditDetails({
             aicredit: data.user.aitoken,
             maxcredit: data.user.maxaitoken,
-          })
+          }),
         );
       } else {
         toast({
@@ -646,8 +636,8 @@ export default function GrindAIChat() {
                         (userPrompt.length > 30 ? "..." : "")
                       : session.title,
                 }
-              : session
-          )
+              : session,
+          ),
         );
 
         setIsLoading(true);
@@ -693,14 +683,14 @@ export default function GrindAIChat() {
                             messages: session.messages.map((msg) =>
                               msg.id === aiMessageId
                                 ? { ...msg, content: finalCleanedText }
-                                : msg
+                                : msg,
                             ),
                           }
-                        : session
+                        : session,
                     );
 
                     const updatedSession = updatedSessions.find(
-                      (s) => s.id === id
+                      (s) => s.id === id,
                     );
                     if (updatedSession) {
                       fetch(`${BACKENDURL}/grindai/update-chat/${id}`, {
@@ -738,11 +728,11 @@ export default function GrindAIChat() {
                             messages: session.messages.map((msg) =>
                               msg.id === aiMessageId
                                 ? { ...msg, content: displayText }
-                                : msg
+                                : msg,
                             ),
                           }
-                        : session
-                    )
+                        : session,
+                    ),
                   );
                 }
 
@@ -765,11 +755,11 @@ export default function GrindAIChat() {
                 ? {
                     ...session,
                     messages: session.messages.filter(
-                      (msg) => msg.id !== aiMessageId
+                      (msg) => msg.id !== aiMessageId,
                     ),
                   }
-                : session
-            )
+                : session,
+            ),
           );
         }
       } catch (e) {
@@ -782,7 +772,7 @@ export default function GrindAIChat() {
         setIsLoading(false);
       }
     },
-    [id, sessions, setSessions]
+    [id, sessions, setSessions],
   );
 
   const getUserChats = async () => {
@@ -830,7 +820,7 @@ export default function GrindAIChat() {
           body: JSON.stringify({
             message: JSON.stringify(newMessage),
           }),
-        }
+        },
       );
       if (response.ok) {
         const data = await response.json();
@@ -888,7 +878,7 @@ export default function GrindAIChat() {
         Array.isArray(currentSessionExists.messages) &&
         currentSessionExists.messages.length > 0
           ? currentSessionExists.messages.some(
-              (msg) => msg.role === "user" && msg.content === userFirstPrompt
+              (msg) => msg.role === "user" && msg.content === userFirstPrompt,
             )
           : false;
 
@@ -928,7 +918,7 @@ export default function GrindAIChat() {
           "Content-Type": "application/json",
           token: localStorage.getItem("token") || "",
         },
-      }
+      },
     );
 
     if (resposne.ok) {
@@ -968,7 +958,7 @@ export default function GrindAIChat() {
         const messages = JSON.parse(existingSession.message);
         if (Array.isArray(messages)) {
           const firstUserMessage = messages.find(
-            (msg: Message) => msg.role === "user" && msg.content
+            (msg: Message) => msg.role === "user" && msg.content,
           );
           const newSession: ChatSession = {
             id,
@@ -1038,401 +1028,342 @@ export default function GrindAIChat() {
   };
 
   return (
-    <div className="flex h-screen bg-background flex-col overflow-hidden">
-      <header className="sticky top-0 z-50 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-16 items-center justify-between px-4">
-          <div
-            className="flex cursor-pointer items-center gap-2 ml-6"
-            onClick={() => navigate("/")}
-          >
-            <SquareChevronRight className="h-6 w-6" />
-            <span className="text-xl font-bold">Grind</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Link
-              to="/problems"
-              className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"
-            >
-              Problems
-            </Link>
-            <Link
-              to="/contest"
-              className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"
-            >
-              Contest
-            </Link>
-            <Link
-              to="/compiler"
-              className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"
-            >
-              Compiler
-            </Link>
-            <Link
-              to="/grind-ai"
-              className="px-4 py-2 rounded-full bg-blue-500 text-white text-base font-medium transition-all hover:bg-blue-600"
-            >
-              Grind AI
-            </Link>
-            {/* <Link
-              to="/learning"
-              className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"
-            >
-              Learning
-            </Link>
-            <Link 
-              to="/room" 
-              className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"
-            >
-              Rooms
-            </Link> */}
-            <Link
-              to="/premium"
-              className="px-4 py-2 rounded-full text-base font-medium text-muted-foreground transition-all hover:bg-muted"
-            >
-              Premium
-            </Link>
-          </div>
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleTheme}
-              className="rounded-full"
-            >
-              {theme === "dark" ? (
-                <Sun className="h-5 w-5" />
-              ) : (
-                <Moon className="h-5 w-5" />
-              )}
-            </Button>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded-full">
-                  <Avatar>
-                    <AvatarImage
-                      src={UserProfile.user.avatar || ""}
-                      alt="@user"
-                    />
-                    <AvatarFallback>
-                      {UserProfile?.user.fullname?.[0] || "G"}
-                    </AvatarFallback>
-                  </Avatar>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-44">
-                <DropdownMenuItem onClick={() => navigate("/you")}>
-                  <UserIcon className="mr-2 h-4 w-4" />
-                  Profile
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={handleSignOut}
-                  className="text-red-600 focus:text-red-700"
-                >
-                  <LogOut className="mr-2 h-4 w-4" /> Sign Out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </div>
-      </header>
-      <div className="flex flex-1 overflow-hidden relative">
-        <div
-          className={`${
-            isSidebarOpen ? "w-72" : "w-0"
-          } transition-all duration-300 border-r border-border/40 bg-background/95 backdrop-blur flex flex-col overflow-hidden relative`}
-        >
-          <div className="p-4 border-b border-border/40">
-            <Button
-              onClick={HandleNewChat}
-              className="w-full gap-2"
-              variant="outline"
-            >
-              <Plus className="h-4 w-4" />
-              New Chat
-            </Button>
-          </div>
+    <div className="min-h-screen bg-background sidebar-offset">
+      <MainSideNav
+        active="ai"
+        theme={theme}
+        toggleTheme={toggleTheme}
+        avatarUrl={UserProfile?.user?.avatar || ""}
+        avatarFallback={UserProfile?.user?.fullname?.[0] || "G"}
+        onProfile={() => navigate("/you")}
+        onSignOut={handleSignOut}
+      />
 
-          <ScrollArea className="flex-1 p-2">
-            <div className="space-y-2">
-              {!Array.isArray(userAllChats) || userAllChats.length === 0 ? (
-                <div className="text-center py-8 px-4">
-                  <MessageSquare className="h-8 w-8 text-muted-foreground mx-auto mb-2 opacity-50" />
-                  <p className="text-xs text-muted-foreground">
-                    No chat history yet
-                  </p>
-                </div>
-              ) : (
-                userAllChats.map((session) => (
-                  <div
-                    key={session.id}
-                    onClick={() => navigate(`/grind-ai/c/${session.id}`)}
-                    className={`group flex items-center justify-between p-3 rounded-lg cursor-pointer transition-colors ${
-                      id === session.id ? "bg-muted" : "hover:bg-muted/50"
-                    }`}
-                  >
-                    <div className="flex items-center gap-2 flex-1 min-w-0">
-                      <MessageSquare className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
-                      <span className="text-sm truncate">
-                        {(() => {
-                          try {
-                            const messages = JSON.parse(session.message);
-                            if (!messages || messages.length === 0) {
+      <main className="flex h-[calc(100vh-3.5rem)] flex-col gap-4 px-4 py-4 sm:px-6 sm:py-6 lg:h-screen lg:px-8">
+        <section className="flex flex-none items-center justify-between rounded-2xl border border-border/60 bg-card px-4 py-3">
+          <div className="flex items-center gap-3">
+            <div className="rounded-lg border border-border/60 bg-background p-2">
+              <SquareChevronRight className="h-4 w-4" />
+            </div>
+            <div>
+              <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
+                Dashboard
+              </p>
+              <h1 className="text-base font-semibold sm:text-lg">
+                Grind AI Chat
+              </h1>
+            </div>
+          </div>
+          <Badge variant="outline">
+            {GetUserCreditDetails?.aicredit ?? 0} credits
+          </Badge>
+        </section>
+
+        <div className="relative min-h-0 flex flex-1 overflow-hidden rounded-2xl border border-border/50 bg-card/60">
+          <div
+            className={`${
+              isSidebarOpen ? "w-80" : "w-0"
+            } transition-all duration-300 border-r border-border/40 bg-background/95 backdrop-blur flex flex-col overflow-hidden relative`}
+          >
+            <div className="p-4 border-b border-border/40">
+              <Button
+                onClick={HandleNewChat}
+                className="w-full gap-2"
+                variant="outline"
+              >
+                <Plus className="h-4 w-4" />
+                New Chat
+              </Button>
+            </div>
+
+            <ScrollArea className="flex-1 p-2">
+              <div className="space-y-2">
+                {!Array.isArray(userAllChats) || userAllChats.length === 0 ? (
+                  <div className="text-center py-8 px-4">
+                    <MessageSquare className="h-8 w-8 text-muted-foreground mx-auto mb-2 opacity-50" />
+                    <p className="text-xs text-muted-foreground">
+                      No chat history yet
+                    </p>
+                  </div>
+                ) : (
+                  userAllChats.map((session) => (
+                    <div
+                      key={session.id}
+                      onClick={() => navigate(`/grind-ai/c/${session.id}`)}
+                      className={`group flex items-center justify-between p-3 rounded-lg cursor-pointer transition-colors ${
+                        id === session.id ? "bg-muted" : "hover:bg-muted/50"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 flex-1 min-w-0">
+                        <MessageSquare className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
+                        <span className="text-sm truncate">
+                          {(() => {
+                            try {
+                              const messages = JSON.parse(session.message);
+                              if (!messages || messages.length === 0) {
+                                return "New Chat";
+                              }
+                              const firstUserMessage = messages.find(
+                                (msg: Message) =>
+                                  msg.role === "user" && msg.content,
+                              );
+                              if (firstUserMessage) {
+                                return (
+                                  firstUserMessage.content.slice(0, 30) +
+                                  (firstUserMessage.content.length > 30
+                                    ? "..."
+                                    : "")
+                                );
+                              }
+                              return "New Chat";
+                            } catch (e) {
                               return "New Chat";
                             }
-                            const firstUserMessage = messages.find(
-                              (msg: Message) =>
-                                msg.role === "user" && msg.content
-                            );
-                            if (firstUserMessage) {
-                              return (
-                                firstUserMessage.content.slice(0, 30) +
-                                (firstUserMessage.content.length > 30
-                                  ? "..."
-                                  : "")
-                              );
-                            }
-                            return "New Chat";
-                          } catch (e) {
-                            return "New Chat";
-                          }
-                        })()}
-                      </span>
-                    </div>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity relative z-10"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>
-                            Delete this conversation?
-                          </AlertDialogTitle>
-                          <AlertDialogDescription>
-                            This chat and all its messages will be permanently
-                            deleted. You won't be able to recover it.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Keep it</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={(e) => deleteSession(session.id, e)}
+                          })()}
+                        </span>
+                      </div>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity relative z-10"
+                            onClick={(e) => e.stopPropagation()}
                           >
-                            Delete forever
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>
+                              Delete this conversation?
+                            </AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This chat and all its messages will be permanently
+                              deleted. You won't be able to recover it.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Keep it</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={(e) => deleteSession(session.id, e)}
+                            >
+                              Delete forever
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
+                  ))
+                )}
+              </div>
+            </ScrollArea>
+
+            <div className="p-4 border-t border-border/40 mb-8">
+              {gettingUserLatestCreditLoading ? (
+                <Button
+                  variant="outline"
+                  className="w-full p-4 h-auto flex flex-col items-stretch gap-2 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border-blue-500/20 opacity-50"
+                  disabled
+                >
+                  <div className="flex items-center justify-between w-full animate-pulse">
+                    <span className="text-xs font-medium text-muted-foreground">
+                      AI Credits
+                    </span>
+                    <div className="h-4 w-12 bg-muted rounded"></div>
                   </div>
-                ))
+                  <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden animate-pulse">
+                    <div className="h-full bg-gradient-to-r from-blue-500/30 to-cyan-500/30 rounded-full w-full"></div>
+                  </div>
+                  <div className="h-3 w-32 bg-muted rounded animate-pulse"></div>
+                </Button>
+              ) : (
+                <Button
+                  variant="outline"
+                  className="w-full p-4 h-auto flex flex-col items-stretch gap-2 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border-blue-500/20 hover:from-blue-500/20 hover:to-cyan-500/20"
+                >
+                  <div className="flex items-center justify-between w-full">
+                    <span className="text-xs font-medium text-muted-foreground">
+                      AI Credits
+                    </span>
+                    <span className="text-sm font-bold text-blue-500">
+                      {GetUserCreditDetails?.aicredit}
+                    </span>
+                  </div>
+                  <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full"
+                      style={{
+                        width: `${(GetUserCreditDetails?.aicredit / GetUserCreditDetails?.maxcredit) * 100}%`,
+                      }}
+                    ></div>
+                  </div>
+                  <p className="text-xs text-muted-foreground text-left">
+                    {GetUserCreditDetails?.aicredit} of{" "}
+                    {GetUserCreditDetails?.maxcredit} credits remaining
+                  </p>
+                  {GetUserCreditDetails?.aicredit === 0 ? (
+                    <div className="mt-3 pt-3 border-t border-border/40">
+                      <div className="text-center space-y-2">
+                        <p className="text-xs text-red-500 font-medium">
+                          You have exhausted your AI credits.
+                        </p>
+                        <Button
+                          size="sm"
+                          className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white"
+                          onClick={() => navigate("/premium/pricing")}
+                        >
+                          <Zap className="h-3 w-3 mr-2" />
+                          Upgrade Plan
+                        </Button>
+                      </div>
+                    </div>
+                  ) : null}
+                </Button>
               )}
             </div>
-          </ScrollArea>
 
-          <div className="p-4 border-t border-border/40 mb-8">
-            {gettingUserLatestCreditLoading ? (
+            {isSidebarOpen && (
               <Button
-                variant="outline"
-                className="w-full p-4 h-auto flex flex-col items-stretch gap-2 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border-blue-500/20 opacity-50"
-                disabled
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsSidebarOpen(false)}
+                className="absolute -right-10 top-4 rounded-full h-8 w-8 bg-background border border-border/40 hover:bg-muted"
               >
-                <div className="flex items-center justify-between w-full animate-pulse">
-                  <span className="text-xs font-medium text-muted-foreground">
-                    AI Credits
-                  </span>
-                  <div className="h-4 w-12 bg-muted rounded"></div>
-                </div>
-                <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden animate-pulse">
-                  <div className="h-full bg-gradient-to-r from-blue-500/30 to-cyan-500/30 rounded-full w-full"></div>
-                </div>
-                <div className="h-3 w-32 bg-muted rounded animate-pulse"></div>
-              </Button>
-            ) : (
-              <Button
-                variant="outline"
-                className="w-full p-4 h-auto flex flex-col items-stretch gap-2 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border-blue-500/20 hover:from-blue-500/20 hover:to-cyan-500/20"
-              >
-                <div className="flex items-center justify-between w-full">
-                  <span className="text-xs font-medium text-muted-foreground">
-                    AI Credits
-                  </span>
-                  <span className="text-sm font-bold text-blue-500">
-                    {GetUserCreditDetails?.aicredit}
-                  </span>
-                </div>
-                <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full"
-                    style={{
-                      width: `${(GetUserCreditDetails?.aicredit / GetUserCreditDetails?.maxcredit) * 100}%`,
-                    }}
-                  ></div>
-                </div>
-                <p className="text-xs text-muted-foreground text-left">
-                  {GetUserCreditDetails?.aicredit} of{" "}
-                  {GetUserCreditDetails?.maxcredit} credits remaining
-                </p>
-                {GetUserCreditDetails?.aicredit === 0 ? (
-                  <div className="mt-3 pt-3 border-t border-border/40">
-                    <div className="text-center space-y-2">
-                      <p className="text-xs text-red-500 font-medium">
-                        You have exhausted your AI credits.
-                      </p>
-                      <Button
-                        size="sm"
-                        className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white"
-                        onClick={() => navigate("/premium/pricing")}
-                      >
-                        <Zap className="h-3 w-3 mr-2" />
-                        Upgrade Plan
-                      </Button>
-                    </div>
-                  </div>
-                ) : null}
+                <ChevronLeft className="h-4 w-4" />
               </Button>
             )}
           </div>
 
-          {isSidebarOpen && (
+          {!isSidebarOpen && (
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => setIsSidebarOpen(false)}
-              className="absolute -right-10 top-4 rounded-full h-8 w-8 bg-background border border-border/40 hover:bg-muted"
+              onClick={() => setIsSidebarOpen(true)}
+              className="absolute left-4 top-4 z-10 rounded-full h-8 w-8 bg-background border border-border/40 hover:bg-muted"
             >
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronRight className="h-4 w-4" />
             </Button>
           )}
-        </div>
-
-        {!isSidebarOpen && (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setIsSidebarOpen(true)}
-            className="absolute left-4 top-4 z-10 rounded-full h-8 w-8 bg-background border border-border/40 hover:bg-muted"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        )}
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <ScrollArea className="flex-1 p-4">
-            {pageLoading ? (
-              <div className="h-full flex items-center justify-center">
-                <div className="max-w-md mx-auto text-center space-y-4">
-                  <div className="h-12 w-12 rounded-full bg-gradient-to-br from-blue-500/20 to-cyan-500/20 flex items-center justify-center mx-auto animate-pulse">
-                    <SquareChevronRight className="h-6 w-6 text-blue-500" />
+          <div className="flex-1 flex flex-col overflow-hidden">
+            <ScrollArea className="flex-1 p-4">
+              {pageLoading ? (
+                <div className="h-full flex items-center justify-center">
+                  <div className="max-w-md mx-auto text-center space-y-4">
+                    <div className="h-12 w-12 rounded-full bg-gradient-to-br from-blue-500/20 to-cyan-500/20 flex items-center justify-center mx-auto animate-pulse">
+                      <SquareChevronRight className="h-6 w-6 text-blue-500" />
+                    </div>
+                    <div className="space-y-2">
+                      <div className="h-4 bg-muted rounded-full w-48 mx-auto animate-pulse"></div>
+                      <div className="h-4 bg-muted rounded-full w-32 mx-auto animate-pulse"></div>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Loading your chat...
+                    </p>
                   </div>
-                  <div className="space-y-2">
-                    <div className="h-4 bg-muted rounded-full w-48 mx-auto animate-pulse"></div>
-                    <div className="h-4 bg-muted rounded-full w-32 mx-auto animate-pulse"></div>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    Loading your chat...
-                  </p>
                 </div>
-              </div>
-            ) : !currentSession ||
-              !currentSession.messages ||
-              !Array.isArray(currentSession.messages) ||
-              currentSession.messages.length === 0 ? (
-              <div className="h-full flex items-center justify-center"></div>
-            ) : (
-              <div className="max-w-4xl mx-auto w-full space-y-6 pb-4 pt-4">
-                {currentSession.messages.map((mess: Message) => {
-                  // If this is the streaming assistant message, show live typing indicator
-                  const isStreaming =
-                    mess.id === streamingMessageId && isLoading;
-                  return (
-                    <div key={mess.id} className="flex gap-4 items-start group">
+              ) : !currentSession ||
+                !currentSession.messages ||
+                !Array.isArray(currentSession.messages) ||
+                currentSession.messages.length === 0 ? (
+                <div className="h-full flex items-center justify-center"></div>
+              ) : (
+                <div className="max-w-4xl mx-auto w-full space-y-6 pb-4 pt-4">
+                  {currentSession.messages.map((mess: Message) => {
+                    // If this is the streaming assistant message, show live typing indicator
+                    const isStreaming =
+                      mess.id === streamingMessageId && isLoading;
+                    return (
                       <div
-                        className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
-                          mess.role === "user"
-                            ? "bg-green-500/10 border border-green-500/20"
-                            : "bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-blue-500/20"
-                        }`}
+                        key={mess.id}
+                        className="flex gap-4 items-start group"
                       >
-                        {mess.role === "user" ? (
-                          <User className="h-5 w-5 text-green-500" />
-                        ) : (
-                          <SquareChevronRight className="h-5 w-5 text-blue-500" />
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-semibold text-sm text-foreground mb-2 text-left">
-                          {mess.role === "user" ? "You" : "Grind AI"}
-                        </div>
-                        <div className="prose prose-sm dark:prose-invert max-w-none">
-                          {isStreaming ? (
-                            <>
-                              <FormattedMessage
-                                content={streamingMessage || mess.content || ""}
-                              />
-                              <span className="ml-1 animate-pulse text-blue-500">
-                                |
-                              </span>
-                            </>
-                          ) : mess.content ? (
-                            <FormattedMessage content={mess.content} />
+                        <div
+                          className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
+                            mess.role === "user"
+                              ? "bg-green-500/10 border border-green-500/20"
+                              : "bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-blue-500/20"
+                          }`}
+                        >
+                          {mess.role === "user" ? (
+                            <User className="h-5 w-5 text-green-500" />
                           ) : (
-                            <div className="flex gap-1.5 py-2">
-                              <div
-                                className="w-2 h-2 rounded-full bg-blue-500 animate-bounce"
-                                style={{ animationDelay: "0ms" }}
-                              />
-                              <div
-                                className="w-2 h-2 rounded-full bg-blue-500 animate-bounce"
-                                style={{ animationDelay: "150ms" }}
-                              />
-                              <div
-                                className="w-2 h-2 rounded-full bg-blue-500 animate-bounce"
-                                style={{ animationDelay: "300ms" }}
-                              />
-                            </div>
+                            <SquareChevronRight className="h-5 w-5 text-blue-500" />
                           )}
                         </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="font-semibold text-sm text-foreground mb-2 text-left">
+                            {mess.role === "user" ? "You" : "Grind AI"}
+                          </div>
+                          <div className="prose prose-sm dark:prose-invert max-w-none">
+                            {isStreaming ? (
+                              <>
+                                <FormattedMessage
+                                  content={
+                                    streamingMessage || mess.content || ""
+                                  }
+                                />
+                                <span className="ml-1 animate-pulse text-blue-500">
+                                  |
+                                </span>
+                              </>
+                            ) : mess.content ? (
+                              <FormattedMessage content={mess.content} />
+                            ) : (
+                              <div className="flex gap-1.5 py-2">
+                                <div
+                                  className="w-2 h-2 rounded-full bg-blue-500 animate-bounce"
+                                  style={{ animationDelay: "0ms" }}
+                                />
+                                <div
+                                  className="w-2 h-2 rounded-full bg-blue-500 animate-bounce"
+                                  style={{ animationDelay: "150ms" }}
+                                />
+                                <div
+                                  className="w-2 h-2 rounded-full bg-blue-500 animate-bounce"
+                                  style={{ animationDelay: "300ms" }}
+                                />
+                              </div>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
-                <div ref={messagesEndRef} />
+                    );
+                  })}
+                  <div ref={messagesEndRef} />
+                </div>
+              )}
+            </ScrollArea>
+            <div className="border-t border-border/40 bg-background/70 p-4">
+              <div className="mx-auto w-full max-w-4xl">
+                <div className="relative flex items-center gap-2">
+                  <Input
+                    ref={inputRef}
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    placeholder="Ask Grind AI anything about coding..."
+                    className="h-[88px] w-full rounded-xl pb-[50px] pr-12 text-base"
+                    disabled={isLoading}
+                  />
+                  <Button
+                    onClick={handleSendMessage}
+                    disabled={!input.trim() || isLoading}
+                    size="icon"
+                    className="absolute bottom-2 right-2 h-9 w-9 rounded-lg"
+                  >
+                    <Send className="h-4 w-4" />
+                  </Button>
+                </div>
+                <p className="mt-3 text-center text-xs text-muted-foreground">
+                  Grind AI can make mistakes. Consider checking important
+                  information.
+                </p>
               </div>
-            )}
-          </ScrollArea>
-          <div className="max-w-4xl mx-auto">
-            <div className="relative flex items-center gap-2">
-              <Input
-                ref={inputRef}
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyPress={handleKeyPress}
-                placeholder="Ask Grind AI anything about coding..."
-                className="pr-12 pb-[50px]  h-[90px] text-base rounded-xl w-screen "
-                disabled={isLoading}
-              />
-              <Button
-                onClick={handleSendMessage}
-                disabled={!input.trim() || isLoading}
-                size="icon"
-                className="absolute right-2 h-9 w-9 rounded-lg"
-              >
-                <Send className="h-4 w-4" />
-              </Button>
             </div>
-            <p className="text-xs text-muted-foreground text-center mt-3">
-              Grind AI can make mistakes. Consider checking important
-              information.
-            </p>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

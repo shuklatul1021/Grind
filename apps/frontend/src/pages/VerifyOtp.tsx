@@ -1,7 +1,6 @@
 import { Button } from "@repo/ui/button";
-import { Moon, SquareChevronRight, Sun, Loader2 } from "lucide-react";
+import { SquareChevronRight, Loader2, ArrowLeft, Mail, ShieldCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useTheme } from "../contexts/ThemeContext";
 import {
   InputOTP,
   InputOTPGroup,
@@ -26,7 +25,6 @@ export function VerifyOtp() {
   const navigate = useNavigate();
   const { setAuthState } = useAuthentication();
   const [loading, setLoading] = useState(false);
-  const { theme, toggleTheme } = useTheme();
   const [otp, setOtp] = useState("");
   const { toast } = useToast();
   const user2FAAuthantication = useSelector(
@@ -78,99 +76,96 @@ export function VerifyOtp() {
       HandelVerifyOtp();
     }
   };
+
+  // Mask email for display
+  const maskedEmail = user2FAAuthantication.email
+    ? user2FAAuthantication.email.replace(
+        /(.{2})(.*)(@.*)/,
+        (_, a, b, c) => a + "•".repeat(Math.min(b.length, 6)) + c
+      )
+    : "your email";
+
   return (
     <div className="min-h-screen bg-background flex flex-col relative overflow-hidden">
-      <div className={`absolute inset-0 ${theme === "dark" ? "bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-zinc-900/50 via-background to-background" : "bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-gray-100/50 via-background to-background"}`} />
-      <div className={`absolute inset-0 bg-[size:60px_60px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_70%,transparent_100%)] ${theme === "dark" ? "bg-grid-white/[0.02]" : "bg-grid-black/[0.02]"}`} />
-      <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-96 h-96 bg-primary/10 rounded-full blur-3xl opacity-30" />
+      {/* Background effects */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:32px_32px] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_50%,#000_70%,transparent_100%)]" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-foreground/[0.03] rounded-full blur-[120px] pointer-events-none" />
 
-      <header className="fixed top-0 left-0 right-0 z-50 border-b border-border/40 bg-background/80 backdrop-blur-xl">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between max-w-7xl">
-          <div
-            className="flex items-center gap-2 font-bold text-lg tracking-tight cursor-pointer hover:opacity-80 transition-opacity"
-            onClick={() => navigate("/")}
-          >
-            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-black text-white">
-              <SquareChevronRight className="h-5 w-5" />
-            </div>
-            <span>Grind</span>
-          </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={toggleTheme}
-            className="rounded-full hover:bg-muted"
-          >
-            {theme === "dark" ? (
-              <Sun className="h-5 w-5" />
-            ) : (
-              <Moon className="h-5 w-5" />
-            )}
-          </Button>
-        </div>
-      </header>
+      {/* Back Button */}
+      <button
+        onClick={() => navigate("/auth")}
+        className="absolute top-6 left-6 z-50 flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors group"
+      >
+        <ArrowLeft className="h-4 w-4 group-hover:-translate-x-0.5 transition-transform" />
+        Back
+      </button>
 
-      <main className="flex-1 flex items-center justify-center px-4 py-20 relative z-10">
-        <div className="w-full max-w-md">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold tracking-tight mb-2">
-              Verify OTP
-            </h1>
-            <p className="text-muted-foreground">
-              Enter the 6-digit code sent to your email to continue.
-            </p>
-          </div>
+      <main className="flex-1 flex items-center justify-center px-4 py-12 relative z-10">
+        <div className="w-full max-w-lg">
+          <Card className="border-border/40 bg-card/50 backdrop-blur-xl shadow-2xl shadow-foreground/[0.03]">
+            <CardHeader className="text-center pb-2 pt-8">
+              {/* Icon */}
+              <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-foreground/5 border border-border/40 mx-auto mb-5">
+                <ShieldCheck className="h-7 w-7 text-foreground/70" />
+              </div>
 
-          <Card className="border-border/40 bg-card/50 backdrop-blur-xl shadow-2xl">
-            <CardHeader className="justify-center text-center">
-              <CardTitle>Verification Code</CardTitle>
-              <CardDescription>
-                Please check your inbox for the code.
+              <CardTitle className="text-2xl font-bold tracking-tight">Check your email</CardTitle>
+              <CardDescription className="text-base mt-2 max-w-sm mx-auto">
+                We sent a 6-digit verification code to
               </CardDescription>
+
+              {/* Email display */}
+              <div className="flex items-center justify-center gap-2 mt-3 px-4 py-2.5 rounded-lg bg-muted/50 border border-border/30 mx-auto w-fit">
+                <Mail className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm font-mono text-foreground">{maskedEmail}</span>
+              </div>
             </CardHeader>
-            <CardContent className="flex flex-col items-center gap-6">
+
+            <CardContent className="flex flex-col items-center gap-8 px-8 pb-8 pt-6">
+              {/* OTP Input */}
               <InputOTP
                 maxLength={6}
                 onChange={(value) => setOtp(value)}
                 onKeyPress={handleKeyPress}
               >
-                <div className="flex gap-2 sm:gap-4 justify-center">
+                <div className="flex gap-2 sm:gap-3 justify-center">
                   <InputOTPGroup>
                     <InputOTPSlot
                       index={0}
-                      className={`h-12 w-10 sm:h-14 sm:w-12 text-xl sm:text-2xl ${ theme === "dark" ? "border-white/30" : "border-black/30"} bg-background/50 focus:ring-primary/50 transition-all`}
+                      className="h-14 w-12 sm:h-16 sm:w-14 text-2xl sm:text-3xl font-semibold border-border/40 bg-background/50 focus:border-foreground/40 focus:ring-foreground/10 transition-all"
                     />
                     <InputOTPSlot
                       index={1}
-                      className={`h-12 w-10 sm:h-14 sm:w-12 text-xl sm:text-2xl ${ theme === "dark" ? "border-white/30" : "border-black/30"} bg-background/50 focus:ring-primary/50 transition-all`}
+                      className="h-14 w-12 sm:h-16 sm:w-14 text-2xl sm:text-3xl font-semibold border-border/40 bg-background/50 focus:border-foreground/40 focus:ring-foreground/10 transition-all"
                     />
                     <InputOTPSlot
                       index={2}
-                      className={`h-12 w-10 sm:h-14 sm:w-12 text-xl sm:text-2xl ${ theme === "dark" ? "border-white/30" : "border-black/30"} bg-background/50 focus:ring-primary/50 transition-all`}
+                      className="h-14 w-12 sm:h-16 sm:w-14 text-2xl sm:text-3xl font-semibold border-border/40 bg-background/50 focus:border-foreground/40 focus:ring-foreground/10 transition-all"
                     />
                   </InputOTPGroup>
-                  <InputOTPSeparator className="w-2 mt-4 opacity-50" />
+                  <InputOTPSeparator className="w-3 mt-5 text-muted-foreground/40" />
                   <InputOTPGroup>
                     <InputOTPSlot
                       index={3}
-                      className={`h-12 w-10 sm:h-14 sm:w-12 text-xl sm:text-2xl ${ theme === "dark" ? "border-white/30" : "border-black/30"} bg-background/50 focus:ring-primary/50 transition-all`}
+                      className="h-14 w-12 sm:h-16 sm:w-14 text-2xl sm:text-3xl font-semibold border-border/40 bg-background/50 focus:border-foreground/40 focus:ring-foreground/10 transition-all"
                     />
                     <InputOTPSlot
                       index={4}
-                      className={`h-12 w-10 sm:h-14 sm:w-12 text-xl sm:text-2xl ${ theme === "dark" ? "border-white/30" : "border-black/30"} bg-background/50 focus:ring-primary/50 transition-all`}
+                      className="h-14 w-12 sm:h-16 sm:w-14 text-2xl sm:text-3xl font-semibold border-border/40 bg-background/50 focus:border-foreground/40 focus:ring-foreground/10 transition-all"
                     />
                     <InputOTPSlot
                       index={5}
-                      className={`h-12 w-10 sm:h-14 sm:w-12 text-xl sm:text-2xl ${ theme === "dark" ? "border-white/30" : "border-black/30"} bg-background/50 focus:ring-primary/50 transition-all`}
+                      className="h-14 w-12 sm:h-16 sm:w-14 text-2xl sm:text-3xl font-semibold border-border/40 bg-background/50 focus:border-foreground/40 focus:ring-foreground/10 transition-all"
                     />
                   </InputOTPGroup>
                 </div>
               </InputOTP>
 
+              {/* Actions */}
               <div className="flex flex-col gap-3 w-full">
                 <Button
-                  className="w-full h-11 text-base font-medium"
-                  disabled={loading}
+                  className="w-full h-12 text-base font-medium bg-foreground text-background hover:bg-foreground/90 rounded-lg"
+                  disabled={loading || otp.length < 6}
                   onClick={HandelVerifyOtp}
                 >
                   {loading ? (
@@ -179,28 +174,31 @@ export function VerifyOtp() {
                       Verifying...
                     </>
                   ) : (
-                    "Verify Code"
+                    "Verify & Continue"
                   )}
                 </Button>
-                <Button
-                  variant="ghost"
-                  className="w-full h-10 text-sm text-muted-foreground hover:text-foreground"
-                  onClick={() => navigate("/auth")}
-                >
-                  Change Email
-                </Button>
+
+                {/* Resend / Change email */}
+                <div className="flex items-center justify-center gap-1 text-sm text-muted-foreground">
+                  <span>Didn't receive it?</span>
+                  <button
+                    className="font-medium text-foreground hover:underline transition-colors"
+                    onClick={() => navigate("/auth")}
+                  >
+                    Try again
+                  </button>
+                </div>
               </div>
             </CardContent>
           </Card>
 
-          <p className="mt-8 text-center text-xs text-muted-foreground px-8">
+          <p className="mt-6 text-center text-xs text-muted-foreground px-4">
             By continuing, you agree to our{" "}
-            <br/>
-            <a href="/terms" className="underline hover:text-primary">
+            <a href="/terms-and-conditions" className="underline hover:text-foreground transition-colors">
               Terms of Service
             </a>{" "}
             and{" "}
-            <a href="/privacy" className="underline hover:text-primary">
+            <a href="/privacy-policy" className="underline hover:text-foreground transition-colors">
               Privacy Policy
             </a>
             .

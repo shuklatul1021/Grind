@@ -5,10 +5,47 @@ services:
     build:
       context: .
       dockerfile: Docker/Backend.dockerfile
+    command: npm run backend:start
     ports:
       - "5000:5000"
     environment:
       - NODE_ENV=production
+    networks:
+      - grind-network
+
+  publisher:
+    build:
+      context: .
+      dockerfile: Docker/Backend.dockerfile
+    command: npm run publisher:start
+    ports:
+      - "5001:5001"
+    depends_on:
+      - redis
+    environment:
+      - NODE_ENV=production
+      - REDIS_URL=redis://redis:6379
+      - PUBLISHER_PORT=5001
+    networks:
+      - grind-network
+
+  worker:
+    build:
+      context: .
+      dockerfile: Docker/Backend.dockerfile
+    command: npm run worker:start
+    depends_on:
+      - redis
+    environment:
+      - NODE_ENV=production
+      - REDIS_URL=redis://redis:6379
+    networks:
+      - grind-network
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
     networks:
       - grind-network
 

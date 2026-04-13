@@ -12,7 +12,6 @@ import { Input } from "@repo/ui/input";
 import { Label } from "@repo/ui/label";
 import { Textarea } from "@repo/ui/textarea";
 import {
-  SquareChevronRight,
   User,
   Mail,
   MapPin,
@@ -27,6 +26,10 @@ import {
   Flame,
   Target,
   ArrowLeft,
+  ExternalLink,
+  Loader2,
+  Code2,
+  CheckCircle2,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@repo/ui/avatar";
 import { BACKENDURL } from "../utils/urls";
@@ -80,8 +83,6 @@ export default function ProfilePage() {
       if (response.ok) {
         const data = await response.json();
         const imageUrl = data.secure_url;
-
-        console.log("Uploaded Image URL:", imageUrl);
         setEditedProfile({ ...editedProfile, avatar: imageUrl });
         setAvatarPreview(imageUrl);
         setIsUploading(false);
@@ -196,421 +197,477 @@ export default function ProfilePage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <header className="sticky top-0 z-50 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-16 items-center justify-between px-4">
-          <div className="container flex h-16 items-center justify-between px-4">
-            <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/')}>
-              <SquareChevronRight className="h-6 w-6" />
-              <span className="text-xl font-bold">Grind</span>
-            </div>
-            <Button variant="ghost" onClick={() => navigate(-1)} className="gap-2">
-              <ArrowLeft className="h-4 w-4" />
-              Back to Problem
-            </Button>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-background">
+      {/* Background grid */}
+      <div className="fixed inset-0 -z-10 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
+
+      {/* Floating back button */}
+      <button
+        onClick={() => navigate(-1)}
+        className="fixed top-5 left-5 z-50 flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors group"
+      >
+        <ArrowLeft className="h-4 w-4 group-hover:-translate-x-0.5 transition-transform" />
+        Back
+      </button>
 
       {isLoading ? (
-        <div className="flex items-center justify-center py-12">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="flex flex-col items-center gap-3">
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-foreground/20 border-t-foreground" />
+            <p className="text-sm text-muted-foreground">Loading profile...</p>
+          </div>
         </div>
       ) : (
-        <main className="container flex-1 px-4 py-12">
-          <div className="mx-auto max-w-6xl">
-            <div className="text-center mb-12">
-              <h1 className="text-4xl font-bold mb-4">
-                Your
-                <span className="bg-gradient-to-r from-blue-500 to-cyan-500 bg-clip-text text-transparent">
-                  {" "}
-                  Profile
-                </span>
-              </h1>
-              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                View your coding stats, manage your account settings, and
-                showcase your achievements
-              </p>
-            </div>
+        <main className="max-w-4xl mx-auto px-4 py-16">
+          {/* Profile Header Card */}
+          <div className="relative mb-8">
+            {/* Banner */}
+            <div className="h-32 rounded-t-2xl bg-gradient-to-r from-muted/80 via-muted/40 to-muted/80 border border-b-0 border-border/40" />
 
-            {/* Tab Buttons */}
-            <div className="flex justify-center gap-4 mb-8">
-              <Button
-                variant={activeTab === "view" ? "default" : "outline"}
-                onClick={() => setActiveTab("view")}
-                className="px-8"
-              >
-                <User className="mr-2 h-4 w-4" />
-                View Profile
-              </Button>
-              <Button
-                variant={activeTab === "edit" ? "default" : "outline"}
-                onClick={() => setActiveTab("edit")}
-                className="px-8"
-              >
-                <Edit2 className="mr-2 h-4 w-4" />
-                Edit Profile
-              </Button>
-            </div>
-            <div className="max-w-4xl mx-auto space-y-6">
-              {activeTab === "view" ? (
-                <>
-                  <Card className="border-border/40 bg-card/50 backdrop-blur">
-                    <CardContent className="pt-6">
-                      <div className="flex flex-col md:flex-row gap-6 items-start">
-                        <Avatar className="h-32 w-32 border-4 border-blue-500">
-                          <AvatarImage src={profile.avatar} />
-                          <AvatarFallback className="text-2xl bg-gradient-to-br from-blue-500 to-purple-600 text-white">
-                            {getInitials(profile.fullname || "")}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1 space-y-4 text-left">
-                          <div>
-                            <h2 className="text-3xl font-bold mb-1">
-                              {profile.fullname || ""}
-                            </h2>
-                            <p className="text-lg text-muted-foreground">
-                              @{profile.username || ""}
-                            </p>
-                          </div>
+            {/* Avatar + Info */}
+            <div className="relative bg-card/50 backdrop-blur-xl border border-border/40 rounded-b-2xl px-6 pb-6">
+              <div className="flex flex-col sm:flex-row items-start gap-5">
+                {/* Avatar positioned to overlap banner */}
+                <div className="-mt-12 flex-shrink-0">
+                  <Avatar className="h-24 w-24 border-4 border-background shadow-xl">
+                    <AvatarImage src={profile.avatar} />
+                    <AvatarFallback className="text-xl bg-foreground/10 text-foreground font-bold">
+                      {getInitials(profile.fullname || "")}
+                    </AvatarFallback>
+                  </Avatar>
+                </div>
 
-                          <p className="text-base">{profile.bio}</p>
+                {/* Name & meta */}
+                <div className="flex-1 pt-2 sm:pt-3 min-w-0">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <div>
+                      <h1 className="text-2xl font-bold tracking-tight text-foreground">
+                        {profile.fullname || "Grind User"}
+                      </h1>
+                      <p className="text-sm text-muted-foreground">
+                        @{profile.username || "username"}
+                      </p>
+                    </div>
 
-                          <div className="flex flex-wrap gap-4 text-sm">
-                            <div className="flex items-center gap-2 text-muted-foreground">
-                              <Mail className="h-4 w-4" />
-                              {profile.email}
-                            </div>
-                            <div className="flex items-center gap-2 text-muted-foreground">
-                              <MapPin className="h-4 w-4" />
-                              {profile.location || ""}
-                            </div>
-                            <br />
-                            <div className="flex items-center gap-2 text-muted-foreground">
-                              <Calendar className="h-4 w-4" />
-                              Joined{" "}
-                              {new Date(
-                                profile.createdAt || ""
-                              ).toLocaleDateString("en-US", {
-                                month: "long",
-                                year: "numeric",
-                              })}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card className="border-border/40 bg-card/50 backdrop-blur">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Trophy className="h-5 w-5 text-yellow-500" />
-                        Statistics
-                      </CardTitle>
-                      <CardDescription>
-                        Your coding journey at a glance
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div className="p-6 rounded-lg bg-gradient-to-br from-blue-500/10 to-blue-600/10 border border-blue-500/20">
-                          <div className="flex items-center gap-3 mb-2">
-                            <Target className="h-6 w-6 text-blue-500" />
-                            <div className="text-3xl font-bold text-blue-500">
-                              {profile.problemsSolved}
-                            </div>
-                          </div>
-                          <div className="text-sm text-muted-foreground">
-                            Problems Solved
-                          </div>
-                        </div>
+                    {/* Tab buttons */}
+                    <div className="flex gap-2">
+                      <Button
+                        variant={activeTab === "view" ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setActiveTab("view")}
+                        className={activeTab === "view" ? "bg-foreground text-background hover:bg-foreground/90" : ""}
+                      >
+                        <User className="mr-1.5 h-3.5 w-3.5" />
+                        View
+                      </Button>
+                      <Button
+                        variant={activeTab === "edit" ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => {
+                          setEditedProfile(profile);
+                          setActiveTab("edit");
+                        }}
+                        className={activeTab === "edit" ? "bg-foreground text-background hover:bg-foreground/90" : ""}
+                      >
+                        <Edit2 className="mr-1.5 h-3.5 w-3.5" />
+                        Edit
+                      </Button>
+                    </div>
+                  </div>
 
-                        <div className="p-6 rounded-lg bg-gradient-to-br from-purple-500/10 to-purple-600/10 border border-purple-500/20">
-                          <div className="flex items-center gap-3 mb-2">
-                            <Trophy className="h-6 w-6 text-purple-500" />
-                            <div className="text-3xl font-bold text-purple-500">
-                              {profile.contestsParticipated}
-                            </div>
-                          </div>
-                          <div className="text-sm text-muted-foreground">
-                            Contests Participated
-                          </div>
-                        </div>
+                  {/* Bio */}
+                  {profile.bio && (
+                    <p className="mt-3 text-sm text-muted-foreground leading-relaxed max-w-lg">
+                      {profile.bio}
+                    </p>
+                  )}
 
-                        <div className="p-6 rounded-lg bg-gradient-to-br from-orange-500/10 to-orange-600/10 border border-orange-500/20">
-                          <div className="flex items-center gap-3 mb-2">
-                            <Flame className="h-6 w-6 text-orange-500" />
-                            <div className="text-3xl font-bold text-orange-500">
-                              {profile.currentStreak}
-                            </div>
-                          </div>
-                          <div className="text-sm text-muted-foreground">
-                            Day Streak
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Social Links Card */}
-                  <Card className="border-border/40 bg-card/50 backdrop-blur">
-                    <CardHeader>
-                      <CardTitle>Social Links</CardTitle>
-                      <CardDescription>
-                        Connect with me on other platforms
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      {profile?.social?.github && (
-                        <a
-                          href={`https://github.com/${profile.social.github}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-3 p-4 rounded-lg border border-border/40 hover:bg-muted transition-colors"
-                        >
-                          <Github className="h-5 w-5" />
-                          <span>github.com/{profile.social.github}</span>
-                        </a>
+                  {/* Meta tags */}
+                  <div className="flex flex-wrap gap-x-4 gap-y-2 mt-3 text-xs text-muted-foreground">
+                    {profile.email && (
+                      <span className="flex items-center gap-1.5">
+                        <Mail className="h-3.5 w-3.5" />
+                        {profile.email}
+                      </span>
+                    )}
+                    {profile.location && (
+                      <span className="flex items-center gap-1.5">
+                        <MapPin className="h-3.5 w-3.5" />
+                        {profile.location}
+                      </span>
+                    )}
+                    <span className="flex items-center gap-1.5">
+                      <Calendar className="h-3.5 w-3.5" />
+                      Joined{" "}
+                      {new Date(profile.createdAt || "").toLocaleDateString(
+                        "en-US",
+                        { month: "long", year: "numeric" }
                       )}
-                      {profile?.social?.linkedin && (
-                        <a
-                          href={`https://linkedin.com/in/${profile.social.linkedin}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-3 p-4 rounded-lg border border-border/40 hover:bg-muted transition-colors"
-                        >
-                          <Linkedin className="h-5 w-5 text-blue-600" />
-                          <span>linkedin.com/in/{profile.social.linkedin}</span>
-                        </a>
-                      )}
-                      {profile?.social?.twitter && (
-                        <a
-                          href={`https://twitter.com/${profile.social.twitter}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-3 p-4 rounded-lg border border-border/40 hover:bg-muted transition-colors"
-                        >
-                          <Twitter className="h-5 w-5 text-blue-400" />
-                          <span>twitter.com/{profile.social.twitter}</span>
-                        </a>
-                      )}
-                    </CardContent>
-                  </Card>
-                </>
-              ) : (
-                // Edit Profile Card
-                <Card className="border-border/40 bg-card/50 backdrop-blur">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Edit2 className="h-5 w-5 text-blue-500" />
-                      Edit Profile
-                    </CardTitle>
-                    <CardDescription>
-                      Update your profile information and social links
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <form onSubmit={handleSave} className="space-y-6">
-                      {/* Avatar Upload */}
-                      <div className="flex items-center gap-6">
-                        <Avatar className="h-24 w-24 border-4 border-blue-500">
-                          <AvatarImage src={avatarPreview || profile.avatar} />
-                          <AvatarFallback className="text-xl bg-gradient-to-br from-blue-500 to-purple-600 text-white">
-                            {getInitials(editedProfile.fullname || "")}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <Label htmlFor="avatar" className="cursor-pointer">
-                            <div className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border hover:bg-muted transition-colors">
-                              <Camera className="h-4 w-4" />
-                              <span className="text-sm">
-                                {isUploading ? "Uploading..." : "Change Avatar"}
-                              </span>
-                            </div>
-                            <input
-                              id="avatar"
-                              type="file"
-                              accept="image/*"
-                              onChange={handleAvatarChange}
-                              className="hidden"
-                            />
-                          </Label>
-                          <p className="text-xs text-muted-foreground mt-2">
-                            Recommended: Square image, at least 400x400px
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="fullName">Full Name *</Label>
-                          <Input
-                            id="fullName"
-                            value={editedProfile.fullname || ""}
-                            onChange={(e) =>
-                              setEditedProfile({
-                                ...editedProfile,
-                                fullname: e.target.value,
-                              })
-                            }
-                            required
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="username">Username *</Label>
-                          <Input
-                            id="username"
-                            value={editedProfile.username}
-                            onChange={(e) =>
-                              setEditedProfile({
-                                ...editedProfile,
-                                username: e.target.value,
-                              })
-                            }
-                            required
-                          />
-                        </div>
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="location">Location</Label>
-                        <Input
-                          id="location"
-                          placeholder="e.g., San Francisco, CA"
-                          value={editedProfile.location}
-                          onChange={(e) =>
-                            setEditedProfile({
-                              ...editedProfile,
-                              location: e.target.value,
-                            })
-                          }
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="bio">Bio</Label>
-                        <Textarea
-                          id="bio"
-                          placeholder="Tell us about yourself..."
-                          value={editedProfile.bio}
-                          onChange={(e) =>
-                            setEditedProfile({
-                              ...editedProfile,
-                              bio: e.target.value,
-                            })
-                          }
-                          rows={4}
-                        />
-                        <p className="text-xs text-muted-foreground">
-                          Brief description for your profile
-                        </p>
-                      </div>
-
-                      {/* Social Links */}
-                      <div className="space-y-4 pt-4 border-t border-border/40">
-                        <h3 className="text-sm font-medium">Social Links</h3>
-
-                        <div className="space-y-2">
-                          <Label
-                            htmlFor="github"
-                            className="flex items-center gap-2"
-                          >
-                            <Github className="h-4 w-4" />
-                            GitHub Username
-                          </Label>
-                          <Input
-                            id="github"
-                            placeholder="username"
-                            value={editedProfile?.social?.github || ""}
-                            onChange={(_e) =>
-                              setEditedProfile({
-                                ...editedProfile,
-                                social: {
-                                  ...editedProfile.social,
-                                  id: editedProfile.social?.id ?? "",
-                                  github: _e.target.value,
-                                },
-                              })
-                            }
-                          />
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label
-                            htmlFor="linkedin"
-                            className="flex items-center gap-2"
-                          >
-                            <Linkedin className="h-4 w-4" />
-                            LinkedIn Username
-                          </Label>
-                          <Input
-                            id="linkedin"
-                            placeholder="username"
-                            value={editedProfile?.social?.linkedin || ""}
-                            onChange={(_e) =>
-                              setEditedProfile({
-                                ...editedProfile,
-                                social: {
-                                  ...editedProfile.social,
-                                  id: editedProfile.social?.id ?? "",
-                                  linkedin: _e.target.value,
-                                },
-                              })
-                            }
-                          />
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label
-                            htmlFor="twitter"
-                            className="flex items-center gap-2"
-                          >
-                            <Twitter className="h-4 w-4" />
-                            Twitter Username
-                          </Label>
-                          <Input
-                            id="twitter"
-                            placeholder="username"
-                            value={editedProfile?.social?.twitter || ""}
-                            onChange={(_e) =>
-                              setEditedProfile({
-                                ...editedProfile,
-                                social: {
-                                  ...editedProfile.social,
-                                  id: editedProfile.social?.id ?? "",
-                                  twitter: _e.target.value,
-                                },
-                              })
-                            }
-                          />
-                        </div>
-                      </div>
-
-                      {/* Action Buttons */}
-                      <div className="flex gap-3 pt-4">
-                        <Button
-                          type="submit"
-                          disabled={handleSaveLoading}
-                          className="flex-1"
-                        >
-                          <Save className="mr-2 h-4 w-4" />
-                          {handleSaveLoading ? "Saving..." : "Save Changes"}
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={handleCancel}
-                          className="flex-1"
-                        >
-                          Cancel
-                        </Button>
-                      </div>
-                    </form>
-                  </CardContent>
-                </Card>
-              )}
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
+
+          {activeTab === "view" ? (
+            <div className="space-y-6">
+              {/* Stats Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <Card className="border-border/40 bg-card/50 backdrop-blur-sm hover:bg-card/70 transition-colors">
+                  <CardContent className="p-5">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-foreground/5 flex items-center justify-center">
+                        <Target className="h-5 w-5 text-foreground/70" />
+                      </div>
+                      <div>
+                        <div className="text-2xl font-bold tracking-tight">
+                          {profile.problemsSolved || 0}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          Problems Solved
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-border/40 bg-card/50 backdrop-blur-sm hover:bg-card/70 transition-colors">
+                  <CardContent className="p-5">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-foreground/5 flex items-center justify-center">
+                        <Trophy className="h-5 w-5 text-foreground/70" />
+                      </div>
+                      <div>
+                        <div className="text-2xl font-bold tracking-tight">
+                          {profile.contestsParticipated || 0}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          Contests Joined
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-border/40 bg-card/50 backdrop-blur-sm hover:bg-card/70 transition-colors">
+                  <CardContent className="p-5">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-foreground/5 flex items-center justify-center">
+                        <Flame className="h-5 w-5 text-foreground/70" />
+                      </div>
+                      <div>
+                        <div className="text-2xl font-bold tracking-tight">
+                          {profile.currentStreak || 0}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          Day Streak
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Social Links */}
+              <Card className="border-border/40 bg-card/50 backdrop-blur-sm">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base font-semibold">Social Links</CardTitle>
+                  <CardDescription className="text-xs">
+                    Your connected platforms
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  {profile?.social?.github ? (
+                    <a
+                      href={`https://github.com/${profile.social.github}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-between p-3 rounded-xl border border-border/40 hover:bg-muted/40 transition-colors group"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-foreground/5 flex items-center justify-center">
+                          <Github className="h-4 w-4" />
+                        </div>
+                        <div>
+                          <div className="text-sm font-medium">GitHub</div>
+                          <div className="text-xs text-muted-foreground">
+                            github.com/{profile.social.github}
+                          </div>
+                        </div>
+                      </div>
+                      <ExternalLink className="h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </a>
+                  ) : null}
+
+                  {profile?.social?.linkedin ? (
+                    <a
+                      href={`https://linkedin.com/in/${profile.social.linkedin}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-between p-3 rounded-xl border border-border/40 hover:bg-muted/40 transition-colors group"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-foreground/5 flex items-center justify-center">
+                          <Linkedin className="h-4 w-4" />
+                        </div>
+                        <div>
+                          <div className="text-sm font-medium">LinkedIn</div>
+                          <div className="text-xs text-muted-foreground">
+                            linkedin.com/in/{profile.social.linkedin}
+                          </div>
+                        </div>
+                      </div>
+                      <ExternalLink className="h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </a>
+                  ) : null}
+
+                  {profile?.social?.twitter ? (
+                    <a
+                      href={`https://twitter.com/${profile.social.twitter}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-between p-3 rounded-xl border border-border/40 hover:bg-muted/40 transition-colors group"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-foreground/5 flex items-center justify-center">
+                          <Twitter className="h-4 w-4" />
+                        </div>
+                        <div>
+                          <div className="text-sm font-medium">Twitter</div>
+                          <div className="text-xs text-muted-foreground">
+                            twitter.com/{profile.social.twitter}
+                          </div>
+                        </div>
+                      </div>
+                      <ExternalLink className="h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </a>
+                  ) : null}
+
+                  {!profile?.social?.github &&
+                    !profile?.social?.linkedin &&
+                    !profile?.social?.twitter && (
+                      <div className="text-center py-6 text-sm text-muted-foreground">
+                        No social links added yet. Edit your profile to add them.
+                      </div>
+                    )}
+                </CardContent>
+              </Card>
+            </div>
+          ) : (
+            /* ── Edit Mode ── */
+            <Card className="border-border/40 bg-card/50 backdrop-blur-sm">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-base font-semibold flex items-center gap-2">
+                  <Edit2 className="h-4 w-4 text-muted-foreground" />
+                  Edit Profile
+                </CardTitle>
+                <CardDescription className="text-xs">
+                  Update your information and social links
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleSave} className="space-y-6">
+                  {/* Avatar Upload */}
+                  <div className="flex items-center gap-5">
+                    <Avatar className="h-20 w-20 border-2 border-border/40">
+                      <AvatarImage src={avatarPreview || profile.avatar} />
+                      <AvatarFallback className="text-lg bg-foreground/10 text-foreground font-bold">
+                        {getInitials(editedProfile.fullname || "")}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <Label htmlFor="avatar" className="cursor-pointer">
+                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-border/40 hover:bg-muted/40 transition-colors text-sm font-medium">
+                          <Camera className="h-4 w-4" />
+                          {isUploading ? "Uploading..." : "Change Avatar"}
+                        </div>
+                        <input
+                          id="avatar"
+                          type="file"
+                          accept="image/*"
+                          onChange={handleAvatarChange}
+                          className="hidden"
+                        />
+                      </Label>
+                      <p className="text-[11px] text-muted-foreground mt-1.5">
+                        Square image, at least 400×400px
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Name fields */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="fullName" className="text-sm">Full Name</Label>
+                      <Input
+                        id="fullName"
+                        value={editedProfile.fullname || ""}
+                        onChange={(e) =>
+                          setEditedProfile({
+                            ...editedProfile,
+                            fullname: e.target.value,
+                          })
+                        }
+                        required
+                        className="h-10 bg-background/50 border-border/40"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="username" className="text-sm">Username</Label>
+                      <Input
+                        id="username"
+                        value={editedProfile.username}
+                        onChange={(e) =>
+                          setEditedProfile({
+                            ...editedProfile,
+                            username: e.target.value,
+                          })
+                        }
+                        required
+                        className="h-10 bg-background/50 border-border/40"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="location" className="text-sm">Location</Label>
+                    <Input
+                      id="location"
+                      placeholder="e.g., San Francisco, CA"
+                      value={editedProfile.location}
+                      onChange={(e) =>
+                        setEditedProfile({
+                          ...editedProfile,
+                          location: e.target.value,
+                        })
+                      }
+                      className="h-10 bg-background/50 border-border/40"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="bio" className="text-sm">Bio</Label>
+                    <Textarea
+                      id="bio"
+                      placeholder="Tell us about yourself..."
+                      value={editedProfile.bio}
+                      onChange={(e) =>
+                        setEditedProfile({
+                          ...editedProfile,
+                          bio: e.target.value,
+                        })
+                      }
+                      rows={3}
+                      className="bg-background/50 border-border/40 resize-none"
+                    />
+                  </div>
+
+                  {/* Social Links */}
+                  <div className="space-y-4 pt-4 border-t border-border/40">
+                    <h3 className="text-sm font-semibold text-muted-foreground">Social Links</h3>
+
+                    <div className="space-y-3">
+                      <div className="space-y-1.5">
+                        <Label htmlFor="github" className="text-sm flex items-center gap-2">
+                          <Github className="h-3.5 w-3.5" /> GitHub
+                        </Label>
+                        <Input
+                          id="github"
+                          placeholder="username"
+                          value={editedProfile?.social?.github || ""}
+                          onChange={(_e) =>
+                            setEditedProfile({
+                              ...editedProfile,
+                              social: {
+                                ...editedProfile.social,
+                                id: editedProfile.social?.id ?? "",
+                                github: _e.target.value,
+                              },
+                            })
+                          }
+                          className="h-10 bg-background/50 border-border/40"
+                        />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <Label htmlFor="linkedin" className="text-sm flex items-center gap-2">
+                          <Linkedin className="h-3.5 w-3.5" /> LinkedIn
+                        </Label>
+                        <Input
+                          id="linkedin"
+                          placeholder="username"
+                          value={editedProfile?.social?.linkedin || ""}
+                          onChange={(_e) =>
+                            setEditedProfile({
+                              ...editedProfile,
+                              social: {
+                                ...editedProfile.social,
+                                id: editedProfile.social?.id ?? "",
+                                linkedin: _e.target.value,
+                              },
+                            })
+                          }
+                          className="h-10 bg-background/50 border-border/40"
+                        />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <Label htmlFor="twitter" className="text-sm flex items-center gap-2">
+                          <Twitter className="h-3.5 w-3.5" /> Twitter
+                        </Label>
+                        <Input
+                          id="twitter"
+                          placeholder="username"
+                          value={editedProfile?.social?.twitter || ""}
+                          onChange={(_e) =>
+                            setEditedProfile({
+                              ...editedProfile,
+                              social: {
+                                ...editedProfile.social,
+                                id: editedProfile.social?.id ?? "",
+                                twitter: _e.target.value,
+                              },
+                            })
+                          }
+                          className="h-10 bg-background/50 border-border/40"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex gap-3 pt-2">
+                    <Button
+                      type="submit"
+                      disabled={handleSaveLoading}
+                      className="flex-1 h-11 bg-foreground text-background hover:bg-foreground/90 font-medium"
+                    >
+                      {handleSaveLoading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Saving...
+                        </>
+                      ) : (
+                        <>
+                          <Save className="mr-2 h-4 w-4" />
+                          Save Changes
+                        </>
+                      )}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleCancel}
+                      className="flex-1 h-11"
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+          )}
         </main>
       )}
     </div>

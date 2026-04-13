@@ -15,7 +15,6 @@ import { Toaster } from "@repo/ui/toaster";
 import { VerifyOtp } from "./pages/VerifyOtp";
 import CompilerPage from "./pages/CompilerPage";
 import AdminLoginPage from "./pages/AdminAuth";
-import AdminDashboard from "./pages/AdminDashboard";
 import AdminCreateContest from "./pages/AdminCreateContest";
 import AdminCreateProblem from "./pages/AdminCreateProblem";
 import AdminProblemDetail from "./pages/AdminProblemDetail";
@@ -30,15 +29,16 @@ import AboutUs from "./pages/AboutUs";
 import TermsAndConditions from "./pages/TermsConditions";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import GrindAI from "./pages/GrindAI";
-import { useEffect } from "react";
 import ProfilePage from "./pages/ProfilePage";
 import GrindAIChat from "./pages/GrindAIChat";
+import SettingsPage from "./pages/SettingsPage";
 import PricingPage from "./pages/PricingPage";
 import CancellationRefunds from "./pages/CancellationRefunds";
 import ShippingPolicy from "./pages/ShippingPolicy";
 import ContactUs from "./pages/ContactUs";
 import PremiumZone from "./pages/PremiumPage";
 import NotFound from "./pages/Not-Found";
+import AdminDashboard from "./pages/AdminDashboard";
 // import { PrimiumResume } from "./premium/resume/Resume";
 // import { ResumeAnalysisPage } from "./premium/resume/ResumeAnalysis";
 // import LearningPage from "./Learning/Learning";
@@ -229,6 +229,7 @@ function App() {
             /> */}
 
             <Route path="/you" element={<ProfilePage />} />
+            <Route path="/settings" element={<SettingsPage />} />
             <Route path="/grind-ai/c/:id" element={<GrindAIChat />} />
           </Route>
           <Route path="/admin/auth" element={<AdminLoginPage />} />

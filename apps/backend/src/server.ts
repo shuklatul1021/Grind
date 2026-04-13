@@ -4,7 +4,6 @@ import adminAuthRouter from "./routes/AdminAuth.js";
 import problemsRouter from "./routes/ProblemsRoute.js";
 import poblemsubmitRouter from "./routes/SubmitRoute.js";
 import { routeratelimiter } from "./limiter/RateLimiter.js";
-import compilerRouter from "./routes/ComplierRoute.js";
 import contestRouter from "./routes/ContestRouter.js";
 import cors from "cors";
 import { MatricsesMiddleware } from "./middleware/prometheus.js";
@@ -15,11 +14,11 @@ import feedbackRouter from "./routes/FeedbackRoute.js";
 export const app = express();
 
 app.use(express.json())
-app.use(cors({
-    credentials: true,
-    origin: ["https://www.grind.org.in"]
-}));
-// app.use(cors());
+// app.use(cors({
+//     credentials: true,
+//     origin: ["https://www.grind.org.in"]
+// }));
+app.use(cors());
 app.use(MatricsesMiddleware) 
 app.use(routeratelimiter);
    
@@ -28,7 +27,6 @@ app.use("/v1/api/admin" , adminAuthRouter);
 app.use("/v1/api/problems" , problemsRouter);
 app.use("/v1/api/contest" , contestRouter);
 app.use("/v1/api/submit" , poblemsubmitRouter);
-app.use("/v1/api/compiler" , compilerRouter);
 app.use("/v1/api/grindai" , grindaiRouter);
 app.use("/v1/api/evaluate" , evaluateRouter);
 app.use("/v1/api/feedback" , feedbackRouter);

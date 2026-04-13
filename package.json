@@ -2,6 +2,9 @@
   "name": "grind",
   "private": true,
   "scripts": {
+    "backend:start": "npm run start --workspace apps/backend",
+    "publisher:start": "npm run start --workspace apps/publisher",
+    "worker:start": "npm run start --workspace apps/worker",
     "build": "turbo run build",
     "dev": "turbo run dev",
     "lint": "turbo run lint",

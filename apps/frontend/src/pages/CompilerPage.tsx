@@ -26,13 +26,13 @@ import {
   Filter,
 } from "lucide-react";
 import { useTheme } from "../contexts/ThemeContext";
-import { COMPILERPUBLISHERURL } from "../utils/urls";
 import CodeEditor from "./CodeEditor";
 import { toast } from "../../../../packages/ui/src/hooks/use-toast";
 import type { RootState } from "../state/ReduxStateProvider";
 import { useSelector } from "react-redux";
 import { updateSEO, seoConfigs } from "../utils/seo";
 import MainSideNav from "../components/MainSideNav";
+import { COMPILER_URL } from "../utils/urls";
 
 const LANGUAGES = [
   { value: "javascript", label: "JavaScript", version: "Node.js 18.x" },
@@ -292,7 +292,7 @@ export default function CompilerPage() {
     setQueueDepth(null);
     setActiveJobId(null);
     try {
-      const response = await fetch(`${COMPILERPUBLISHERURL}/compiler/run`, {
+      const response = await fetch(`${COMPILER_URL}/compiler/run`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -357,7 +357,7 @@ export default function CompilerPage() {
     const pollJobStatus = async () => {
       try {
         const response = await fetch(
-          `${COMPILERPUBLISHERURL}/compiler/jobs/${activeJobId}`,
+          `${COMPILER_URL}/compiler/jobs/${activeJobId}`,
           {
             method: "GET",
             headers: {
@@ -534,7 +534,7 @@ export default function CompilerPage() {
   const getUserCodeHistory = async () => {
     try {
       const response = await fetch(
-        `${COMPILERPUBLISHERURL}/compiler/get-code-history`,
+        `${COMPILER_URL}/compiler/get-code-history`,
         {
           method: "GET",
           headers: {

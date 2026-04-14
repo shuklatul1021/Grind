@@ -257,7 +257,7 @@ export default function CompilerPage() {
   ) => {
     try {
       const response = await fetch(
-        `${COMPILERPUBLISHERURL}/compiler/create-code-history`,
+        `${COMPILER_URL}/compiler/create-code-history`,
         {
           method: "POST",
           headers: {

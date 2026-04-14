@@ -10,6 +10,7 @@
     "build": "tsc -b"
   },
   "dependencies": {
+    "@e2b/code-interpreter": "^2.4.0",
     "bullmq": "^5.58.0",
     "ioredis": "^5.5.0"
   },

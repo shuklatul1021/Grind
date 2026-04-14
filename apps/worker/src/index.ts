@@ -1,7 +1,8 @@
 import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
 import { CompilerWorkerPool } from "@repo/compiler";
 
-dotenv.config();
 
 async function main() {
   const workerPool = new CompilerWorkerPool();

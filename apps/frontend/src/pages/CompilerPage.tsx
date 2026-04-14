@@ -190,9 +190,7 @@ export default function CompilerPage() {
   const [isRunning, setIsRunning] = useState(false);
   const [executionStatus, setExecutionStatus] =
     useState<CompilerExecutionState>("idle");
-  const [statusMessage, setStatusMessage] = useState(
-    "Queue a job to start execution.",
-  );
+  const [executionTime, setExecutionTime] = useState<number | null>(null);
   const [activeJobId, setActiveJobId] = useState<string | null>(null);
   const [queueDepth, setQueueDepth] = useState<number | null>(null);
   const [copied, setCopied] = useState(false);
@@ -289,8 +287,8 @@ export default function CompilerPage() {
   ) => {
     setIsRunning(true);
     setExecutionStatus("queued");
-    setStatusMessage("Submitting code to the queue.");
-    setOutput("Submitting code to the queue...");
+    setOutput(""); // keep terminal blank until real output arrives
+    setExecutionTime(null);
     setQueueDepth(null);
     setActiveJobId(null);
     try {
@@ -313,18 +311,6 @@ export default function CompilerPage() {
       }
 
       setExecutionStatus("queued");
-      setStatusMessage(
-        data.acknowledgement?.message || "Code pushed to queue.",
-      );
-      setOutput(
-        [
-          "Code pushed to queue.",
-          `Job ID: ${data.jobId}`,
-          data.queueDepth ? `Queue depth: ${data.queueDepth}` : "",
-        ]
-          .filter(Boolean)
-          .join("\n"),
-      );
       setQueueDepth(data.queueDepth ?? null);
       setActiveJobId(data.jobId ?? null);
 
@@ -333,7 +319,6 @@ export default function CompilerPage() {
       return;
     } catch (err) {
       setExecutionStatus("failed");
-      setStatusMessage("Failed to queue the job.");
       setOutput(
         err instanceof Error
           ? err.message
@@ -392,38 +377,31 @@ export default function CompilerPage() {
 
         if (data.status === "queued") {
           setExecutionStatus("queued");
-          setStatusMessage(
-            data.progress?.message || "Code is waiting in the queue.",
-          );
           return;
         }
 
         if (data.status === "running") {
           setExecutionStatus("running");
-          setStatusMessage(
-            data.progress?.message || "Worker picked the job. Code is running.",
-          );
-          setOutput((currentOutput) => {
-            if (
-              currentOutput.includes("Code pushed to queue.") ||
-              currentOutput.includes("Submitting code to the queue...")
-            ) {
-              return "Worker picked the job. Code is running...";
-            }
-
-            return currentOutput;
-          });
           return;
         }
 
         if (data.status === "completed") {
           setExecutionStatus("completed");
-          setStatusMessage(data.result?.message || "Execution completed.");
-          setOutput(
-            data.result?.output ||
-              data.result?.message ||
-              "Code execution completed.",
-          );
+          const stdout = data.result?.output ?? "";
+          const stderr = data.result?.error ?? "";
+          let finalOutput = [stdout, stderr].filter(Boolean).join("\n");
+          if (!finalOutput && !stderr && data.result?.message?.includes("placeholder execution flow")) {
+             finalOutput = "(No output printed)";
+          } else if (!finalOutput) {
+             finalOutput = "(No output printed)";
+          }
+          
+          setOutput(finalOutput);
+          
+          if (data.result?.executionTime !== undefined) {
+             setExecutionTime(data.result.executionTime);
+          }
+          
           setIsRunning(false);
           setActiveJobId(null);
           await getUserCodeHistory();
@@ -432,8 +410,8 @@ export default function CompilerPage() {
 
         if (data.status === "failed") {
           setExecutionStatus("failed");
-          setStatusMessage(data.error || "Code execution failed.");
-          setOutput(data.error || "Code execution failed.");
+          const errMsg = data.result?.error || data.error || "Code execution failed.";
+          setOutput(errMsg);
           setIsRunning(false);
           setActiveJobId(null);
         }
@@ -447,7 +425,7 @@ export default function CompilerPage() {
     void pollJobStatus();
     const intervalId = window.setInterval(() => {
       void pollJobStatus();
-    }, 800);
+    }, 2000);
 
     return () => {
       cancelled = true;
@@ -458,8 +436,8 @@ export default function CompilerPage() {
   const handleReset = () => {
     setCode(DEFAULT_CODE[selectedLanguage as keyof typeof DEFAULT_CODE] || "");
     setOutput("");
+    setExecutionTime(null);
     setExecutionStatus("idle");
-    setStatusMessage("Queue a job to start execution.");
     setQueueDepth(null);
     setActiveJobId(null);
   };
@@ -945,19 +923,19 @@ export default function CompilerPage() {
               >
                 <CardHeader className="py-3 px-4 border-b border-border/40 bg-muted/20">
                   <div className="flex items-center justify-between gap-3">
-                    <CardTitle className="text-base">Output</CardTitle>
+                    <CardTitle className="text-base flex items-center gap-3">
+                      Output
+                      {executionTime !== null && executionStatus === "completed" && (
+                        <span className="text-xs font-normal text-muted-foreground flex items-center gap-1.5 bg-background/50 px-2 py-0.5 rounded-md border border-border/40">
+                          <Clock className="w-3.5 h-3.5" />
+                          {executionTime < 1000 ? `${executionTime}ms` : `${(executionTime / 1000).toFixed(2)}s`}
+                        </span>
+                      )}
+                    </CardTitle>
                     <Badge variant="outline" className={executionBadgeClass}>
                       {EXECUTION_STATUS_LABELS[executionStatus]}
                     </Badge>
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    {statusMessage}
-                  </p>
-                  {queueDepth !== null && (
-                    <p className="text-xs text-muted-foreground">
-                      Queue depth: {queueDepth}
-                    </p>
-                  )}
                 </CardHeader>
                 <CardContent className="flex-1 p-0 bg-[#1e1e1e] text-left">
                   <div className="h-full w-full p-4 overflow-auto font-mono text-base text-gray-300">

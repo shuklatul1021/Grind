@@ -1,4 +1,5 @@
 import { Queue } from "bullmq";
+import { randomUUID } from "crypto";
 import { compilerQueueConfig } from "./config.js";
 import { createRedisConnection } from "./redis.js";
 import type {
@@ -84,7 +85,8 @@ export async function publishCompilerJob(data: CompilerJobData) {
   };
 
   const queueDepthBeforePublish = await getQueueDepth();
-  const job = await compilerQueue.add("execute-compiler-job", data);
+  const jobId = randomUUID();
+  const job = await compilerQueue.add("execute-compiler-job", data, { jobId });
   await job.updateProgress(progress);
 
   return {

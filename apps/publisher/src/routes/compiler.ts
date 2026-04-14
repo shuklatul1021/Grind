@@ -6,7 +6,10 @@ import {
   publishCompilerJob,
   type CompilerLanguage,
 } from "@repo/compiler";
-import { compilerRateLimiter } from "../limiter/rateLimiter.js";
+import {
+  compilerRateLimiter,
+  compilerStatusRateLimiter,
+} from "../limiter/rateLimiter.js";
 import { UserAuthMiddleware } from "../middleware/user.js";
 
 const compilerRouter = Router();
@@ -63,7 +66,7 @@ compilerRouter.post(
 
 compilerRouter.get(
   "/jobs/:jobId",
-  compilerRateLimiter,
+  compilerStatusRateLimiter,
   UserAuthMiddleware,
   async (req, res) => {
     try {

@@ -1077,11 +1077,7 @@ export default function CompilerPage() {
         terminal.writeln(line);
       });
     } else if (executionStatus === "queued") {
-      terminal.writeln(
-        queueDepth !== null
-          ? `Job queued... Position: ${queueDepth}`
-          : "Job queued...",
-      );
+      //pass
     } else if (executionStatus === "running") {
       terminal.writeln("Running...");
     }

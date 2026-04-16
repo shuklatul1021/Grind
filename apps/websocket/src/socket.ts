@@ -1,6 +1,5 @@
 import { WebSocket, WebSocketServer } from "ws";
 import Docker from "dockerode";
-import * as pty from "node-pty";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -35,7 +34,6 @@ interface SessionState {
   stream: NodeJS.ReadWriteStream | null;
   runToken: number;
   runTimestamps: number[];
-  activePty: pty.IPty | null;
   pendingInput: string[];
 }
 
@@ -258,11 +256,6 @@ async function cleanupSession(state: SessionState): Promise<void> {
 
   state.pendingInput = [];
 
-  if (state.activePty) {
-    state.activePty.kill();
-    state.activePty = null;
-  }
-
   const currentContainer = state.container;
   state.container = null;
   await destroyContainer(currentContainer);
@@ -430,7 +423,6 @@ socket.on("connection", (ws: WebSocket) => {
     stream: null,
     runToken: 0,
     runTimestamps: [],
-    activePty: null,
     pendingInput: [],
   };
 

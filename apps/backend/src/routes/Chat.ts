@@ -46,7 +46,7 @@ grindaiRouter.post("/chat", UserAuthMiddleware , async (req, res) => {
     res.setHeader("Connection", "keep-alive");
 
     const responseStream = await genAI.models.generateContentStream({
-      model: "gemini-2.5-flash",
+      model: "gemini-3.1-flash-lite-preview",
       contents: [{ role: "user", parts: [{ text: messageText }] }],
       config: {
         systemInstruction: GRIND_SYSTEM_PROMPT,

@@ -14,10 +14,14 @@
   "license": "ISC",
   "dependencies": {
     "@repo/ui": "*",
+    "@types/dockerode": "^4.0.1",
     "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^22.18.10",
     "@types/ws": "^8.18.1",
+    "dockerode": "^4.0.10",
     "dotenv": "^17.2.3",
     "jsonwebtoken": "^9.0.2",
+    "node-pty": "^1.1.0",
     "typescript": "^5.9.3",
     "ws": "^8.18.3"
   }

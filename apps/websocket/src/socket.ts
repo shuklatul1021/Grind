@@ -108,7 +108,7 @@ function getExecutionSpec(language: string): ExecutionSpec | null {
       };
     case "java":
       return {
-        images: ["runner-java:latest", "eclipse-temurin:17-jdk-alpine"],
+        images: ["eclipse-temurin:17-jdk-alpine", "runner-java:latest"],
         fileName: "Main.java",
         command: "javac Main.java && java Main",
       };
@@ -126,13 +126,13 @@ function getExecutionSpec(language: string): ExecutionSpec | null {
       };
     case "go":
       return {
-        images: ["runner-go:latest", "golang:1.22-alpine"],
+        images: ["golang:1.22-alpine", "runner-go:latest"],
         fileName: "main.go",
         command: "go run main.go",
       };
     case "rust":
       return {
-        images: ["runner-rust:latest", "rust:1.77-alpine"],
+        images: ["rust:1.77-alpine", "runner-rust:latest"],
         fileName: "main.rs",
         command: "rustc main.rs -o app && ./app",
       };
@@ -176,6 +176,7 @@ async function pullImage(image: string): Promise<void> {
 function createExecutionContainerConfig(image: string) {
   return {
     Image: image,
+    Entrypoint: [],
     Tty: true,
     OpenStdin: true,
     StdinOnce: false,
@@ -183,7 +184,7 @@ function createExecutionContainerConfig(image: string) {
     AttachStdout: true,
     AttachStderr: true,
     NetworkDisabled: true,
-    Cmd: ["sh", "-lc", "sleep 300"],
+    Cmd: ["/bin/sh", "-lc", "sleep 300"],
     HostConfig: {
       Memory: 256 * 1024 * 1024,
       CpuPeriod: 100000,
@@ -330,7 +331,7 @@ async function executeInteractiveRun(
     ].join(" && ");
 
     const exec = await container.exec({
-      Cmd: ["sh", "-lc", command],
+      Cmd: ["/bin/sh", "-lc", command],
       AttachStdin: true,
       AttachStdout: true,
       AttachStderr: true,

@@ -14,15 +14,9 @@ import ProblemPage from "./pages/ProblemPage";
 import { Toaster } from "@repo/ui/toaster";
 import { VerifyOtp } from "./pages/VerifyOtp";
 import CompilerPage from "./pages/CompilerPage";
-import AdminLoginPage from "./pages/AdminAuth";
-import AdminCreateContest from "./pages/AdminCreateContest";
-import AdminCreateProblem from "./pages/AdminCreateProblem";
-import AdminProblemDetail from "./pages/AdminProblemDetail";
-import AdminContestDetail from "./pages/AdminContestDetail";
 import ContestsPage from "./pages/ContestsPage";
 import ContestPage from "./pages/ContestPage";
 import {
-  useAdminAuthentication,
   useAuthentication,
 } from "./hooks/useAuthentication";
 import AboutUs from "./pages/AboutUs";
@@ -38,7 +32,6 @@ import ShippingPolicy from "./pages/ShippingPolicy";
 import ContactUs from "./pages/ContactUs";
 import PremiumZone from "./pages/PremiumPage";
 import NotFound from "./pages/Not-Found";
-import AdminDashboard from "./pages/AdminDashboard";
 // import { PrimiumResume } from "./premium/resume/Resume";
 // import { ResumeAnalysisPage } from "./premium/resume/ResumeAnalysis";
 // import LearningPage from "./Learning/Learning";
@@ -94,16 +87,6 @@ function RequireAuth({ redirectTo = "/" }: { redirectTo?: string }) {
   );
 }
 
-function RequireAdminAuth({ redirectTo = "/" }: { redirectTo?: string }) {
-  const { adminauthState } = useAdminAuthentication();
-  if (adminauthState.loading)
-    return <div className="p-4">Checking Admin authentication…</div>;
-  return adminauthState.isAuthenticated ? (
-    <Outlet />
-  ) : (
-    <Navigate to={redirectTo} replace />
-  );
-}
 
 function App() {
   // useEffect(()=>{
@@ -231,26 +214,6 @@ function App() {
             <Route path="/you" element={<ProfilePage />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/grind-ai/c/:id" element={<GrindAIChat />} />
-          </Route>
-          <Route path="/admin/auth" element={<AdminLoginPage />} />
-          <Route element={<RequireAdminAuth redirectTo="/" />}>
-            <Route path="/admin/dashboard" element={<AdminDashboard />} />
-            <Route
-              path="/admin/dashboard/createcontest"
-              element={<AdminCreateContest />}
-            />
-            <Route
-              path="/admin/dashboard/createproblem"
-              element={<AdminCreateProblem />}
-            />
-            <Route
-              path="/admin/dashboard/contest/:id"
-              element={<AdminContestDetail />}
-            />
-            <Route
-              path="/admin/dashboard/problem/:id"
-              element={<AdminProblemDetail />}
-            />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>

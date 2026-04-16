@@ -68,15 +68,27 @@ import { useEffect, useState, useRef } from "react";
 import ShinyText from "../components/react-bits/ShinyText";
 
 /* ─── Animated Counter ─── */
-function AnimatedCounter({ end, suffix = "", label }: { end: number; suffix?: string; label: string }) {
+function AnimatedCounter({
+  end,
+  suffix = "",
+  label,
+}: {
+  end: number;
+  suffix?: string;
+  label: string;
+}) {
   const ref = useRef<HTMLDivElement>(null);
   const [count, setCount] = useState(0);
   const [started, setStarted] = useState(false);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
-      ([entry]) => { if (entry?.isIntersecting && !started) { setStarted(true); } },
-      { threshold: 0.3 }
+      ([entry]) => {
+        if (entry?.isIntersecting && !started) {
+          setStarted(true);
+        }
+      },
+      { threshold: 0.3 },
     );
     if (ref.current) observer.observe(ref.current);
     return () => observer.disconnect();
@@ -103,7 +115,8 @@ function AnimatedCounter({ end, suffix = "", label }: { end: number; suffix?: st
   return (
     <div ref={ref} className="text-center">
       <div className="text-4xl md:text-6xl font-bold tracking-tight text-foreground">
-        {count.toLocaleString()}{suffix}
+        {count.toLocaleString()}
+        {suffix}
       </div>
       <p className="text-sm text-muted-foreground mt-2 font-medium">{label}</p>
     </div>
@@ -142,9 +155,14 @@ function LogoMarquee() {
       <div className="absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-background to-transparent z-10" />
       <div className="flex animate-marquee whitespace-nowrap">
         {doubled.map((logo, i) => (
-          <div key={i} className="flex items-center gap-2.5 mx-8 text-muted-foreground/40 hover:text-muted-foreground/70 transition-colors duration-300">
+          <div
+            key={i}
+            className="flex items-center gap-2.5 mx-8 text-muted-foreground/40 hover:text-muted-foreground/70 transition-colors duration-300"
+          >
             {logo.icon}
-            <span className="text-sm font-medium tracking-wide">{logo.name}</span>
+            <span className="text-sm font-medium tracking-wide">
+              {logo.name}
+            </span>
           </div>
         ))}
       </div>
@@ -184,10 +202,11 @@ export default function LandingPage() {
 
       {/* ── Navbar ── */}
       <header
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-200 ${scrolled
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-200 ${
+          scrolled
             ? "bg-background/80 backdrop-blur-xl border-b border-border/40 h-14"
             : "bg-transparent h-16"
-          }`}
+        }`}
       >
         <div className="container mx-auto px-4 h-full flex items-center justify-between max-w-7xl">
           <div
@@ -207,18 +226,35 @@ export default function LandingPage() {
               onClick={toggleTheme}
               className="rounded-full w-8 h-8 text-muted-foreground hover:text-foreground"
             >
-              {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              {theme === "dark" ? (
+                <Sun className="h-4 w-4" />
+              ) : (
+                <Moon className="h-4 w-4" />
+              )}
             </Button>
             {user ? (
-              <Button size="sm" onClick={() => navigate("/problems")} className="rounded-full px-4">
+              <Button
+                size="sm"
+                onClick={() => navigate("/problems")}
+                className="rounded-full px-4"
+              >
                 Dashboard
               </Button>
             ) : (
               <div className="flex items-center gap-2">
-                <Button size="sm" variant="ghost" onClick={() => navigate("/auth")} className="rounded-full px-4 hidden md:inline-flex">
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => navigate("/auth")}
+                  className="rounded-full px-4 hidden md:inline-flex"
+                >
                   Log in
                 </Button>
-                <Button size="sm" onClick={() => navigate("/auth")} className="rounded-full px-4 shadow-sm">
+                <Button
+                  size="sm"
+                  onClick={() => navigate("/auth")}
+                  className="rounded-full px-4 shadow-sm"
+                >
                   Get Started
                 </Button>
               </div>
@@ -257,12 +293,15 @@ export default function LandingPage() {
                 pauseOnHover={false}
               />
               <br />
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-white via-white/80 to-white/50">Ship your career.</span>
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-white via-white/80 to-white/50">
+                Ship your career.
+              </span>
             </h1>
 
             {/* Subtitle */}
             <p className="text-lg md:text-xl text-muted-foreground max-w-2xl leading-relaxed animate-in fade-in slide-in-from-bottom-6 duration-1000">
-              The most advanced platform to practice algorithms, compete in contests, and prepare for technical interviews — all in one place.
+              The most advanced platform to practice algorithms, compete in
+              contests, and prepare for technical interviews — all in one place.
             </p>
 
             {/* CTAs */}
@@ -287,13 +326,20 @@ export default function LandingPage() {
             {/* Social Proof */}
             <div className="flex items-center gap-3 text-sm text-muted-foreground pt-4 animate-in fade-in slide-in-from-bottom-8 duration-1000">
               <div className="flex -space-x-2">
-                {["#555","#444","#666","#777"].map((c, i) => (
-                  <div key={i} className="w-7 h-7 rounded-full border-2 border-background flex items-center justify-center text-[10px] font-bold text-white" style={{ backgroundColor: c }}>
-                    {["P","A","R","S"][i]}
+                {["#555", "#444", "#666", "#777"].map((c, i) => (
+                  <div
+                    key={i}
+                    className="w-7 h-7 rounded-full border-2 border-background flex items-center justify-center text-[10px] font-bold text-white"
+                    style={{ backgroundColor: c }}
+                  >
+                    {["P", "A", "R", "S"][i]}
                   </div>
                 ))}
               </div>
-              <span>Trusted by <strong className="text-foreground">10,000+</strong> developers</span>
+              <span>
+                Trusted by <strong className="text-foreground">10,000+</strong>{" "}
+                developers
+              </span>
             </div>
           </div>
 
@@ -306,74 +352,25 @@ export default function LandingPage() {
               {/* Header */}
               <div className="text-center mb-10">
                 <h2 className="text-2xl md:text-4xl font-bold tracking-tight mb-3">
-                  Meet the <span className="bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/60">Grind Editor</span>
+                  Meet the{" "}
+                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/60">
+                    Grind Editor
+                  </span>
                 </h2>
-                <p className="text-muted-foreground">A professional-grade code editor, right in your browser.</p>
+                <p className="text-muted-foreground">
+                  A professional-grade code editor, right in your browser.
+                </p>
               </div>
 
-              {/* Editor Mockup */}
-              <div className="relative bg-[#0d0d0d] rounded-xl overflow-hidden border border-white/5 shadow-inner">
-                {/* Title bar */}
-                <div className="flex items-center justify-between px-4 py-2.5 bg-[#1a1a1a] border-b border-white/5">
-                  <div className="flex gap-2">
-                    <div className="w-3 h-3 rounded-full bg-[#ff5f56]" />
-                    <div className="w-3 h-3 rounded-full bg-[#ffbd2e]" />
-                    <div className="w-3 h-3 rounded-full bg-[#27c93f]" />
-                  </div>
-                  <span className="text-xs text-white/30 font-mono">Grind Editor — two_sum.ts</span>
-                  <div className="w-16" />
-                </div>
-
-                <div className="flex min-h-[320px] md:min-h-[380px]">
-                  {/* Sidebar */}
-                  <div className="w-48 bg-[#111] hidden md:flex flex-col border-r border-white/5 p-3">
-                    <div className="text-[10px] uppercase tracking-widest text-white/25 mb-3 font-semibold">Explorer</div>
-                    {[
-                      { icon: <SiTypescript className="h-3.5 w-3.5 text-white/70" />, name: "two_sum.ts", active: true },
-                      { icon: <SiJavascript className="h-3.5 w-3.5 text-white/50" />, name: "sum.js", active: false },
-                      { icon: <SiPython className="h-3.5 w-3.5 text-white/50" />, name: "valid_anagram.py", active: false },
-                      { icon: <SiCplusplus className="h-3.5 w-3.5 text-white/50" />, name: "binary_search.cpp", active: false },
-                    ].map((f, i) => (
-                      <div key={i} className={`flex items-center gap-2 px-2 py-1.5 text-xs rounded cursor-pointer transition-colors ${f.active ? "text-white bg-white/5 border-l-2 border-white/50" : "text-white/40 hover:text-white/60 border-l-2 border-transparent"}`}>
-                        {f.icon} <span>{f.name}</span>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Code area */}
-                  <div className="flex-1 flex flex-col">
-                    <div className="flex-1 p-4 font-mono text-[11px] md:text-[13px] overflow-hidden leading-6">
-                      <pre className="text-white/80">
-{`  `}<span className="text-[#569cd6]">function</span> <span className="text-[#dcdcaa]">twoSum</span><span className="text-[#d4d4d4]">(</span><span className="text-[#9cdcfe]">nums</span>: <span className="text-[#4ec9b0]">number</span>[], <span className="text-[#9cdcfe]">target</span>: <span className="text-[#4ec9b0]">number</span>): <span className="text-[#4ec9b0]">number</span>[] {"{"}
-{`    `}<span className="text-[#6a9955]">{"// HashMap approach - O(n)"}</span>
-{`    `}<span className="text-[#569cd6]">const</span> <span className="text-[#9cdcfe]">map</span> = <span className="text-[#569cd6]">new</span> <span className="text-[#4ec9b0]">Map</span>&lt;<span className="text-[#4ec9b0]">number</span>, <span className="text-[#4ec9b0]">number</span>&gt;();
-{`    `}<span className="text-[#c586c0]">for</span> (<span className="text-[#569cd6]">let</span> <span className="text-[#9cdcfe]">i</span> = <span className="text-[#b5cea8]">0</span>; <span className="text-[#9cdcfe]">i</span> &lt; <span className="text-[#9cdcfe]">nums</span>.length; <span className="text-[#9cdcfe]">i</span>++) {"{"}
-{`      `}<span className="text-[#569cd6]">const</span> <span className="text-[#9cdcfe]">comp</span> = <span className="text-[#9cdcfe]">target</span> - <span className="text-[#9cdcfe]">nums</span>[<span className="text-[#9cdcfe]">i</span>];
-{`      `}<span className="text-[#c586c0]">if</span> (<span className="text-[#9cdcfe]">map</span>.<span className="text-[#dcdcaa]">has</span>(<span className="text-[#9cdcfe]">comp</span>))
-{`        `}<span className="text-[#c586c0]">return</span> [<span className="text-[#9cdcfe]">map</span>.<span className="text-[#dcdcaa]">get</span>(<span className="text-[#9cdcfe]">comp</span>)!, <span className="text-[#9cdcfe]">i</span>];
-{`      `}<span className="text-[#9cdcfe]">map</span>.<span className="text-[#dcdcaa]">set</span>(<span className="text-[#9cdcfe]">nums</span>[<span className="text-[#9cdcfe]">i</span>], <span className="text-[#9cdcfe]">i</span>);
-{`    `}{"}"}
-{`    `}<span className="text-[#c586c0]">return</span> [];
-{`  `}{"}"}
-                      </pre>
-                    </div>
-
-                    {/* Terminal */}
-                    <div className="border-t border-white/5 bg-[#111] p-3 font-mono text-[10px] md:text-xs">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-white/25 uppercase tracking-widest text-[10px] font-bold">Terminal</span>
-                        <span className="flex items-center gap-1.5 text-white/70 text-xs">
-                          <CheckCircle2 className="h-3 w-3" /> All tests passed
-                        </span>
-                      </div>
-                      <div className="text-white/50 space-y-0.5">
-                        <div><span className="text-white/70">✔</span> Test 1: [2,7,11,15], 9 → [0,1] <span className="text-white/20">(2ms)</span></div>
-                        <div><span className="text-white/70">✔</span> Test 2: [3,2,4], 6 → [1,2] <span className="text-white/20">(1ms)</span></div>
-                        <div><span className="text-white/70">✔</span> Test 3: [3,3], 6 → [0,1] <span className="text-white/20">(1ms)</span></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+              {/* Editor Preview */}
+              <div className="relative rounded-xl overflow-hidden border border-white/10 bg-[#0d0d0d] shadow-inner">
+                <img
+                  src="/code-editor-image.png"
+                  alt="Grind code editor preview"
+                  className="block w-full h-auto object-cover"
+                  loading="lazy"
+                  draggable={false}
+                />
               </div>
             </div>
           </div>
@@ -386,12 +383,17 @@ export default function LandingPage() {
         <section className="container mx-auto px-4 py-28 max-w-7xl">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4">
-              <span className="text-muted-foreground">Empowering developers with</span>
+              <span className="text-muted-foreground">
+                Empowering developers with
+              </span>
               <br />
-              <span className="text-foreground">the most powerful coding platform</span>
+              <span className="text-foreground">
+                the most powerful coding platform
+              </span>
             </h2>
             <p className="text-lg text-muted-foreground max-w-xl mx-auto">
-              Grind does the heavy lifting for you, so you can focus on learning instead of fighting setups.
+              Grind does the heavy lifting for you, so you can focus on learning
+              instead of fighting setups.
             </p>
           </div>
 
@@ -403,9 +405,12 @@ export default function LandingPage() {
                 <div className="text-6xl md:text-8xl font-bold tracking-tighter bg-clip-text text-transparent bg-gradient-to-b from-foreground to-foreground/40 mb-4">
                   500+
                 </div>
-                <p className="text-lg text-muted-foreground font-medium">curated problems</p>
+                <p className="text-lg text-muted-foreground font-medium">
+                  curated problems
+                </p>
                 <p className="text-sm text-muted-foreground/60 mt-2 max-w-sm mx-auto">
-                  From easy warmups to FAANG-level challenges, covering every data structure and algorithm pattern.
+                  From easy warmups to FAANG-level challenges, covering every
+                  data structure and algorithm pattern.
                 </p>
               </CardContent>
             </Card>
@@ -413,19 +418,29 @@ export default function LandingPage() {
             {/* Build big card */}
             <Card className="bg-muted/5 border-border/30 overflow-hidden relative group hover:border-border/60 transition-all duration-300">
               <CardHeader className="pb-2">
-                <CardTitle className="text-xl">Build skills without breaking flow</CardTitle>
+                <CardTitle className="text-xl">
+                  Build skills without breaking flow
+                </CardTitle>
                 <CardDescription className="text-base">
-                  Grind handles <strong className="text-foreground">complexity</strong> so you stay focused. Our intelligent problem recommendations adapt to your level in real-time.
+                  Grind handles{" "}
+                  <strong className="text-foreground">complexity</strong> so you
+                  stay focused. Our intelligent problem recommendations adapt to
+                  your level in real-time.
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-6 flex items-center justify-center">
                 <div className="grid grid-cols-3 gap-3 w-full">
-                  {["Easy","Medium","Hard"].map((d, i) => (
-                    <div key={i} className="rounded-lg bg-background/50 border border-border/30 p-4 text-center">
+                  {["Easy", "Medium", "Hard"].map((d, i) => (
+                    <div
+                      key={i}
+                      className="rounded-lg bg-background/50 border border-border/30 p-4 text-center"
+                    >
                       <div className="text-2xl font-bold text-foreground">
                         {[150, 250, 100][i]}
                       </div>
-                      <div className="text-xs text-muted-foreground mt-1">{d}</div>
+                      <div className="text-xs text-muted-foreground mt-1">
+                        {d}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -435,18 +450,24 @@ export default function LandingPage() {
         </section>
 
         {/* ═════════ FEATURES BENTO — Bolt Style ═════════ */}
-        <section id="features" className="container mx-auto px-4 py-28 max-w-7xl border-t border-border/30">
+        <section
+          id="features"
+          className="container mx-auto px-4 py-28 max-w-7xl border-t border-border/30"
+        >
           <div className="mb-16 text-center">
             <div className="inline-flex items-center rounded-full border border-border/40 bg-muted/20 px-3 py-1 text-xs font-medium text-muted-foreground mb-6">
               <Sparkles className="mr-2 h-3 w-3" />
               Powerful Features
             </div>
             <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-6">
-              <span className="text-muted-foreground">Everything you need to</span>{" "}
+              <span className="text-muted-foreground">
+                Everything you need to
+              </span>{" "}
               <span className="text-foreground">excel.</span>
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              A complete environment designed to help you master coding interviews and sharpen algorithmic thinking.
+              A complete environment designed to help you master coding
+              interviews and sharpen algorithmic thinking.
             </p>
           </div>
 
@@ -458,18 +479,30 @@ export default function LandingPage() {
                 <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center mb-4 text-foreground group-hover:scale-110 transition-transform duration-300">
                   <Code2 className="h-6 w-6" />
                 </div>
-                <CardTitle className="text-2xl">Multi-Language Support</CardTitle>
+                <CardTitle className="text-2xl">
+                  Multi-Language Support
+                </CardTitle>
                 <CardDescription className="text-base mt-2">
-                  Write code in your favorite language. We support JavaScript, Python, Java, C++, and more with full syntax highlighting and intellisense.
+                  Write code in your favorite language. We support JavaScript,
+                  Python, Java, C++, and more with full syntax highlighting and
+                  intellisense.
                 </CardDescription>
               </CardHeader>
               <CardContent className="relative min-h-[200px] flex items-end justify-end p-0 overflow-hidden">
                 <div className="w-[90%] h-[90%] bg-background border-t border-l border-border/40 rounded-tl-xl shadow-2xl p-4 translate-x-4 translate-y-4 group-hover:translate-x-2 group-hover:translate-y-2 transition-transform duration-500">
                   <div className="flex gap-2 mb-3">
-                    <span className="px-2 py-1 rounded bg-muted text-foreground text-xs font-mono">TypeScript</span>
-                    <span className="px-2 py-1 rounded bg-muted text-muted-foreground text-xs font-mono">Python</span>
-                    <span className="px-2 py-1 rounded bg-muted text-muted-foreground text-xs font-mono">Java</span>
-                    <span className="px-2 py-1 rounded bg-muted text-muted-foreground text-xs font-mono">C++</span>
+                    <span className="px-2 py-1 rounded bg-muted text-foreground text-xs font-mono">
+                      TypeScript
+                    </span>
+                    <span className="px-2 py-1 rounded bg-muted text-muted-foreground text-xs font-mono">
+                      Python
+                    </span>
+                    <span className="px-2 py-1 rounded bg-muted text-muted-foreground text-xs font-mono">
+                      Java
+                    </span>
+                    <span className="px-2 py-1 rounded bg-muted text-muted-foreground text-xs font-mono">
+                      C++
+                    </span>
                   </div>
                   <div className="space-y-2">
                     <div className="h-2 w-3/4 bg-muted rounded animate-pulse" />
@@ -487,24 +520,36 @@ export default function LandingPage() {
                 <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center mb-4 text-foreground group-hover:scale-110 transition-transform duration-300">
                   <Bot className="h-6 w-6" />
                 </div>
-                <CardTitle className="text-2xl">AI Teaching Assistant</CardTitle>
+                <CardTitle className="text-2xl">
+                  AI Teaching Assistant
+                </CardTitle>
                 <CardDescription className="text-base mt-2">
-                  Don't just get the answer. Get intelligent hints and concept breakdowns to help you learn.
+                  Don't just get the answer. Get intelligent hints and concept
+                  breakdowns to help you learn.
                 </CardDescription>
               </CardHeader>
               <CardContent className="mt-4 relative">
                 <div className="space-y-4 relative z-10">
                   <div className="bg-background/80 backdrop-blur-sm p-3 rounded-2xl rounded-tl-none border border-border/40 text-sm shadow-sm">
                     <p className="text-muted-foreground text-xs mb-1">You</p>
-                    <p className="text-foreground">How do I optimize this O(n²) solution?</p>
+                    <p className="text-foreground">
+                      How do I optimize this O(n²) solution?
+                    </p>
                   </div>
                   <div className="bg-muted/50 backdrop-blur-sm p-3 rounded-2xl rounded-tr-none border border-border/40 text-sm ml-4 shadow-sm">
                     <div className="flex items-center gap-2 mb-1">
                       <Bot className="h-3 w-3 text-muted-foreground" />
-                      <p className="text-muted-foreground text-xs font-medium">AI Assistant</p>
+                      <p className="text-muted-foreground text-xs font-medium">
+                        AI Assistant
+                      </p>
                     </div>
                     <p className="text-foreground/90">
-                      Consider using a <span className="text-foreground font-mono font-semibold">HashMap</span> to store visited elements. This allows O(1) lookups, reducing overall complexity to O(n).
+                      Consider using a{" "}
+                      <span className="text-foreground font-mono font-semibold">
+                        HashMap
+                      </span>{" "}
+                      to store visited elements. This allows O(1) lookups,
+                      reducing overall complexity to O(n).
                     </p>
                   </div>
                   <div className="bg-background/80 backdrop-blur-sm p-3 rounded-2xl rounded-tl-none border border-border/40 text-sm shadow-sm opacity-60">
@@ -524,15 +569,24 @@ export default function LandingPage() {
                   <Zap className="h-6 w-6" />
                 </div>
                 <CardTitle>Instant Execution</CardTitle>
-                <CardDescription>Run code in isolated sandboxes with &lt;50ms latency.</CardDescription>
+                <CardDescription>
+                  Run code in isolated sandboxes with &lt;50ms latency.
+                </CardDescription>
               </CardHeader>
               <CardContent className="p-0 relative h-24 overflow-hidden">
                 <div className="absolute inset-x-0 bottom-0 h-full bg-background/50 border-t border-border/40 p-3 font-mono text-xs text-muted-foreground">
                   <div className="flex items-center gap-2 mb-1 opacity-50">
-                    <span>$</span><span className="text-foreground">run solution.ts</span>
+                    <span>$</span>
+                    <span className="text-foreground">run solution.ts</span>
                   </div>
-                  <div className="flex items-center gap-2"><span>&gt;</span><span>Tests passed: 15/15</span></div>
-                  <div className="flex items-center gap-2 mt-1"><span>&gt;</span><span>Runtime: 42ms</span></div>
+                  <div className="flex items-center gap-2">
+                    <span>&gt;</span>
+                    <span>Tests passed: 15/15</span>
+                  </div>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span>&gt;</span>
+                    <span>Runtime: 42ms</span>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -545,7 +599,9 @@ export default function LandingPage() {
                   <Trophy className="h-6 w-6" />
                 </div>
                 <CardTitle>Global Leaderboards</CardTitle>
-                <CardDescription>Compete in weekly contests and climb the global ranks.</CardDescription>
+                <CardDescription>
+                  Compete in weekly contests and climb the global ranks.
+                </CardDescription>
               </CardHeader>
               <CardContent className="p-4 pt-0">
                 <div className="space-y-2">
@@ -555,15 +611,21 @@ export default function LandingPage() {
                       <div className="w-6 h-6 rounded-full bg-foreground/20" />
                       <span className="text-sm font-medium">Ram D.</span>
                     </div>
-                    <span className="text-xs font-mono text-muted-foreground">2850 pts</span>
+                    <span className="text-xs font-mono text-muted-foreground">
+                      2850 pts
+                    </span>
                   </div>
                   <div className="flex items-center justify-between p-2 rounded bg-background/50 border border-border/40 opacity-60">
                     <div className="flex items-center gap-2">
-                      <span className="text-muted-foreground font-bold">#2</span>
+                      <span className="text-muted-foreground font-bold">
+                        #2
+                      </span>
                       <div className="w-6 h-6 rounded-full bg-muted" />
                       <span className="text-sm font-medium">Mark Z.</span>
                     </div>
-                    <span className="text-xs font-mono text-muted-foreground">2720 pts</span>
+                    <span className="text-xs font-mono text-muted-foreground">
+                      2720 pts
+                    </span>
                   </div>
                 </div>
               </CardContent>
@@ -577,9 +639,13 @@ export default function LandingPage() {
                   <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center mb-4 text-foreground group-hover:scale-110 transition-transform duration-300">
                     <Layout className="h-6 w-6" />
                   </div>
-                  <CardTitle className="text-2xl">System Design & Architecture</CardTitle>
+                  <CardTitle className="text-2xl">
+                    System Design & Architecture
+                  </CardTitle>
                   <CardDescription className="text-base mt-2 max-w-lg">
-                    Master high-level architecture with our interactive whiteboard. Practice designing scalable systems like Netflix, Uber, or Twitter.
+                    Master high-level architecture with our interactive
+                    whiteboard. Practice designing scalable systems like
+                    Netflix, Uber, or Twitter.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="p-0 md:p-6 relative min-h-[200px] flex items-center justify-center">
@@ -598,7 +664,9 @@ export default function LandingPage() {
                       <span className="text-[10px] text-white/70">App</span>
                     </div>
                     <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-24 h-12 rounded-xl bg-white/5 border border-white/20 flex items-center justify-center">
-                      <span className="text-[10px] text-white/70">Database Cluster</span>
+                      <span className="text-[10px] text-white/70">
+                        Database Cluster
+                      </span>
                     </div>
                   </div>
                 </CardContent>
@@ -613,10 +681,13 @@ export default function LandingPage() {
             <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4">
               <span className="text-muted-foreground">Whatever your level</span>
               <br />
-              <span className="text-foreground">Grind gives you superpowers</span>
+              <span className="text-foreground">
+                Grind gives you superpowers
+              </span>
             </h2>
             <p className="text-lg text-muted-foreground max-w-xl mx-auto">
-              From first-year students to senior engineers, Grind adapts to the way you learn — turning every session into progress.
+              From first-year students to senior engineers, Grind adapts to the
+              way you learn — turning every session into progress.
             </p>
           </div>
 
@@ -628,16 +699,27 @@ export default function LandingPage() {
                   <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-foreground">
                     <GraduationCap className="h-5 w-5" />
                   </div>
-                  <CardTitle className="text-xl">Students & Beginners</CardTitle>
+                  <CardTitle className="text-xl">
+                    Students & Beginners
+                  </CardTitle>
                 </div>
                 <CardDescription className="text-base">
-                  Learn by doing. Start from the basics and build up to advanced topics with our guided learning paths and AI tutor.
+                  Learn by doing. Start from the basics and build up to advanced
+                  topics with our guided learning paths and AI tutor.
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {["Structured learning paths from basics to advanced", "AI hints that teach, not just solve", "Progress tracking and streak system", "Beginner-friendly problem sets"].map((item, i) => (
-                    <div key={i} className="flex items-center gap-2.5 text-sm text-muted-foreground">
+                  {[
+                    "Structured learning paths from basics to advanced",
+                    "AI hints that teach, not just solve",
+                    "Progress tracking and streak system",
+                    "Beginner-friendly problem sets",
+                  ].map((item, i) => (
+                    <div
+                      key={i}
+                      className="flex items-center gap-2.5 text-sm text-muted-foreground"
+                    >
                       <CheckCircle2 className="h-4 w-4 text-foreground/60 flex-shrink-0" />
                       <span>{item}</span>
                     </div>
@@ -653,16 +735,27 @@ export default function LandingPage() {
                   <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-foreground">
                     <Briefcase className="h-5 w-5" />
                   </div>
-                  <CardTitle className="text-xl">Professionals & Job Seekers</CardTitle>
+                  <CardTitle className="text-xl">
+                    Professionals & Job Seekers
+                  </CardTitle>
                 </div>
                 <CardDescription className="text-base">
-                  Crack FAANG interviews with precision. Practice company-specific problems and compete in timed contests.
+                  Crack FAANG interviews with precision. Practice
+                  company-specific problems and compete in timed contests.
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {["Company-tagged problem collections", "Mock interview simulations", "Weekly ranked contests", "Performance analytics and weakspot detection"].map((item, i) => (
-                    <div key={i} className="flex items-center gap-2.5 text-sm text-muted-foreground">
+                  {[
+                    "Company-tagged problem collections",
+                    "Mock interview simulations",
+                    "Weekly ranked contests",
+                    "Performance analytics and weakspot detection",
+                  ].map((item, i) => (
+                    <div
+                      key={i}
+                      className="flex items-center gap-2.5 text-sm text-muted-foreground"
+                    >
                       <CheckCircle2 className="h-4 w-4 text-foreground/60 flex-shrink-0" />
                       <span>{item}</span>
                     </div>
@@ -698,18 +791,37 @@ export default function LandingPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
-              { step: "01", icon: <BookOpen className="h-6 w-6" />, title: "Pick a Problem", desc: "Browse 500+ problems organized by topic, difficulty, and company tags. Find exactly what you need." },
-              { step: "02", icon: <Code2 className="h-6 w-6" />, title: "Write & Run Code", desc: "Use our pro editor with syntax highlighting, auto-complete, and instant test execution in 7+ languages." },
-              { step: "03", icon: <TrendingUp className="h-6 w-6" />, title: "Learn & Improve", desc: "Get AI-powered hints, review editorial solutions, and track progress with detailed analytics." },
+              {
+                step: "01",
+                icon: <BookOpen className="h-6 w-6" />,
+                title: "Pick a Problem",
+                desc: "Browse 500+ problems organized by topic, difficulty, and company tags. Find exactly what you need.",
+              },
+              {
+                step: "02",
+                icon: <Code2 className="h-6 w-6" />,
+                title: "Write & Run Code",
+                desc: "Use our pro editor with syntax highlighting, auto-complete, and instant test execution in 7+ languages.",
+              },
+              {
+                step: "03",
+                icon: <TrendingUp className="h-6 w-6" />,
+                title: "Learn & Improve",
+                desc: "Get AI-powered hints, review editorial solutions, and track progress with detailed analytics.",
+              },
             ].map((item, i) => (
               <div key={i} className="relative group">
-                <div className="text-6xl font-bold text-muted/30 absolute -top-8 left-0">{item.step}</div>
+                <div className="text-6xl font-bold text-muted/30 absolute -top-8 left-0">
+                  {item.step}
+                </div>
                 <div className="relative bg-muted/5 border border-border/30 rounded-xl p-8 pt-10 hover:border-border/60 transition-all duration-300">
                   <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-5 bg-white/10 text-foreground">
                     {item.icon}
                   </div>
                   <h3 className="text-lg font-semibold mb-2">{item.title}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {item.desc}
+                  </p>
                 </div>
               </div>
             ))}
@@ -717,19 +829,47 @@ export default function LandingPage() {
         </section>
 
         {/* ═════════ TESTIMONIALS ═════════ */}
-        <section id="testimonials" className="container mx-auto px-4 py-28 max-w-7xl border-t border-border/30">
+        <section
+          id="testimonials"
+          className="container mx-auto px-4 py-28 max-w-7xl border-t border-border/30"
+        >
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">Loved by developers</h2>
-            <p className="text-lg text-muted-foreground">Here's what our community has to say about Grind.</p>
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">
+              Loved by developers
+            </h2>
+            <p className="text-lg text-muted-foreground">
+              Here's what our community has to say about Grind.
+            </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
-              { name: "Priya Sharma", role: "CS Student", content: "Grind was instrumental in my interview prep. The AI hints are a game changer - they help you learn without giving away the answer.", avatar: "PS" },
-              { name: "Arjun Patel", role: "CS Student", content: "The UI is incredibly clean and the editor experience is top-notch. It feels just like VS Code, which makes practicing so comfortable.", avatar: "AP" },
-              { name: "Rohan Kumar", role: "CS Student", content: "I've tried LeetCode and HackerRank, but Grind's curated problem sets and learning paths are superior. Highly recommend!", avatar: "RK" },
+              {
+                name: "Priya Sharma",
+                role: "CS Student",
+                content:
+                  "Grind was instrumental in my interview prep. The AI hints are a game changer - they help you learn without giving away the answer.",
+                avatar: "PS",
+              },
+              {
+                name: "Arjun Patel",
+                role: "CS Student",
+                content:
+                  "The UI is incredibly clean and the editor experience is top-notch. It feels just like VS Code, which makes practicing so comfortable.",
+                avatar: "AP",
+              },
+              {
+                name: "Rohan Kumar",
+                role: "CS Student",
+                content:
+                  "I've tried LeetCode and HackerRank, but Grind's curated problem sets and learning paths are superior. Highly recommend!",
+                avatar: "RK",
+              },
             ].map((t, i) => (
-              <Card key={i} className="bg-muted/5 border-border/30 hover:border-border/60 transition-all duration-300">
+              <Card
+                key={i}
+                className="bg-muted/5 border-border/30 hover:border-border/60 transition-all duration-300"
+              >
                 <CardHeader>
                   <div className="flex items-center gap-4">
                     <div className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center font-bold text-foreground text-sm">
@@ -737,16 +877,22 @@ export default function LandingPage() {
                     </div>
                     <div>
                       <div className="font-semibold">{t.name}</div>
-                      <div className="text-xs text-muted-foreground">{t.role}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {t.role}
+                      </div>
                     </div>
                   </div>
                   <div className="flex gap-0.5 text-foreground/50 mt-2">
-                    {[...Array(5)].map((_, j) => <Star key={j} className="h-4 w-4 fill-current" />)}
+                    {[...Array(5)].map((_, j) => (
+                      <Star key={j} className="h-4 w-4 fill-current" />
+                    ))}
                   </div>
                 </CardHeader>
                 <CardContent className="relative">
                   <Quote className="absolute top-0 left-0 h-8 w-8 text-muted-foreground/10 -translate-y-1/2 translate-x-2" />
-                  <p className="text-muted-foreground text-sm leading-relaxed relative z-10">"{t.content}"</p>
+                  <p className="text-muted-foreground text-sm leading-relaxed relative z-10">
+                    "{t.content}"
+                  </p>
                 </CardContent>
               </Card>
             ))}
@@ -756,25 +902,47 @@ export default function LandingPage() {
         {/* ═════════ FAQ ═════════ */}
         <section id="faq" className="container mx-auto px-4 py-24 max-w-3xl">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">Frequently asked questions</h2>
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">
+              Frequently asked questions
+            </h2>
           </div>
 
           <Accordion type="single" collapsible className="w-full">
             <AccordionItem value="item-1">
-              <AccordionTrigger>Is Grind suitable for beginners?</AccordionTrigger>
-              <AccordionContent>Yes! We have a dedicated "Beginner's Track" that starts with the basics of programming and gradually introduces algorithms and data structures.</AccordionContent>
+              <AccordionTrigger>
+                Is Grind suitable for beginners?
+              </AccordionTrigger>
+              <AccordionContent>
+                Yes! We have a dedicated "Beginner's Track" that starts with the
+                basics of programming and gradually introduces algorithms and
+                data structures.
+              </AccordionContent>
             </AccordionItem>
             <AccordionItem value="item-2">
-              <AccordionTrigger>How does the AI assistant work?</AccordionTrigger>
-              <AccordionContent>Our AI analyzes your code in real-time and provides contextual hints. It won't just give you the answer; instead, it guides you toward the solution.</AccordionContent>
+              <AccordionTrigger>
+                How does the AI assistant work?
+              </AccordionTrigger>
+              <AccordionContent>
+                Our AI analyzes your code in real-time and provides contextual
+                hints. It won't just give you the answer; instead, it guides you
+                toward the solution.
+              </AccordionContent>
             </AccordionItem>
             <AccordionItem value="item-3">
               <AccordionTrigger>Can I use Grind for free?</AccordionTrigger>
-              <AccordionContent>Absolutely. Our Free tier gives you access to a curated list of problems and basic features. Upgrade to Pro for advanced tools.</AccordionContent>
+              <AccordionContent>
+                Absolutely. Our Free tier gives you access to a curated list of
+                problems and basic features. Upgrade to Pro for advanced tools.
+              </AccordionContent>
             </AccordionItem>
             <AccordionItem value="item-4">
-              <AccordionTrigger>What programming languages are supported?</AccordionTrigger>
-              <AccordionContent>We currently support JavaScript, TypeScript, Python, Java, C++, Go, and Rust. We're constantly adding more.</AccordionContent>
+              <AccordionTrigger>
+                What programming languages are supported?
+              </AccordionTrigger>
+              <AccordionContent>
+                We currently support JavaScript, TypeScript, Python, Java, C++,
+                Go, and Rust. We're constantly adding more.
+              </AccordionContent>
             </AccordionItem>
           </Accordion>
         </section>
@@ -829,41 +997,142 @@ export default function LandingPage() {
                 <span>Grind</span>
               </div>
               <p className="text-sm text-muted-foreground mb-4">
-                Master algorithms and build your future with the world's best coding platform.
+                Master algorithms and build your future with the world's best
+                coding platform.
               </p>
               <div className="flex gap-4">
-                <a href="#" className="text-muted-foreground hover:text-foreground transition-colors"><Globe className="h-5 w-5" /></a>
-                <a href="#" className="text-muted-foreground hover:text-foreground transition-colors"><GitBranch className="h-5 w-5" /></a>
+                <a
+                  href="#"
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <Globe className="h-5 w-5" />
+                </a>
+                <a
+                  href="#"
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <GitBranch className="h-5 w-5" />
+                </a>
               </div>
             </div>
 
             <div className="text-left">
-              <h4 className="font-semibold mb-4 text-sm uppercase tracking-wide dark:text-foreground">Product</h4>
+              <h4 className="font-semibold mb-4 text-sm uppercase tracking-wide dark:text-foreground">
+                Product
+              </h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><button className="hover:text-foreground transition-colors" onClick={() => navigate("/problems")}>Problems</button></li>
-                <li><button className="hover:text-foreground transition-colors" onClick={() => navigate("/contest")}>Contests</button></li>
-                <li><button className="hover:text-foreground transition-colors" onClick={() => navigate("/compiler")}>Compiler</button></li>
-                <li><button className="hover:text-foreground transition-colors" onClick={() => navigate("/grind-ai")}>Grind AI</button></li>
-                <li><button className="hover:text-foreground transition-colors" onClick={() => navigate("/premium/pricing")}>Pricing</button></li>
+                <li>
+                  <button
+                    className="hover:text-foreground transition-colors"
+                    onClick={() => navigate("/problems")}
+                  >
+                    Problems
+                  </button>
+                </li>
+                <li>
+                  <button
+                    className="hover:text-foreground transition-colors"
+                    onClick={() => navigate("/contest")}
+                  >
+                    Contests
+                  </button>
+                </li>
+                <li>
+                  <button
+                    className="hover:text-foreground transition-colors"
+                    onClick={() => navigate("/compiler")}
+                  >
+                    Compiler
+                  </button>
+                </li>
+                <li>
+                  <button
+                    className="hover:text-foreground transition-colors"
+                    onClick={() => navigate("/grind-ai")}
+                  >
+                    Grind AI
+                  </button>
+                </li>
+                <li>
+                  <button
+                    className="hover:text-foreground transition-colors"
+                    onClick={() => navigate("/premium/pricing")}
+                  >
+                    Pricing
+                  </button>
+                </li>
               </ul>
             </div>
 
             <div className="text-left">
-              <h4 className="font-semibold mb-4 text-sm uppercase tracking-wide dark:text-foreground">Resources</h4>
+              <h4 className="font-semibold mb-4 text-sm uppercase tracking-wide dark:text-foreground">
+                Resources
+              </h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><button className="hover:text-foreground transition-colors" onClick={() => navigate("/about")}>About Us</button></li>
-                <li><button className="hover:text-foreground transition-colors" onClick={() => navigate("/contact-us")}>Contact</button></li>
-                <li><a href="#faq" className="hover:text-foreground transition-colors">FAQ</a></li>
+                <li>
+                  <button
+                    className="hover:text-foreground transition-colors"
+                    onClick={() => navigate("/about")}
+                  >
+                    About Us
+                  </button>
+                </li>
+                <li>
+                  <button
+                    className="hover:text-foreground transition-colors"
+                    onClick={() => navigate("/contact-us")}
+                  >
+                    Contact
+                  </button>
+                </li>
+                <li>
+                  <a
+                    href="#faq"
+                    className="hover:text-foreground transition-colors"
+                  >
+                    FAQ
+                  </a>
+                </li>
               </ul>
             </div>
 
             <div className="text-left">
-              <h4 className="font-semibold mb-4 text-sm uppercase tracking-wide dark:text-foreground">Legal</h4>
+              <h4 className="font-semibold mb-4 text-sm uppercase tracking-wide dark:text-foreground">
+                Legal
+              </h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><button className="hover:text-foreground transition-colors" onClick={() => navigate("/terms-and-conditions")}>Terms & Conditions</button></li>
-                <li><button className="hover:text-foreground transition-colors" onClick={() => navigate("/privacy-policy")}>Privacy Policy</button></li>
-                <li><button className="hover:text-foreground transition-colors" onClick={() => navigate("/cancellation-policy")}>Cancellation & Refunds</button></li>
-                <li><button className="hover:text-foreground transition-colors" onClick={() => navigate("/shipping-policy")}>Shipping Policy</button></li>
+                <li>
+                  <button
+                    className="hover:text-foreground transition-colors"
+                    onClick={() => navigate("/terms-and-conditions")}
+                  >
+                    Terms & Conditions
+                  </button>
+                </li>
+                <li>
+                  <button
+                    className="hover:text-foreground transition-colors"
+                    onClick={() => navigate("/privacy-policy")}
+                  >
+                    Privacy Policy
+                  </button>
+                </li>
+                <li>
+                  <button
+                    className="hover:text-foreground transition-colors"
+                    onClick={() => navigate("/cancellation-policy")}
+                  >
+                    Cancellation & Refunds
+                  </button>
+                </li>
+                <li>
+                  <button
+                    className="hover:text-foreground transition-colors"
+                    onClick={() => navigate("/shipping-policy")}
+                  >
+                    Shipping Policy
+                  </button>
+                </li>
               </ul>
             </div>
           </div>
@@ -871,9 +1140,15 @@ export default function LandingPage() {
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 pt-8 border-t border-border/40 text-sm text-muted-foreground">
             <p>© 2026 Grind Inc. All rights reserved.</p>
             <div className="flex gap-6">
-              <button className="hover:text-foreground transition-colors"><Twitter /></button>
-              <button className="hover:text-foreground transition-colors"><Github /></button>
-              <button className="hover:text-foreground transition-colors"><SiDiscord className="text-[25px]" /></button>
+              <button className="hover:text-foreground transition-colors">
+                <Twitter />
+              </button>
+              <button className="hover:text-foreground transition-colors">
+                <Github />
+              </button>
+              <button className="hover:text-foreground transition-colors">
+                <SiDiscord className="text-[25px]" />
+              </button>
             </div>
           </div>
         </div>

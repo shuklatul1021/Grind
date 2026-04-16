@@ -1,19 +1,38 @@
 
 function getBackendURL(){
-    if(import.meta.env.VITE_NODE_ENV === "development"){
-        return "http://localhost:5000/v1/api";
-    }else if (import.meta.env.VITE_NODE_ENV === "production"){
+    const env = import.meta.env.VITE_NODE_ENV || import.meta.env.MODE;
+
+    if(env === "production"){
         return "https://api.grind.org.in/v1/api";
     }
+
+    return "http://localhost:5000/v1/api";
 }   
 function getCompilerURL(){
-    if(import.meta.env.VITE_NODE_ENV === "development"){
-        return "http://localhost:5001/v1/api";
-    }else if (import.meta.env.VITE_NODE_ENV === "production"){
+    const env = import.meta.env.VITE_NODE_ENV || import.meta.env.MODE;
+
+    if(env === "production"){
         return "https://compiler.grind.org.in/v1/api";
     }
+
+    return "http://localhost:5001/v1/api";
 }   
+
+function getCompilerWsURL(){
+    if(import.meta.env.VITE_COMPILER_WS_URL){
+        return import.meta.env.VITE_COMPILER_WS_URL;
+    }
+
+    const env = import.meta.env.VITE_NODE_ENV || import.meta.env.MODE;
+
+    if(env === "production"){
+        return "wss://websocket.grind.org.in";
+    }
+
+    return "ws://localhost:8080";
+}
 
 export const BACKENDURL = getBackendURL();
 export const COMPILER_URL = getCompilerURL();
+export const COMPILER_WS_URL = getCompilerWsURL();
 

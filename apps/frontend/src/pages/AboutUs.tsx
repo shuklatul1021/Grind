@@ -16,8 +16,7 @@ import {
   Target,
   Users,
   Zap,
-  Heart,
-  SquareChevronRight,
+  Heart
 } from "lucide-react";
 import { useEffect } from "react";
 
@@ -40,8 +39,14 @@ export default function AboutUs() {
             className="flex items-center gap-2 cursor-pointer"
             onClick={() => navigate("/")}
           >
-            <SquareChevronRight className="h-6 w-6" />
-            <span className="text-xl font-bold">Grind</span>
+            <div className="h-8 w-8 overflow-hidden rounded-lg border border-border/60 bg-background p-0.5 shadow-sm">
+              <img
+                src="/new_logo.jpg"
+                alt="Grind logo"
+                className="h-full w-full rounded-md object-cover"
+              />
+            </div>
+            <span className="text-lg font-bold">Grind</span>
           </div>
           <Button
             variant="ghost"
@@ -316,7 +321,13 @@ export default function AboutUs() {
         <div className="container px-4 py-8">
           <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
             <div className="flex items-center gap-2">
-              <SquareChevronRight className="h-5 w-5" />
+              <div className="h-8 w-8 overflow-hidden rounded-lg border border-border/60 bg-background p-0.5 shadow-sm">
+                <img
+                  src="/new_logo.jpg"
+                  alt="Grind logo"
+                  className="h-full w-full rounded-md object-cover"
+                />
+              </div>
               <span className="font-semibold">Grind</span>
             </div>
             <p className="text-sm text-muted-foreground">

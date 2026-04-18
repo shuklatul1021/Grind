@@ -2,7 +2,6 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@repo/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@repo/ui/card';
 import {
-  SquareChevronRight,
   Check,
   Zap,
   Crown,
@@ -30,7 +29,7 @@ export default function PricingPage() {
   const plans = [
     {
       name: 'Basic',
-      price: '99',
+      price: '199',
       description: 'Perfect for individual developers',
       icon: Code2,
       color: 'blue',
@@ -46,7 +45,7 @@ export default function PricingPage() {
     },
     {
       name: 'Pro',
-      price: '199',
+      price: '499',
       description: 'For serious competitive programmers',
       icon: Crown,
       color: 'purple',
@@ -70,8 +69,14 @@ export default function PricingPage() {
         <div className="container flex h-16 items-center justify-between px-4">
           <div className="container flex h-16 items-center justify-between px-4">
             <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/')}>
-              <SquareChevronRight className="h-6 w-6" />
-              <span className="text-xl font-bold">Grind</span>
+              <div className="h-8 w-8 overflow-hidden rounded-lg border border-border/60 bg-background p-0.5 shadow-sm">
+                <img
+                  src="/new_logo.jpg"
+                  alt="Grind logo"
+                  className="h-full w-full rounded-md object-cover"
+                />
+              </div>
+              <span className="text-lg font-bold">Grind</span>
             </div>
             <Button variant="ghost" onClick={() => navigate(-1)} className="gap-2">
               <ArrowLeft className="h-4 w-4" />

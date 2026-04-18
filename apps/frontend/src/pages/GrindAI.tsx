@@ -10,7 +10,7 @@ import {
   Send,
   MessageSquare,
   Trash2,
-  SquareChevronRight,
+  BrainCircuit,
   ChevronLeft,
   ChevronRight,
   Zap,
@@ -294,7 +294,7 @@ export default function GrindAI() {
         <section className="flex flex-none items-center justify-between rounded-2xl border border-border/60 bg-card px-4 py-3">
           <div className="flex items-center gap-3">
             <div className="rounded-lg border border-border/60 bg-background p-2">
-              <SquareChevronRight className="h-4 w-4" />
+              <BrainCircuit className="h-4 w-4" />
             </div>
             <div>
               <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
@@ -502,7 +502,7 @@ export default function GrindAI() {
                 <div className="h-full flex flex-col items-center justify-center max-w-4xl mx-auto px-4">
                   <div className="text-center mb-12">
                     <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-gradient-to-br from-blue-500/20 to-cyan-500/20 mb-6">
-                      <SquareChevronRight className="h-12 w-12 text-blue-500" />
+                      <BrainCircuit className="h-12 w-12 text-blue-500" />
                     </div>
                     <h1 className="text-5xl font-bold mb-4">
                       Welcome to

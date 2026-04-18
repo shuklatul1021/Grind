@@ -1,31 +1,21 @@
 User-agent: *
 Allow: /
 
-# High Priority Pages
-Sitemap: https://grind.org.in/sitemap.xml
-
-# Crawl-delay for bots (optional, helps with server load)
-Crawl-delay: 1
-
-# Disallow admin or private routes if any
+# Keep API and internal paths out of indexing
 Disallow: /api/
 Disallow: /admin/
+Disallow: /verify
+Disallow: /grind-ai/c/
+Disallow: /settings
+Disallow: /you
 
-# Allow all important pages explicitly
-Allow: /compiler
-Allow: /problems
-Allow: /workspace
-Allow: /premium-questions
-Allow: /dsa-notes
-Allow: /resume
-Allow: /resume-analysis
+# Sitemap location
+Sitemap: https://grind.org.in/sitemap.xml
 
-# Google Search Console
+# Googlebot
 User-agent: Googlebot
 Allow: /
-Crawl-delay: 0
 
 # Bing
 User-agent: Bingbot
 Allow: /
-Crawl-delay: 1

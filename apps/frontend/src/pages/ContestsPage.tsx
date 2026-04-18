@@ -10,7 +10,6 @@ import {
   Trophy,
   TrendingUp,
   ChevronRight,
-  SquareChevronRight,
 } from "lucide-react";
 import { useTheme } from "../contexts/ThemeContext";
 import { toast } from "../../../../packages/ui/src/hooks/use-toast";
@@ -157,7 +156,7 @@ export default function ContestsPage() {
           <div className="mb-6 flex items-center justify-between rounded-2xl border border-border/60 bg-card px-4 py-3">
             <div className="flex items-center gap-3">
               <div className="rounded-lg border border-border/60 bg-background p-2">
-                <SquareChevronRight className="h-4 w-4" />
+                <Trophy className="h-4 w-4" />
               </div>
               <div>
                 <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">

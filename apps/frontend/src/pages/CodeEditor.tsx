@@ -276,6 +276,14 @@ export default function CodeEditor({
   const gutterRef = useRef<HTMLPreElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
+  const syncGutterScroll = (scrollTop: number) => {
+    if (!gutterRef.current) {
+      return;
+    }
+
+    gutterRef.current.style.transform = `translateY(-${scrollTop}px)`;
+  };
+
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [suggestionIndex, setSuggestionIndex] = useState(0);
@@ -385,15 +393,20 @@ export default function CodeEditor({
 
   useEffect(() => {
     const editorEl = editorRef.current;
-    const gutterEl = gutterRef.current;
-    if (!editorEl || !gutterEl) return;
+    const initialGutterEl = gutterRef.current;
+    if (!editorEl || !initialGutterEl) return;
 
     const onScroll = () => {
-      gutterEl.scrollTop = editorEl.scrollTop;
+      initialGutterEl.style.transform = `translateY(-${editorEl.scrollTop}px)`;
     };
 
     editorEl.addEventListener("scroll", onScroll, { passive: true });
-    return () => editorEl.removeEventListener("scroll", onScroll);
+    onScroll();
+
+    return () => {
+      editorEl.removeEventListener("scroll", onScroll);
+      initialGutterEl.style.transform = "";
+    };
   }, []);
 
   useEffect(() => {
@@ -403,6 +416,15 @@ export default function CodeEditor({
     if (!textarea) return;
 
     textareaRef.current = textarea;
+
+    const handleTextareaScroll = () => {
+      syncGutterScroll(textarea.scrollTop);
+    };
+
+    textarea.addEventListener("scroll", handleTextareaScroll, {
+      passive: true,
+    });
+    handleTextareaScroll();
 
     const handleKeyDown = (e: KeyboardEvent) => {
       // Auto-suggest navigation
@@ -562,6 +584,7 @@ export default function CodeEditor({
     textarea.addEventListener("click", () => setShowSuggestions(false));
 
     return () => {
+      textarea.removeEventListener("scroll", handleTextareaScroll);
       textarea.removeEventListener("keydown", handleKeyDown);
       textarea.removeEventListener("blur", handleBlur);
       textarea.removeEventListener("click", () => setShowSuggestions(false));
@@ -570,12 +593,12 @@ export default function CodeEditor({
 
   return (
     <div
-      className="relative h-full flex flex-col overflow-hidden group transition-colors duration-200"
+      className="group relative flex h-full min-w-0 flex-col overflow-hidden transition-colors duration-200"
       style={{ backgroundColor: theme === "dark" ? "#1e1e1e" : "#ffffff" }}
     >
       <style>{theme === "dark" ? vsCodeDarkTheme : vsCodeLightTheme}</style>
       <div
-        className="flex flex-1 overflow-hidden relative"
+        className="relative flex min-w-0 flex-1 overflow-hidden"
         style={{ height: "100%" }}
       >
         {/* Gutter */}
@@ -601,7 +624,7 @@ export default function CodeEditor({
         </div>
         <div
           ref={editorRef}
-          className="flex-1 overflow-auto editor-scroll-container relative"
+          className="editor-scroll-container relative flex-1 overflow-auto min-w-0 max-w-full"
           style={{
             fontFamily:
               '"JetBrains Mono", "Fira Code", Consolas, Monaco, "Andale Mono", "Ubuntu Mono", monospace',
@@ -627,7 +650,8 @@ export default function CodeEditor({
               lineHeight: "1.6",
               whiteSpace: "pre",
               overflowX: "auto",
-              minWidth: "fit-content",
+              minWidth: "100%",
+              maxWidth: "100%",
               width: "100%",
             }}
             className="editor-container"

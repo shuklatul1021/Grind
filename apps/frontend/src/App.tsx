@@ -4,7 +4,9 @@ import {
   Route,
   Navigate,
   Outlet,
+  useLocation,
 } from "react-router-dom";
+import { useEffect } from "react";
 import "./App.css";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import LandingPage from "./pages/LandingPage";
@@ -16,9 +18,7 @@ import { VerifyOtp } from "./pages/VerifyOtp";
 import CompilerPage from "./pages/CompilerPage";
 import ContestsPage from "./pages/ContestsPage";
 import ContestPage from "./pages/ContestPage";
-import {
-  useAuthentication,
-} from "./hooks/useAuthentication";
+import { useAuthentication } from "./hooks/useAuthentication";
 import AboutUs from "./pages/AboutUs";
 import TermsAndConditions from "./pages/TermsConditions";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
@@ -32,6 +32,7 @@ import ShippingPolicy from "./pages/ShippingPolicy";
 import ContactUs from "./pages/ContactUs";
 import PremiumZone from "./pages/PremiumPage";
 import NotFound from "./pages/Not-Found";
+import { resolveSEOConfig, updateSEO } from "./utils/seo";
 // import { PrimiumResume } from "./premium/resume/Resume";
 // import { ResumeAnalysisPage } from "./premium/resume/ResumeAnalysis";
 // import LearningPage from "./Learning/Learning";
@@ -87,6 +88,16 @@ function RequireAuth({ redirectTo = "/" }: { redirectTo?: string }) {
   );
 }
 
+function RouteSEOManager() {
+  const location = useLocation();
+
+  useEffect(() => {
+    const seoConfig = resolveSEOConfig(location.pathname);
+    updateSEO(seoConfig);
+  }, [location.pathname]);
+
+  return null;
+}
 
 function App() {
   // useEffect(()=>{
@@ -95,18 +106,19 @@ function App() {
 
   console.log(
     "%c⚠️ SECURITY WARNING ⚠️\n" +
-    "This console is for developers only. If someone told you to paste code here, it's a SCAM!\n" +
-    "Attackers can steal:\n" +
-    "• Your account and passwords\n" +
-    "• Your personal data\n" +
-    "• Your payment information\n" +
-    " Do NOT paste any code here unless you know exactly what it does!",
-    "color: #ffffff; background: #000000; font-size: 1.2em; font-weight: bold; line-height: 1.8; padding: 10px;"
+      "This console is for developers only. If someone told you to paste code here, it's a SCAM!\n" +
+      "Attackers can steal:\n" +
+      "• Your account and passwords\n" +
+      "• Your personal data\n" +
+      "• Your payment information\n" +
+      " Do NOT paste any code here unless you know exactly what it does!",
+    "color: #ffffff; background: #000000; font-size: 1.2em; font-weight: bold; line-height: 1.8; padding: 10px;",
   );
 
   return (
     <ThemeProvider>
       <BrowserRouter>
+        <RouteSEOManager />
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/about" element={<AboutUs />} />
@@ -122,6 +134,7 @@ function App() {
           <Route path="/shipping-policy" element={<ShippingPolicy />} />
           <Route path="/contact-us" element={<ContactUs />} />
           <Route path="/auth" element={<AuthPage />} />
+          <Route path="/pricing" element={<PricingPage />} />
           <Route path="/verify" element={<VerifyOtp />} />
           <Route element={<RequireAuth redirectTo="/auth" />}>
             <Route path="/problems" element={<ProblemsPage />} />
@@ -133,7 +146,6 @@ function App() {
             {/* <Route path="/room" element={<RoomsPage />} />
             <Route path="/room/:roomId/arena" element={<UserCodeArenaPage />} />
             <Route path="/room/:roomId/host" element={<HostRoomPage />} /> */}
-
 
             {/* Learning Routes */}
             {/* <Route path="/learning" element={<LearningPage />} /> */}
@@ -153,12 +165,10 @@ function App() {
             {/* Logical Reasoning Syllabus */}
             {/* <Route path="/learning/practice/logical-reasoning" element={<LogicalReasoningSyllabus />} /> */}
 
-
             {/* Learning Interview Preparation */}
             {/* <Route path="/learning/interview" element={<InterviewPreparationPage />} />
             <Route path="/learning/interview/dsa" element={<DSAInterviewPage />} />
             <Route path="/learning/interview/hr" element={<HRBehavioralPage />} /> */}
-
 
             {/* Learning Concepts */}
             {/* <Route path="/learning/concepts" element={<ConceptLearningPage />} />
@@ -169,7 +179,6 @@ function App() {
             <Route path="/learning/concepts/networks" element={<NetworksPage />} />
             <Route path="/learning/concepts/computer-architecture" element={<ComputerArchitecturePage />} /> */}
 
-
             {/* Learning Career Growth */}
             {/* <Route path="/learning/career" element={<CareerGrowthPage />} />
             <Route path="/learning/career/resume" element={<ResumeBuildingPage />} />
@@ -177,7 +186,6 @@ function App() {
             <Route path="/learning/quiz" element={<QuizPage />} />
             <Route path="/learning/interview" element={<InterviewPreparationPage />} />
             <Route path="/learning/hr" element={<HrRoundPage />} /> */}
-
 
             {/* Premium Routes */}
             <Route path="/premium" element={<PremiumZone />} />

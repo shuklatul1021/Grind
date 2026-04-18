@@ -111,7 +111,13 @@ export default function MainSideNav({
             >
               {collapsed && (
                 <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-foreground text-background flex-shrink-0">
-                  <SquareChevronRight className="h-4 w-4" />
+                  <div className="h-8 w-8 overflow-hidden rounded-lg border border-border/60 bg-background p-0.5 shadow-sm">
+                    <img
+                      src="/new_logo.jpg"
+                      alt="Grind logo"
+                      className="h-full w-full rounded-md object-cover"
+                    />
+                  </div>
                 </div>
               )}
               {!collapsed && (

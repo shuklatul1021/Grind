@@ -21,6 +21,7 @@ import {
   CloudUpload,
   Pause,
   Play as PlayIcon,
+  BookText,
 } from "lucide-react";
 import { useTheme } from "../contexts/ThemeContext";
 import { useToast } from "../../../../packages/ui/src/hooks/use-toast";
@@ -113,7 +114,7 @@ export default function ProblemPage() {
   useEffect(() => {
     if (slug && code) {
       const savedCodes = JSON.parse(
-        localStorage.getItem("grind_saved_codes") || "{}"
+        localStorage.getItem("grind_saved_codes") || "{}",
       );
       savedCodes[slug] = {
         code,
@@ -166,7 +167,7 @@ export default function ProblemPage() {
             code,
             language: selectedLanguage,
             token: localStorage.getItem("token") || "",
-          })
+          }),
         );
       }
     };
@@ -175,11 +176,7 @@ export default function ProblemPage() {
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [slug, code, selectedLanguage]);
 
-  useEffect(() => {
-    fetchProblem();
-  }, [slug]);
-
-  const fetchProblem = async () => {
+  const fetchProblem = useCallback(async () => {
     setLoading(true);
     try {
       const response = await fetch(
@@ -190,27 +187,34 @@ export default function ProblemPage() {
             "Content-Type": "application/json",
             token: localStorage.getItem("token") || "",
           },
-        }
+        },
       );
       if (response.ok) {
         const json = await response.json();
         setProblem(json.problem);
         const parsedStarterCodes = JSON.parse(json.problem.starterCode);
         setStarterCodes(parsedStarterCodes);
-        const savedCodes = JSON.parse(localStorage.getItem("grind_saved_codes") || "{}");
-        if (savedCodes[slug!]) {
-          setCode(savedCodes[slug!].code);
-          setSelectedLanguage(savedCodes[slug!].language);
+        const savedCodes = JSON.parse(
+          localStorage.getItem("grind_saved_codes") || "{}",
+        );
+        const savedEntry = slug ? savedCodes[slug] : undefined;
+
+        if (savedEntry) {
+          setCode(savedEntry.code);
+          setSelectedLanguage(savedEntry.language);
         } else {
-          const selectedCode = parsedStarterCodes.find(
-            (sc: StarterCode) => sc.language === selectedLanguage
-          );
-          setCode(selectedCode ? selectedCode.code : "");
+          const defaultCode =
+            parsedStarterCodes.find(
+              (sc: StarterCode) => sc.language === "python",
+            ) ?? parsedStarterCodes[0];
+
+          setSelectedLanguage(defaultCode?.language ?? "python");
+          setCode(defaultCode?.code ?? "");
         }
       } else {
         throw new Error("Failed to fetch");
       }
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to fetch problem details",
@@ -224,7 +228,11 @@ export default function ProblemPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [slug, toast]);
+
+  useEffect(() => {
+    void fetchProblem();
+  }, [fetchProblem]);
 
   const handleRunCode = async () => {
     if (!problem) return;
@@ -234,9 +242,12 @@ export default function ProblemPage() {
         `${BACKENDURL}/submit/submitcode/${problem.id}`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json", token: localStorage.getItem("token") || "" },
+          headers: {
+            "Content-Type": "application/json",
+            token: localStorage.getItem("token") || "",
+          },
           body: JSON.stringify({ code, language: selectedLanguage }),
-        }
+        },
       );
       const data = await response.json();
       if (response.ok) {
@@ -266,7 +277,7 @@ export default function ProblemPage() {
           });
         }
       }
-    } catch (error) {
+    } catch {
       setTestResult({ status: "runtime_error", message: "Runtime Error" });
     } finally {
       setSubmitting(false);
@@ -304,176 +315,198 @@ export default function ProblemPage() {
 
   if (!problem) return null;
 
+  const acceptanceDisplay =
+    typeof problem.acceptanceRate === "number"
+      ? `${problem.acceptanceRate.toFixed(1)}%`
+      : "N/A";
+  const constraintsText =
+    problem.constraints?.trim() || "Constraints will be available soon.";
+  const examples = problem.examples as Example[];
+
   return (
-    <div className="flex h-screen flex-col bg-background text-foreground overflow-hidden">
-      {/* Modern Header - Minimal & Clean */}
-      <header className="flex h-14 shrink-0 items-center justify-between border-b border-border/50 bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        {/* Left: Navigation & Context */}
-        <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate("/problems")}
-            className="h-8 w-8 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground"
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <div className="flex items-center gap-3">
-            <div
-              className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-              onClick={() => navigate("/")}
+    <div className="relative flex h-screen flex-col overflow-hidden bg-background text-foreground">
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute -top-24 left-1/3 h-64 w-64 rounded-full bg-primary/5 blur-3xl" />
+        <div className="absolute bottom-0 right-0 h-72 w-72 rounded-full bg-sky-500/5 blur-3xl dark:bg-sky-400/5" />
+      </div>
+
+      <div className="relative flex h-full flex-col">
+        {/* Modern Header - Minimal & Clean */}
+        <header className="flex h-16 shrink-0 items-center border-b border-border/50 bg-background/95 px-3 backdrop-blur supports-[backdrop-filter]:bg-background/70 sm:px-4 lg:px-6">
+          {/* Left: Navigation & Context */}
+          <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate("/problems")}
+              className="h-8 w-8 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
             >
-              <SquareChevronRight className="h-5 w-5 text-primary" />
-              <span className="font-semibold tracking-tight text-foreground">
-                Grind
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+              <div
+                className="flex flex-none items-center gap-2 cursor-pointer text-muted-foreground transition-colors hover:text-foreground"
+                onClick={() => navigate("/")}
+              >
+                <SquareChevronRight className="h-5 w-5 text-primary" />
+                <span className="font-semibold tracking-tight text-foreground">
+                  Grind
+                </span>
+              </div>
+              <div className="h-4 w-[1px] bg-border/50" />
+              <span className="max-w-[38vw] truncate text-sm font-semibold text-foreground/90 sm:max-w-[360px] lg:max-w-[520px]">
+                {problem.title}
               </span>
             </div>
-            <div className="h-4 w-[1px] bg-border/50" />
-            <span className="text-sm font-medium truncate max-w-[300px]">
-              {problem.title}
-            </span>
-          </div>
-        </div>
-
-        {/* Center: Timer */}
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-          <WorkspaceTimer />
-        </div>
-
-        {/* Right: Actions & Profile */}
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 mr-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-muted-foreground hover:text-foreground"
-            >
-              <Settings className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleTheme}
-              className="h-8 w-8 text-muted-foreground hover:text-foreground"
-            >
-              {theme === "dark" ? (
-                <Sun className="h-4 w-4" />
-              ) : (
-                <Moon className="h-4 w-4" />
-              )}
-            </Button>
           </div>
 
-          <div className="h-4 w-[1px] bg-border/50" />
-
-          <div className="flex items-center gap-2">
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={handleRunCode}
-              disabled={submitting}
-              className="h-8 px-4 text-xs font-medium gap-2"
-            >
-              {submitting ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              ) : (
-                <Play className="h-3.5 w-3.5 fill-current" />
-              )}
-              Run
-            </Button>
-            <Button
-              size="sm"
-              onClick={handleRunCode}
-              disabled={submitting}
-              className="h-8 px-4 text-xs font-medium gap-2 bg-green-600 hover:bg-green-700 text-white shadow-sm"
-            >
-              <CloudUpload className="h-3.5 w-3.5" />
-              Submit
-            </Button>
+          {/* Center: Timer */}
+          <div className="hidden flex-none items-center justify-center px-4 xl:flex">
+            <WorkspaceTimer />
           </div>
-        </div>
-      </header>
-      <ResizablePanelGroup direction="horizontal" className="flex-1">
-        {!isFullscreen && (
-          <>
-            <ResizablePanel
-              defaultSize={30}
-              minSize={30}
-              maxSize={60}
-              className="bg-card/30"
-            >
-              <div className="flex h-full flex-col">
-                <Tabs
-                  defaultValue="description"
-                  className="flex-1 flex flex-col"
-                >
-                  <div className="border-b border-border/50 px-4 bg-muted/10">
-                    <TabsList className="h-10 w-full justify-start gap-6 rounded-none bg-transparent p-0">
-                      <TabsTrigger
-                        value="description"
-                        className="relative h-10 rounded-none border-b-2 border-transparent bg-transparent px-0 pb-2 pt-2 font-medium text-muted-foreground shadow-none transition-none data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:shadow-none hover:text-foreground"
-                      >
-                        Description
-                      </TabsTrigger>
-                      <TabsTrigger
-                        value="submissions"
-                        className="relative h-10 rounded-none border-b-2 border-transparent bg-transparent px-0 pb-2 pt-2 font-medium text-muted-foreground shadow-none transition-none data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:shadow-none hover:text-foreground"
-                      >
-                        Submissions
-                      </TabsTrigger>
-                    </TabsList>
-                  </div>
 
-                  <TabsContent
-                    value="description"
-                    className="flex-1 overflow-y-auto p-6 outline-none mt-0"
+          {/* Right: Actions & Profile */}
+          <div className="flex flex-none items-center gap-2 sm:gap-3">
+            <div className="hidden md:block xl:hidden">
+              <WorkspaceTimer />
+            </div>
+
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-muted-foreground hover:bg-muted hover:text-foreground"
+              >
+                <Settings className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={toggleTheme}
+                className="h-8 w-8 text-muted-foreground hover:bg-muted hover:text-foreground"
+              >
+                {theme === "dark" ? (
+                  <Sun className="h-4 w-4" />
+                ) : (
+                  <Moon className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
+
+            <div className="hidden h-4 w-[1px] bg-border/50 sm:block" />
+
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleRunCode}
+                disabled={submitting}
+                className="h-8 gap-2 px-3 text-xs font-semibold sm:px-4"
+              >
+                {submitting ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Play className="h-3.5 w-3.5 fill-current" />
+                )}
+                Run
+              </Button>
+              <Button
+                size="sm"
+                onClick={handleRunCode}
+                disabled={submitting}
+                className="h-8 gap-2 bg-emerald-600 px-3 text-xs font-semibold text-white shadow-sm hover:bg-emerald-700 sm:px-4"
+              >
+                <CloudUpload className="h-3.5 w-3.5" />
+                Submit
+              </Button>
+            </div>
+          </div>
+        </header>
+
+        <ResizablePanelGroup direction="horizontal" className="flex-1">
+          {!isFullscreen && (
+            <>
+              <ResizablePanel
+                defaultSize={30}
+                minSize={30}
+                maxSize={60}
+                className="bg-card/30 backdrop-blur-[2px]"
+              >
+                <div className="flex h-full flex-col">
+                  <Tabs
+                    defaultValue="description"
+                    className="flex-1 flex flex-col"
                   >
-                    <div className="space-y-6 max-w-3xl mx-auto">
-                      <div className="space-y-4">
-                        <div className="flex items-start justify-between gap-4">
-                          <h1 className="text-2xl font-bold tracking-tight">
-                            {problem.title}
-                          </h1>
-                          <Badge
-                            variant="outline"
-                            className={`${getDifficultyColor(
-                              problem.difficulty
-                            )} capitalize px-2.5 py-0.5 text-xs font-semibold border`}
-                          >
-                            {problem.difficulty}
-                          </Badge>
-                        </div>
+                    <div className="border-b border-border/50 bg-muted/10 px-4">
+                      <TabsList className="h-10 w-full justify-start gap-6 rounded-none bg-transparent p-0">
+                        <TabsTrigger
+                          value="description"
+                          className="relative h-10 rounded-none border-b-2 border-transparent bg-transparent px-0 pb-2 pt-2 font-medium text-muted-foreground shadow-none transition-none data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:shadow-none hover:text-foreground"
+                        >
+                          Description
+                        </TabsTrigger>
+                        <TabsTrigger
+                          value="info"
+                          className="relative h-10 rounded-none border-b-2 border-transparent bg-transparent px-0 pb-2 pt-2 font-medium text-muted-foreground shadow-none transition-none data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:shadow-none hover:text-foreground"
+                        >
+                          Info
+                        </TabsTrigger>
+                        <TabsTrigger
+                          value="submissions"
+                          className="relative h-10 rounded-none border-b-2 border-transparent bg-transparent px-0 pb-2 pt-2 font-medium text-muted-foreground shadow-none transition-none data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:shadow-none hover:text-foreground"
+                        >
+                          Submissions
+                        </TabsTrigger>
+                      </TabsList>
+                    </div>
 
-                        <div className="flex flex-wrap gap-2">
-                          {problem.tags.map((tag) => (
+                    <TabsContent
+                      value="description"
+                      className="mt-0 flex-1 overflow-y-auto p-5 outline-none sm:p-6"
+                    >
+                      <div className="mx-auto max-w-4xl space-y-6">
+                        <div className="space-y-4">
+                          <div className="flex items-start justify-between gap-4">
+                            <h1 className="text-2xl font-bold tracking-tight">
+                              {problem.title}
+                            </h1>
                             <Badge
-                              key={tag}
-                              variant="secondary"
-                              className="bg-muted/50 text-muted-foreground hover:bg-muted text-[10px] px-2 py-0.5"
+                              variant="outline"
+                              className={`${getDifficultyColor(
+                                problem.difficulty,
+                              )} capitalize px-2.5 py-0.5 text-xs font-semibold border`}
                             >
-                              {tag}
+                              {problem.difficulty}
                             </Badge>
-                          ))}
+                          </div>
                         </div>
-                      </div>
 
-                      <div className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground leading-relaxed">
-                        <div className="whitespace-pre-wrap">
-                          {problem.description}
+                        <div className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground leading-relaxed">
+                          <div className="whitespace-pre-wrap">
+                            {problem.description}
+                          </div>
                         </div>
-                      </div>
 
-                      <div className="space-y-4">
-                        <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                          <Terminal className="h-4 w-4" />
-                          Examples
-                        </h3>
-                        <div className="grid gap-4">
-                          {(problem.examples as Example[]).map(
-                            (example, index) => (
+                        <div className="rounded-lg border border-border/60 bg-muted/20 p-4">
+                          <h3 className="mb-2 flex items-center gap-2 text-sm font-semibold text-foreground">
+                            <BookText className="h-4 w-4 text-muted-foreground" />
+                            Constraints
+                          </h3>
+                          <p className="whitespace-pre-wrap text-sm leading-relaxed text-muted-foreground">
+                            {constraintsText}
+                          </p>
+                        </div>
+
+                        <div className="space-y-4">
+                          <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                            <Terminal className="h-4 w-4" />
+                            Examples
+                          </h3>
+                          <div className="grid gap-4">
+                            {examples.map((example, index) => (
                               <div
                                 key={index}
-                                className="rounded-lg border border-border/50 bg-muted/20 p-4 space-y-3"
+                                className="space-y-3 rounded-lg border border-border/50 bg-background/70 p-4 shadow-sm"
                               >
                                 <div className="flex items-center justify-between">
                                   <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
@@ -509,280 +542,337 @@ export default function ProblemPage() {
                                   )}
                                 </div>
                               </div>
-                            )
-                          )}
+                            ))}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </TabsContent>
+                    </TabsContent>
 
-                  <TabsContent value="submissions" className="flex-1 p-6 mt-0">
-                    <div className="flex h-full items-center justify-center text-muted-foreground">
-                      <div className="text-center">
-                        <Code2 className="h-10 w-10 mx-auto mb-3 opacity-20" />
-                        <p>No submissions yet.</p>
-                      </div>
-                    </div>
-                  </TabsContent>
-                </Tabs>
-              </div>
-            </ResizablePanel>
-
-            <ResizableHandle
-              withHandle
-              className="w-[1px] bg-border/50 hover:bg-primary/50 transition-colors"
-            />
-          </>
-        )}
-        <ResizablePanel
-          defaultSize={isFullscreen ? 100 : 60}
-          minSize={40}
-          className="bg-background/50 backdrop-blur-sm"
-        >
-          <ResizablePanelGroup direction="vertical">
-            <ResizablePanel
-              defaultSize={65}
-              minSize={30}
-              className="flex flex-col border-l border-border/50"
-            >
-              <div className="flex h-10 shrink-0 items-center justify-between border-b border-border/50 bg-background px-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground bg-muted/30 px-2 py-1 rounded-md border border-border/50">
-                    <Code2 className="h-3.5 w-3.5" />
-                    <span>Solution</span>
-                  </div>
-                  <div className="h-4 w-[1px] bg-border/50" />
-                  <Select
-                    value={selectedLanguage}
-                    onValueChange={handleLanguageChange}
-                  >
-                    <SelectTrigger className="h-7 w-[140px] border-none bg-transparent shadow-none hover:bg-muted/50 focus:ring-0 text-xs font-medium p-0 gap-1 text-muted-foreground hover:text-foreground transition-colors">
-                      <span className="truncate">Language:</span>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {starterCodes.map((lang) => (
-                        <SelectItem
-                          key={lang.language}
-                          value={lang.language}
-                          className="text-xs"
-                        >
-                          <span className="capitalize">{lang.language}</span>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="flex items-center gap-1">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-7 w-7 text-muted-foreground hover:text-foreground"
-                    onClick={() =>
-                      setCode(
-                        starterCodes.find(
-                          (sc) => sc.language === selectedLanguage
-                        )?.code || ""
-                      )
-                    }
-                    title="Reset Code"
-                  >
-                    <RotateCcw className="h-3.5 w-3.5" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className={`h-7 w-7 text-muted-foreground hover:text-foreground ${isFullscreen ? "bg-primary/20 text-primary" : ""}`}
-                    onClick={() => setIsFullscreen(!isFullscreen)}
-                    title={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
-                  >
-                    <Maximize2 className="h-3.5 w-3.5" />
-                  </Button>
-                </div>
-              </div>
-
-              <div className="flex-1 relative bg-background overflow-auto">
-                <CodeEditor
-                  code={code}
-                  setCode={setCode}
-                  language={selectedLanguage}
-                />
-              </div>
-            </ResizablePanel>
-
-            <ResizableHandle
-              withHandle
-              className="h-[1px] bg-border/50 hover:bg-primary/50 transition-colors"
-            />
-            {/* Test Cases / Console */}
-            <ResizablePanel
-              defaultSize={35}
-              minSize={20}
-              className="bg-card/30 border-l border-border/50"
-            >
-              <div className="flex h-full flex-col">
-                {/* Test Case Header */}
-                <div className="flex h-10 shrink-0 items-center justify-between border-b border-border/50 bg-muted/10 px-4">
-                  <div className="flex items-center gap-2">
-                    <Terminal className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-xs font-medium text-muted-foreground">
-                      Test Cases
-                    </span>
-                  </div>
-                  {testResult && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setTestResult(null)}
-                      className="h-6 text-[10px] px-2 hover:bg-background"
+                    <TabsContent
+                      value="info"
+                      className="mt-0 flex-1 overflow-y-auto p-5 outline-none sm:p-6"
                     >
-                      Clear Result
-                    </Button>
-                  )}
-                </div>
+                      <div className="mx-auto max-w-4xl space-y-4">
+                        <div className="rounded-lg border border-border/60 bg-muted/20 p-4">
+                          <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground">
+                            <BookText className="h-4 w-4 text-muted-foreground" />
+                            Problem Info
+                          </h3>
 
-                <div className="flex-1 overflow-y-auto">
-                  {!testResult ? (
-                    <div className="flex h-full flex-col">
-                      {/* Case Tabs */}
-                      <div className="flex items-center gap-1 p-2 border-b border-border/50 bg-background/50">
-                        {problem.testcase.map((_, i) => (
-                          <button
-                            key={i}
-                            onClick={() => setActiveTest(i)}
-                            className={`
+                          <div className="grid gap-3 sm:grid-cols-2">
+                            <div className="rounded-md border border-border/60 bg-background/70 p-3">
+                              <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                                Acceptance
+                              </p>
+                              <p className="mt-1 text-sm font-semibold text-foreground">
+                                {acceptanceDisplay}
+                              </p>
+                            </div>
+                            <div className="rounded-md border border-border/60 bg-background/70 p-3">
+                              <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                                Test Cases
+                              </p>
+                              <p className="mt-1 text-sm font-semibold text-foreground">
+                                {problem.testcase.length}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="mt-4 space-y-2">
+                            <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                              Tags
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                              {problem.tags.length > 0 ? (
+                                problem.tags.map((tag) => (
+                                  <Badge
+                                    key={tag}
+                                    variant="secondary"
+                                    className="bg-background/70 text-muted-foreground text-[10px] px-2 py-0.5"
+                                  >
+                                    {tag}
+                                  </Badge>
+                                ))
+                              ) : (
+                                <span className="text-xs text-muted-foreground">
+                                  No tags
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </TabsContent>
+
+                    <TabsContent
+                      value="submissions"
+                      className="flex-1 p-6 mt-0"
+                    >
+                      <div className="flex h-full items-center justify-center text-muted-foreground">
+                        <div className="text-center">
+                          <Code2 className="h-10 w-10 mx-auto mb-3 opacity-20" />
+                          <p>No submissions yet.</p>
+                        </div>
+                      </div>
+                    </TabsContent>
+                  </Tabs>
+                </div>
+              </ResizablePanel>
+
+              <ResizableHandle
+                withHandle
+                className="w-[1px] bg-border/50 hover:bg-primary/50 transition-colors"
+              />
+            </>
+          )}
+          <ResizablePanel
+            defaultSize={isFullscreen ? 100 : 60}
+            minSize={40}
+            className="bg-gradient-to-b from-background/40 via-background/20 to-background/40 p-3 backdrop-blur-sm sm:p-4"
+          >
+            <ResizablePanelGroup direction="vertical" className="h-full">
+              <ResizablePanel defaultSize={65} minSize={30} className="min-h-0">
+                <div className="relative flex h-full min-h-0 flex-col overflow-hidden rounded-2xl border border-border/70 bg-card/95 shadow-[0_24px_60px_-40px_rgba(0,0,0,0.9)] ring-1 ring-white/[0.04]">
+                  <div className="pointer-events-none absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-white/[0.04] to-transparent" />
+
+                  <div className="relative flex h-11 shrink-0 items-center justify-between border-b border-border/60 bg-muted/15 px-4">
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2 rounded-md border border-border/60 bg-background/60 px-2 py-1 text-xs font-medium text-foreground/85">
+                        <Code2 className="h-3.5 w-3.5" />
+                        <span>Solution</span>
+                      </div>
+                      <div className="h-4 w-[1px] bg-border/50" />
+                      <Select
+                        value={selectedLanguage}
+                        onValueChange={handleLanguageChange}
+                      >
+                        <SelectTrigger className="h-7 w-[140px] border-none bg-transparent shadow-none hover:bg-muted/50 focus:ring-0 text-xs font-medium p-0 gap-1 text-muted-foreground hover:text-foreground transition-colors">
+                          <span className="truncate">Language:</span>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {starterCodes.map((lang) => (
+                            <SelectItem
+                              key={lang.language}
+                              value={lang.language}
+                              className="text-xs"
+                            >
+                              <span className="capitalize">
+                                {lang.language}
+                              </span>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="flex items-center gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 rounded-md border border-transparent text-muted-foreground hover:border-border/60 hover:bg-muted/40 hover:text-foreground"
+                        onClick={() =>
+                          setCode(
+                            starterCodes.find(
+                              (sc) => sc.language === selectedLanguage,
+                            )?.code || "",
+                          )
+                        }
+                        title="Reset Code"
+                      >
+                        <RotateCcw className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className={`h-7 w-7 rounded-md border border-transparent text-muted-foreground hover:border-border/60 hover:bg-muted/40 hover:text-foreground ${isFullscreen ? "border-primary/40 bg-primary/20 text-primary" : ""}`}
+                        onClick={() => setIsFullscreen(!isFullscreen)}
+                        title={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
+                      >
+                        <Maximize2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="relative flex-1 overflow-auto bg-background dark:bg-[#17181c]">
+                    <CodeEditor
+                      code={code}
+                      setCode={setCode}
+                      language={selectedLanguage}
+                    />
+                  </div>
+                </div>
+              </ResizablePanel>
+
+              <ResizableHandle
+                withHandle
+                className="relative h-3 bg-transparent after:absolute after:left-1/2 after:top-1/2 after:h-1 after:w-14 after:-translate-x-1/2 after:-translate-y-1/2 after:rounded-full after:bg-border/60 after:transition-colors hover:after:bg-primary/60"
+              />
+              {/* Test Cases / Console */}
+              <ResizablePanel defaultSize={35} minSize={20} className="min-h-0">
+                <div className="relative flex h-full min-h-0 flex-col overflow-hidden rounded-2xl border border-border/70 bg-card/95 shadow-[0_24px_60px_-40px_rgba(0,0,0,0.9)] ring-1 ring-white/[0.04]">
+                  {/* Test Case Header */}
+                  <div className="relative flex h-11 shrink-0 items-center justify-between border-b border-border/60 bg-muted/15 px-4">
+                    <div className="flex items-center gap-2">
+                      <Terminal className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-xs font-medium text-muted-foreground">
+                        Test Cases
+                      </span>
+                    </div>
+                    {testResult && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setTestResult(null)}
+                        className="h-6 text-[10px] px-2 hover:bg-background"
+                      >
+                        Clear Result
+                      </Button>
+                    )}
+                  </div>
+
+                  <div className="flex-1 overflow-y-auto">
+                    {!testResult ? (
+                      <div className="flex h-full flex-col">
+                        {/* Case Tabs */}
+                        <div className="flex items-center gap-1 border-b border-border/60 bg-muted/15 p-2.5">
+                          {problem.testcase.map((_, i) => (
+                            <button
+                              key={i}
+                              onClick={() => setActiveTest(i)}
+                              className={`
                                 px-3 py-1.5 rounded-md text-xs font-medium transition-all
                                 ${
                                   i === activeTest
-                                    ? "bg-primary/10 text-primary shadow-sm ring-1 ring-primary/20"
-                                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                                    ? "bg-background text-foreground shadow-sm ring-1 ring-border/60"
+                                    : "text-muted-foreground hover:bg-background/70 hover:text-foreground"
                                 }
                               `}
-                          >
-                            Case {i + 1}
-                          </button>
-                        ))}
-                      </div>
+                            >
+                              Case {i + 1}
+                            </button>
+                          ))}
+                        </div>
 
-                      {/* Case Content */}
-                      <div className="p-4 space-y-4">
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between">
+                        {/* Case Content */}
+                        <div className="p-4 space-y-4">
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <label className="text-xs font-medium text-muted-foreground">
+                                Input
+                              </label>
+                            </div>
+                            <div className="relative group">
+                              <div className="min-h-[40px] rounded-lg border border-border/60 bg-background/60 p-3.5 font-mono text-sm text-foreground/90 shadow-inner">
+                                {problem.testcase[activeTest]?.input ?? "-"}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="space-y-2">
                             <label className="text-xs font-medium text-muted-foreground">
-                              Input
+                              Expected Output
                             </label>
-                          </div>
-                          <div className="relative group">
-                            <div className="rounded-md border border-border/50 bg-muted/30 p-3 font-mono text-sm text-foreground/90 min-h-[40px]">
-                              {problem.testcase[activeTest]?.input ?? "-"}
+                            <div className="min-h-[40px] rounded-lg border border-border/60 bg-background/60 p-3.5 font-mono text-sm text-foreground/90 shadow-inner">
+                              {problem.testcase[activeTest]?.expectedOutput ??
+                                "-"}
                             </div>
                           </div>
                         </div>
-                        <div className="space-y-2">
-                          <label className="text-xs font-medium text-muted-foreground">
-                            Expected Output
-                          </label>
-                          <div className="rounded-md border border-border/50 bg-muted/30 p-3 font-mono text-sm text-foreground/90 min-h-[40px]">
-                            {problem.testcase[activeTest]?.expectedOutput ??
-                              "-"}
-                          </div>
-                        </div>
                       </div>
-                    </div>
-                  ) : (
-                    <div className="h-full flex flex-col p-4 overflow-y-auto">
-                      <div
-                        className={`rounded-lg border p-4 mb-4 ${
-                          testResult.status === "accepted"
-                            ? "bg-green-500/5 border-green-500/20"
-                            : "bg-red-500/5 border-red-500/20"
-                        }`}
-                      >
-                        <div className="flex items-center gap-3 mb-3">
-                          {testResult.status === "accepted" ? (
-                            <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400" />
-                          ) : (
-                            <XCircle className="h-5 w-5 text-red-600 dark:text-red-400" />
-                          )}
-                          <span
-                            className={`font-semibold text-base ${
-                              testResult.status === "accepted"
-                                ? "text-green-600 dark:text-green-400"
-                                : "text-red-600 dark:text-red-400"
-                            }`}
-                          >
-                            {testResult.status === "accepted"
-                              ? "Accepted"
-                              : testResult.status === "syntax_error"
-                                ? "Syntax Error"
-                                : "Wrong Answer"}
-                          </span>
-                        </div>
-                        <p className="text-sm font-medium text-foreground/90 mb-3">
-                          {testResult.message}
-                        </p>
-                        {testResult.status === "syntax_error" &&
-                          testResult.error && (
-                            <div className="mt-3 space-y-2 text-left">
-                              <div className="text-xs font-semibold text-red-600 dark:text-red-400 mb-2">
-                                Error Details:
-                              </div>
-                              <div className="rounded-md bg-red-950/20 border border-red-500/30 p-3 text-left">
-                                <pre className="text-xs text-red-600 dark:text-red-400 whitespace-pre-wrap font-mono overflow-x-auto">
-                                  {testResult.error}
-                                </pre>
-                              </div>
-                            </div>
-                          )}
-                        {testResult.status === "wrong_answer" && (
-                          <div className="mt-3 space-y-3">
-                            {testResult.expectedOutput && (
-                              <div>
-                                <div className="text-xs font-semibold text-muted-foreground mb-1.5">
-                                  Expected Output:
-                                </div>
-                                <div className="rounded-md bg-muted/50 border border-border/50 p-2.5">
-                                  <pre className="text-xs font-mono text-foreground/90 whitespace-pre-wrap">
-                                    {testResult.expectedOutput}
-                                  </pre>
-                                </div>
-                              </div>
-                            )}
-                            {testResult.yourOutput !== undefined && (
-                              <div>
-                                <div className="text-xs font-semibold text-muted-foreground mb-1.5">
-                                  Your Output:
-                                </div>
-                                <div className="rounded-md bg-muted/50 border border-red-500/30 p-2.5">
-                                  <pre className="text-xs font-mono text-foreground/90 whitespace-pre-wrap">
-                                    {testResult.yourOutput}
-                                  </pre>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="flex justify-end mt-auto pt-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setTestResult(null)}
-                          className="text-xs"
+                    ) : (
+                      <div className="h-full flex flex-col p-4 overflow-y-auto">
+                        <div
+                          className={`rounded-lg border p-4 mb-4 ${
+                            testResult.status === "accepted"
+                              ? "bg-green-500/5 border-green-500/20"
+                              : "bg-red-500/5 border-red-500/20"
+                          }`}
                         >
-                          Back to Test Cases
-                        </Button>
+                          <div className="flex items-center gap-3 mb-3">
+                            {testResult.status === "accepted" ? (
+                              <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400" />
+                            ) : (
+                              <XCircle className="h-5 w-5 text-red-600 dark:text-red-400" />
+                            )}
+                            <span
+                              className={`font-semibold text-base ${
+                                testResult.status === "accepted"
+                                  ? "text-green-600 dark:text-green-400"
+                                  : "text-red-600 dark:text-red-400"
+                              }`}
+                            >
+                              {testResult.status === "accepted"
+                                ? "Accepted"
+                                : testResult.status === "syntax_error"
+                                  ? "Syntax Error"
+                                  : "Wrong Answer"}
+                            </span>
+                          </div>
+                          <p className="text-sm font-medium text-foreground/90 mb-3">
+                            {testResult.message}
+                          </p>
+                          {testResult.status === "syntax_error" &&
+                            testResult.error && (
+                              <div className="mt-3 space-y-2 text-left">
+                                <div className="text-xs font-semibold text-red-600 dark:text-red-400 mb-2">
+                                  Error Details:
+                                </div>
+                                <div className="rounded-md bg-red-950/20 border border-red-500/30 p-3 text-left">
+                                  <pre className="text-xs text-red-600 dark:text-red-400 whitespace-pre-wrap font-mono overflow-x-auto">
+                                    {testResult.error}
+                                  </pre>
+                                </div>
+                              </div>
+                            )}
+                          {testResult.status === "wrong_answer" && (
+                            <div className="mt-3 space-y-3">
+                              {testResult.expectedOutput && (
+                                <div>
+                                  <div className="text-xs font-semibold text-muted-foreground mb-1.5">
+                                    Expected Output:
+                                  </div>
+                                  <div className="rounded-md bg-muted/50 border border-border/50 p-2.5">
+                                    <pre className="text-xs font-mono text-foreground/90 whitespace-pre-wrap">
+                                      {testResult.expectedOutput}
+                                    </pre>
+                                  </div>
+                                </div>
+                              )}
+                              {testResult.yourOutput !== undefined && (
+                                <div>
+                                  <div className="text-xs font-semibold text-muted-foreground mb-1.5">
+                                    Your Output:
+                                  </div>
+                                  <div className="rounded-md bg-muted/50 border border-red-500/30 p-2.5">
+                                    <pre className="text-xs font-mono text-foreground/90 whitespace-pre-wrap">
+                                      {testResult.yourOutput}
+                                    </pre>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="flex justify-end mt-auto pt-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setTestResult(null)}
+                            className="text-xs"
+                          >
+                            Back to Test Cases
+                          </Button>
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
-              </div>
-            </ResizablePanel>
-          </ResizablePanelGroup>
-        </ResizablePanel>
-      </ResizablePanelGroup>
+              </ResizablePanel>
+            </ResizablePanelGroup>
+          </ResizablePanel>
+        </ResizablePanelGroup>
+      </div>
     </div>
   );
 }

@@ -3,15 +3,15 @@
 
 <head>
   <meta charset="UTF-8" />
-  <link rel="icon" type="image/svg+xml" href="/NewSvg.png" />
+  <link rel="icon" type="image/svg+xml" href="/new_logo.ico" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Grind : Improve Your Coding Skill With grind</title>
+  <title>Grind | Coding Practice, Online Compiler, and Interview Prep</title>
   <meta name="description"
-    content="Grind helps developers improve coding skills with practice, tools, and structured learning. Boost your productivity and learning speed." />
+    content="Grind helps developers improve coding skills with practice problems, online compiler tools, and structured interview preparation." />
   <meta name="keywords"
-    content="coding practice, grind, developer tools, coding improvement, productivity, online compiler, coding problems, dsa notes, interview preparation" />
+    content="grind, coding practice, online compiler, interview preparation, coding problems, developer tools, dsa practice" />
   <meta name="author" content="Atul Shukla" />
-  <link rel="canonical" href="https://grind.org.in/" />
+  <meta name="application-name" content="Grind" />
   <meta name="google-adsense-account" content="ca-pub-2699219088015803">
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
   <meta name="googlebot" content="index, follow" />
@@ -50,28 +50,60 @@
 
 
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2699219088015803"
-     crossorigin="anonymous"></script>
+    crossorigin="anonymous"></script>
   <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "WebSite",
-      "name": "Grind",
-      "url": "https://grind.org.in",
-      "description": "Grind is a coding practice platform that helps developers improve problem solving skills, prepare for interviews, and master algorithms.",
-      "publisher": {
-        "@type": "Organization",
-        "name": "Grind",
-        "url": "https://grind.org.in",
-        "logo": {
-          "@type": "ImageObject",
-          "url": "https://grind.org.in/NewSvg.png"
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://grind.org.in/#organization",
+          "name": "Grind",
+          "url": "https://grind.org.in/",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://grind.org.in/new_logo.ico"
+          }
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://grind.org.in/#website",
+          "name": "Grind",
+          "url": "https://grind.org.in/",
+          "description": "Grind is a coding practice platform that helps developers improve problem solving skills, prepare for interviews, and master algorithms.",
+          "publisher": {
+            "@id": "https://grind.org.in/#organization"
+          },
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": "https://grind.org.in/problems?search={search_term_string}",
+            "query-input": "required name=search_term_string"
+          }
+        },
+        {
+          "@type": "SoftwareApplication",
+          "name": "Grind Online Compiler",
+          "applicationCategory": "DeveloperApplication",
+          "operatingSystem": "Web",
+          "url": "https://grind.org.in/compiler",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+          }
+        },
+        {
+          "@type": "SiteNavigationElement",
+          "name": ["Home", "Login", "Pricing", "About", "Contact"],
+          "url": [
+            "https://grind.org.in/",
+            "https://grind.org.in/auth",
+            "https://grind.org.in/pricing",
+            "https://grind.org.in/about",
+            "https://grind.org.in/contact-us"
+          ]
         }
-      },
-      "potentialAction": {
-        "@type": "SearchAction",
-        "target": "https://grind.org.in/search?q={search_term_string}",
-        "query-input": "required name=search_term_string"
-      }
+      ]
     }
 </script>
 </head>

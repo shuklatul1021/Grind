@@ -12,7 +12,6 @@ import { Input } from "@repo/ui/input";
 import { Label } from "@repo/ui/label";
 import {
   Loader2,
-  SquareChevronRight,
   ArrowRight,
   ArrowLeft,
   Code2,
@@ -166,7 +165,11 @@ export default function AuthPage() {
             <Card className="border-border/40 bg-card/50 backdrop-blur-xl shadow-2xl shadow-foreground/[0.03]">
               <CardHeader className="text-center pb-4 pt-8">
                 <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-foreground text-background mx-auto mb-4">
-                  <SquareChevronRight className="h-6 w-6" />
+                  <img
+                    src="/new_logo.jpg"
+                    alt="Grind logo"
+                    className="h-full w-full rounded-md object-cover"
+                  />
                 </div>
                 <CardTitle className="text-2xl">Welcome to Grind</CardTitle>
                 <CardDescription className="text-base">

@@ -22,7 +22,7 @@ import {
   MessageSquare,
   User,
   Trash2,
-  SquareChevronRight,
+  BrainCircuit,
   ChevronLeft,
   ChevronRight,
   Copy,
@@ -493,7 +493,9 @@ export default function GrindAIChat() {
                       })
                         .then((response) => {
                           if (response.ok) {
+                            //pass
                           } else {
+                            //passs
                           }
                         })
                         .catch(() => {});
@@ -529,6 +531,7 @@ export default function GrindAIChat() {
                   );
                 }
                 if (data.error) {
+                  //pass
                 }
               }
             }
@@ -705,7 +708,9 @@ export default function GrindAIChat() {
                       })
                         .then((response) => {
                           if (response.ok) {
+                            //pass
                           } else {
+                            //pass
                           }
                         })
                         .catch(() => {});
@@ -1043,7 +1048,7 @@ export default function GrindAIChat() {
         <section className="flex flex-none items-center justify-between rounded-2xl border border-border/60 bg-card px-4 py-3">
           <div className="flex items-center gap-3">
             <div className="rounded-lg border border-border/60 bg-background p-2">
-              <SquareChevronRight className="h-4 w-4" />
+              <BrainCircuit className="h-4 w-4" />
             </div>
             <div>
               <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
@@ -1251,7 +1256,7 @@ export default function GrindAIChat() {
                 <div className="h-full flex items-center justify-center">
                   <div className="max-w-md mx-auto text-center space-y-4">
                     <div className="h-12 w-12 rounded-full bg-gradient-to-br from-blue-500/20 to-cyan-500/20 flex items-center justify-center mx-auto animate-pulse">
-                      <SquareChevronRight className="h-6 w-6 text-blue-500" />
+                      <BrainCircuit className="h-6 w-6 text-blue-500" />
                     </div>
                     <div className="space-y-2">
                       <div className="h-4 bg-muted rounded-full w-48 mx-auto animate-pulse"></div>
@@ -1288,7 +1293,7 @@ export default function GrindAIChat() {
                           {mess.role === "user" ? (
                             <User className="h-5 w-5 text-green-500" />
                           ) : (
-                            <SquareChevronRight className="h-5 w-5 text-blue-500" />
+                            <BrainCircuit className="h-5 w-5 text-blue-500" />
                           )}
                         </div>
                         <div className="flex-1 min-w-0">

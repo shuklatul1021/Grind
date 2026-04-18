@@ -42,7 +42,6 @@ import {
   Trophy,
   Moon,
   Sun,
-  SquareChevronRight,
   Bot,
   Code2,
   Globe,
@@ -214,7 +213,13 @@ export default function LandingPage() {
             onClick={() => navigate("/")}
           >
             <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-foreground text-background">
-              <SquareChevronRight className="h-5 w-5" />
+              <div className="h-8 w-8 overflow-hidden rounded-lg border border-border/60 bg-background p-0.5 shadow-sm">
+                <img
+                  src="/new_logo.jpg"
+                  alt="Grind logo"
+                  className="h-full w-full rounded-md object-cover"
+                />
+              </div>
             </div>
             <span>Grind</span>
           </div>
@@ -976,7 +981,7 @@ export default function LandingPage() {
                 size="lg"
                 variant="outline"
                 className="h-12 px-8 text-base rounded-full w-full sm:w-auto bg-background/50"
-                onClick={() => navigate("/premium/pricing")}
+                onClick={() => navigate("/pricing")}
               >
                 View Pricing
               </Button>
@@ -992,7 +997,13 @@ export default function LandingPage() {
             <div className="col-span-2 md:col-span-1">
               <div className="flex items-center gap-2 font-bold text-xl mb-4">
                 <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 text-primary">
-                  <SquareChevronRight className="h-5 w-5" />
+                  <div className="h-8 w-8 overflow-hidden rounded-lg border border-border/60 bg-background p-0.5 shadow-sm">
+                    <img
+                      src="/new_logo.jpg"
+                      alt="Grind logo"
+                      className="h-full w-full rounded-md object-cover"
+                    />
+                  </div>
                 </div>
                 <span>Grind</span>
               </div>
@@ -1056,7 +1067,7 @@ export default function LandingPage() {
                 <li>
                   <button
                     className="hover:text-foreground transition-colors"
-                    onClick={() => navigate("/premium/pricing")}
+                    onClick={() => navigate("/pricing")}
                   >
                     Pricing
                   </button>

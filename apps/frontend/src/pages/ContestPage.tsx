@@ -8,7 +8,6 @@ import {
   Clock,
   Trophy,
   ArrowLeft,
-  SquareChevronRight,
 } from "lucide-react";
 import { BACKENDURL } from "../utils/urls";
 import { toast } from "../../../../packages/ui/src/hooks/use-toast";
@@ -160,7 +159,7 @@ export default function ContestPage(): JSX.Element {
                 <ArrowLeft className="h-5 w-5" />
               </Button>
               <div className="rounded-lg border border-border/60 bg-background p-2">
-                <SquareChevronRight className="h-4 w-4" />
+                <Trophy className="h-4 w-4" />
               </div>
               <div>
                 <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">

@@ -18,8 +18,6 @@ import {
   Copy,
   Check,
   SquareChevronRight,
-  Columns,
-  Rows,
   History,
   ChevronLeft,
   Clock,
@@ -221,7 +219,7 @@ export default function CompilerPage() {
   const [activeJobId, setActiveJobId] = useState<string | null>(null);
   const [queueDepth, setQueueDepth] = useState<number | null>(null);
   const [copied, setCopied] = useState(false);
-  const [layout, setLayout] = useState<"bottom" | "right">("right");
+  const [layout, ] = useState<"bottom" | "right">("right");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isFocusMode, setIsFocusMode] = useState(false);
   const [codeHistory, setCodeHistory] = useState<CodeHistory[]>([]);
@@ -764,9 +762,6 @@ export default function CompilerPage() {
     navigate("/");
   };
 
-  const toggleLayout = () => {
-    setLayout((prev) => (prev === "bottom" ? "right" : "bottom"));
-  };
 
   const toggleFocusMode = () => {
     setIsFocusMode((prev) => {
@@ -1324,44 +1319,45 @@ export default function CompilerPage() {
             </div>
 
             <div
-              className={`flex h-full flex-1 min-h-0 gap-4 transition-all duration-300 ${
+              className={`flex h-full flex-1 min-h-0 min-w-0 gap-4 transition-all duration-300 ${
                 isSidebarOpen ? "lg:pl-[21rem]" : ""
               } ${layout === "right" ? "flex-row" : "flex-col"}`}
             >
               <Card
-                className={`border-border/40 flex min-h-0 flex-col overflow-hidden shadow-lg ${layout === "right" ? "w-[60%]" : "w-full flex-1"}`}
+                className={`border-border/40 flex min-h-0 min-w-0 flex-col overflow-hidden shadow-lg ${
+                  layout === "right" ? "flex-[3_1_0%]" : "w-full flex-1"
+                }`}
               >
-                <CardHeader className="py-3 px-4 border-b border-border/40">
-                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="flex items-center gap-2">
+                <CardHeader className="border-b border-border/40 px-4 py-3">
+                  <div className="flex flex-col gap-3">
+                    <div className="flex min-w-0 items-center gap-2">
                       <CardTitle className="text-base">Code Editor</CardTitle>
                       {currentLanguage && (
                         <Badge
                           variant="secondary"
-                          className="text-xs font-normal"
+                          className="shrink-0 text-xs font-normal"
                         >
                           {currentLanguage.version}
                         </Badge>
                       )}
                     </div>
+
                     <div className="flex flex-wrap items-center gap-2">
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                        className="h-8 px-3 gap-2"
+                        className="h-8 shrink-0 gap-2 px-3"
                       >
                         <History className="h-3.5 w-3.5" />
                         History
                       </Button>
 
-                      <div className="h-4 w-px bg-border/60" />
-
                       <Select
                         value={selectedLanguage}
                         onValueChange={handleLanguageChange}
                       >
-                        <SelectTrigger className="h-8 w-[140px] text-xs">
+                        <SelectTrigger className="h-8 w-[140px] shrink-0 text-xs">
                           <SelectValue placeholder="Select Language" />
                         </SelectTrigger>
                         <SelectContent>
@@ -1377,13 +1373,11 @@ export default function CompilerPage() {
                         </SelectContent>
                       </Select>
 
-                      <div className="h-4 w-px bg-border/60 mx-1" />
-
                       <Button
                         onClick={CheckUserCode}
                         disabled={isRunning}
                         size="sm"
-                        className="h-8 px-3"
+                        className="h-8 shrink-0 px-3"
                       >
                         {isRunning ? (
                           <>
@@ -1397,24 +1391,6 @@ export default function CompilerPage() {
                             <Play className="mr-2 h-3 w-3" />
                             Run
                           </>
-                        )}
-                      </Button>
-
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={toggleLayout}
-                        className="h-8 w-8"
-                        title={
-                          layout === "bottom"
-                            ? "Switch to side-by-side view"
-                            : "Switch to stacked view"
-                        }
-                      >
-                        {layout === "bottom" ? (
-                          <Columns className="h-4 w-4" />
-                        ) : (
-                          <Rows className="h-4 w-4" />
                         )}
                       </Button>
                     </div>
@@ -1465,12 +1441,14 @@ export default function CompilerPage() {
               </Card>
 
               <Card
-                className={`border-border/40 flex min-h-0 flex-col overflow-hidden shadow-lg ${layout === "right" ? "w-[40%]" : "w-full"}`}
+                className={`border-border/40 flex min-h-0 min-w-0 flex-col overflow-hidden shadow-lg ${
+                  layout === "right" ? "flex-[2_1_0%]" : "w-full"
+                }`}
                 style={{ minHeight: layout === "bottom" ? "300px" : "auto" }}
               >
-                <CardHeader className="py-3 px-4 border-b border-border/40 bg-muted/20">
-                  <div className="flex items-center justify-between gap-3">
-                    <CardTitle className="text-base flex items-center gap-3">
+                <CardHeader className="border-b border-border/40 bg-muted/20 px-4 py-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <CardTitle className="flex min-w-0 items-center gap-3 text-base">
                       Output
                       {executionTime !== null &&
                         executionStatus === "completed" && (
@@ -1482,7 +1460,7 @@ export default function CompilerPage() {
                           </span>
                         )}
                     </CardTitle>
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <Button
                         variant={isFocusMode ? "secondary" : "outline"}
                         size="sm"

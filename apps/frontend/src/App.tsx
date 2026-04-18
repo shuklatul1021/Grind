@@ -88,6 +88,19 @@ function RequireAuth({ redirectTo = "/" }: { redirectTo?: string }) {
   );
 }
 
+function RootRouteGate() {
+  const { authState } = useAuthentication();
+  const hasToken =
+    typeof window !== "undefined" && Boolean(localStorage.getItem("token"));
+
+  // Preserve SEO for public users while redirecting signed-in sessions instantly.
+  if (authState.isAuthenticated || (hasToken && authState.loading)) {
+    return <Navigate to="/problems" replace />;
+  }
+
+  return <LandingPage />;
+}
+
 function RouteSEOManager() {
   const location = useLocation();
 
@@ -100,9 +113,9 @@ function RouteSEOManager() {
 }
 
 function App() {
-  // useEffect(()=>{
-  //   document.addEventListener('contextmenu', (e) => e.preventDefault());
-  // },[])
+  useEffect(() => {
+    document.addEventListener("contextmenu", (e) => e.preventDefault());
+  }, []);
 
   console.log(
     "%c⚠️ SECURITY WARNING ⚠️\n" +
@@ -120,7 +133,7 @@ function App() {
       <BrowserRouter>
         <RouteSEOManager />
         <Routes>
-          <Route path="/" element={<LandingPage />} />
+          <Route path="/" element={<RootRouteGate />} />
           <Route path="/about" element={<AboutUs />} />
           <Route
             path="/terms-and-conditions"

@@ -1,5 +1,5 @@
 import { useState, createContext, useContext } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@repo/ui/avatar";
 import { Button } from "@repo/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@repo/ui/sheet";
@@ -93,6 +93,13 @@ export default function MainSideNav({
   const [collapsed, setCollapsed] = useState(false);
   const activeItem = navItems.find((item) => item.key === active);
   const avatarLetter = (avatarFallback || "G").charAt(0).toUpperCase();
+  const navigate = useNavigate();
+
+  const handleSignOut = () => {
+    navigate("/auth")
+    setSheetOpen(false); 
+    onSignOut(); 
+  }
 
   return (
     <>
@@ -375,7 +382,7 @@ export default function MainSideNav({
                     Appearance
                   </button>
                   <button
-                    onClick={() => { setSheetOpen(false); onSignOut(); }}
+                    onClick={handleSignOut}
                     className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-red-500 hover:bg-red-500/10 transition-colors"
                   >
                     <LogOut className="h-[18px] w-[18px]" />

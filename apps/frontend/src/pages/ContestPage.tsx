@@ -1,143 +1,149 @@
-import { useEffect, useState, type JSX } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { ArrowLeft, Calendar, Clock, Trophy, Users } from "lucide-react";
+
+import { Badge } from "@repo/ui/badge";
 import { Button } from "@repo/ui/button";
 import { Card, CardContent, CardHeader } from "@repo/ui/card";
-import { Badge } from "@repo/ui/badge";
-import {
-  Calendar,
-  Clock,
-  Trophy,
-  ArrowLeft,
-} from "lucide-react";
-import { BACKENDURL } from "../utils/urls";
-import { toast } from "../../../../packages/ui/src/hooks/use-toast";
-import { useTheme } from "../contexts/ThemeContext";
+
 import type { RootState } from "../state/ReduxStateProvider";
-import { useSelector } from "react-redux";
+import type { ContestDetail } from "../types/contest";
+import { useTheme } from "../contexts/ThemeContext";
 import MainSideNav from "../components/MainSideNav";
+import { toast } from "../../../../packages/ui/src/hooks/use-toast";
+import { BACKENDURL } from "../utils/urls";
 
-type Problem = { id: string; title: string };
-
-interface ProblemAndContestMapping {
-  id: string;
-  challengeId: string;
-  contestId: string;
-  challenge: {
-    id: string;
-    title: string;
-    description: string;
-    difficulty: string;
-    slug: string;
-    tags: string[];
-    maxpoint: number;
-    starterCode: string;
-    createdAt: string;
-    updatedAt: string;
-  };
-}
-
-type ContestAPI = {
-  id: string;
-  title: string;
-  description: string;
-  startTime: string;
-  endTime: string;
-  duration?: string;
-  participants: number;
-  problems?: Problem[];
-  prize?: string;
-  status: "upcoming" | "ongoing" | "completed";
-  difficulty: "easy" | "medium" | "hard";
-  type?: string;
-  contestTochallegemapping: ProblemAndContestMapping[];
-};
-
-function formatDate(iso?: string) {
-  if (!iso) return "-";
-  const d = new Date(iso);
-  if (isNaN(d.getTime())) return "-";
-  return d.toLocaleString();
-}
-
-function getDifficultyColor(diff: ContestAPI["difficulty"]) {
-  switch (diff) {
-    case "easy":
-      return "bg-green-500/10 text-green-500 border-green-500/20";
-    case "medium":
-      return "bg-yellow-500/10 text-yellow-500 border-yellow-500/20";
-    case "hard":
-      return "bg-red-500/10 text-red-500 border-red-500/20";
+function formatDate(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "-";
   }
+
+  return date.toLocaleString();
 }
-function getStatusBadge(status: ContestAPI["status"]) {
+
+function getStatusBadge(status: ContestDetail["status"]) {
   switch (status) {
     case "upcoming":
       return (
-        <Badge className="bg-blue-500/10 text-blue-500 border-blue-500/20">
+        <Badge className="border-blue-500/30 bg-blue-500/10 text-blue-500">
           Upcoming
         </Badge>
       );
     case "ongoing":
       return (
-        <Badge className="bg-green-500/10 text-green-500 border-green-500/20">
-          Live Now
+        <Badge className="border-green-500/30 bg-green-500/10 text-green-500">
+          Live
         </Badge>
       );
     case "completed":
       return (
-        <Badge className="bg-gray-500/10 text-gray-500 border-gray-500/20">
+        <Badge className="border-border/60 bg-muted/50 text-muted-foreground">
           Completed
         </Badge>
       );
   }
 }
 
-export default function ContestPage(): JSX.Element {
+export default function ContestPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
-  const UserProfile = useSelector((state: RootState) => state.userDetails);
+  const userProfile = useSelector((state: RootState) => state.userDetails);
 
-  const [contest, setContest] = useState<ContestAPI | null>(null);
+  const [contest, setContest] = useState<ContestDetail | null>(null);
   const [loading, setLoading] = useState(true);
+  const [joining, setJoining] = useState(false);
 
-  const handleSignOut = () => {
-    localStorage.removeItem("token");
-    navigate("/");
+  const loadContest = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${BACKENDURL}/contest/getcontest/${id}`, {
+        headers: {
+          "Content-Type": "application/json",
+          token: localStorage.getItem("token") || "",
+        },
+      });
+
+      const data = await response.json();
+      if (!response.ok || !data?.success) {
+        throw new Error(data?.message || "Failed to load contest.");
+      }
+
+      setContest(data.contest);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description:
+          error instanceof Error ? error.message : "Failed to load contest.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
-    if (!id) return;
-    let cancelled = false;
-    (async () => {
-      try {
-        setLoading(true);
-        const res = await fetch(`${BACKENDURL}/contest/getcontest/${id}`, {
-          headers: {
-            "Content-Type": "application/json",
-            token: localStorage.getItem("token") || "",
-          },
-        });
-        if (!res.ok) {
-          const txt = await res.text();
-          throw new Error(txt || `HTTP ${res.status}`);
-        }
-        const json = await res.json();
-        if (!cancelled) setContest(json.contest ?? json);
-      } catch (err) {
-        toast({
-          title: "Error",
-          description: "Failed to load contest",
-          variant: "destructive",
-        });
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
+    if (!id) {
+      return;
+    }
+
+    void loadContest();
   }, [id]);
+
+  const handleJoinContest = async () => {
+    if (!id) {
+      return;
+    }
+
+    try {
+      setJoining(true);
+      const response = await fetch(`${BACKENDURL}/contest/${id}/join`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          token: localStorage.getItem("token") || "",
+        },
+      });
+
+      const data = await response.json();
+      if (!response.ok || !data?.success) {
+        throw new Error(data?.message || "Could not join contest.");
+      }
+
+      toast({
+        title: "Registered",
+        description: "Contest registration confirmed.",
+      });
+      await loadContest();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description:
+          error instanceof Error ? error.message : "Could not join contest.",
+        variant: "destructive",
+      });
+    } finally {
+      setJoining(false);
+    }
+  };
+
+  const actionLabel = useMemo(() => {
+    if (!contest) {
+      return "Loading";
+    }
+
+    if (contest.status === "upcoming") {
+      return contest.isRegistered ? "Registered" : "Register";
+    }
+
+    if (contest.status === "ongoing") {
+      return contest.canEnter ? "Enter Contest" : "Contest Locked";
+    }
+
+    return "View Leaderboard";
+  }, [contest]);
 
   return (
     <div className="min-h-screen bg-background sidebar-offset">
@@ -145,15 +151,18 @@ export default function ContestPage(): JSX.Element {
         active="contest"
         theme={theme}
         toggleTheme={toggleTheme}
-        avatarUrl={UserProfile?.user?.avatar || ""}
-        avatarFallback={UserProfile?.user?.fullname?.[0] || "G"}
+        avatarUrl={userProfile?.user?.avatar || ""}
+        avatarFallback={userProfile?.user?.fullname?.[0] || "G"}
         onProfile={() => navigate("/you")}
-        onSignOut={handleSignOut}
+        onSignOut={() => {
+          localStorage.removeItem("token");
+          navigate("/");
+        }}
       />
 
       <main className="px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
-        <div className="mx-auto max-w-[1600px]">
-          <div className="mb-6 flex items-center justify-between rounded-2xl border border-border/60 bg-card px-4 py-3">
+        <div className="mx-auto max-w-[1600px] space-y-6">
+          <div className="flex items-center justify-between rounded-2xl border border-border/60 bg-card px-4 py-3">
             <div className="flex items-center gap-3">
               <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
                 <ArrowLeft className="h-5 w-5" />
@@ -163,178 +172,179 @@ export default function ContestPage(): JSX.Element {
               </div>
               <div>
                 <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
-                  Contest
+                  Contest Detail
                 </p>
                 <h2 className="text-base font-semibold sm:text-lg">
-                  {contest?.title ?? "Contest"}
+                  {contest?.title || "Contest"}
                 </h2>
               </div>
             </div>
-            {getStatusBadge(contest?.status ?? "upcoming")}
+            {contest ? getStatusBadge(contest.status) : null}
           </div>
 
-          <div className="grid gap-6 md:grid-cols-3">
-            <div className="md:col-span-2 space-y-4">
-              <Card className="border-border/40">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      {getStatusBadge(contest?.status ?? "upcoming")}
-                      <Badge
-                        className={getDifficultyColor(
-                          contest?.difficulty ?? "medium",
-                        )}
+          {loading || !contest ? (
+            <div className="flex items-center justify-center py-20">
+              <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+            </div>
+          ) : (
+            <div className="grid gap-6 lg:grid-cols-[1.25fr_0.75fr]">
+              <div className="space-y-4">
+                <Card className="border-border/40">
+                  <CardHeader>
+                    <div className="flex flex-wrap items-center gap-2">
+                      {getStatusBadge(contest.status)}
+                      <Badge variant="outline">{contest.type}</Badge>
+                      <Badge variant="secondary">{contest.difficulty}</Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <h3 className="text-2xl font-semibold">{contest.title}</h3>
+                      <p className="mt-2 whitespace-pre-line text-sm text-muted-foreground">
+                        {contest.description || "Contest description coming soon."}
+                      </p>
+                    </div>
+
+                    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Calendar className="h-4 w-4" />
+                        <span>{formatDate(contest.startTime)}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Clock className="h-4 w-4" />
+                        <span>{contest.durationMinutes} min</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Users className="h-4 w-4" />
+                        <span>{contest.participants} registered</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Trophy className="h-4 w-4" />
+                        <span>{contest.problems.length} problems</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-border/40">
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-sm font-medium">Problems</h4>
+                      <span className="text-xs text-muted-foreground">
+                        Ordered by contest sequence
+                      </span>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {contest.problems.map((problem) => (
+                      <div
+                        key={problem.id}
+                        className="rounded-xl border border-border/50 bg-background px-4 py-3"
                       >
-                        {contest?.difficulty ?? "—"}
-                      </Badge>
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      {contest?.type ?? ""}
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="p-6">
-                  <h3 className="text-xl font-semibold mb-2">
-                    {contest?.title ?? "Loading…"}
-                  </h3>
-                  <p className="mb-4 text-sm text-muted-foreground whitespace-pre-line">
-                    {loading
-                      ? "Loading description…"
-                      : (contest?.description ?? "No description")}
-                  </p>
-
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                      <Calendar className="h-4 w-4" />
-                      <div>
-                        <div className="text-xs">Start</div>
-                        <div className="font-medium">
-                          {formatDate(contest?.startTime)}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                      <Clock className="h-4 w-4" />
-                      <div>
-                        <div className="text-xs">End</div>
-                        <div className="font-medium">
-                          {formatDate(contest?.endTime)}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="border-border/40">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <h4 className="text-sm font-medium">Problems</h4>
-                    <div className="text-xs text-muted-foreground">
-                      {contest?.contestTochallegemapping?.length ?? 0} problems
-                    </div>
-                  </div>
-                </CardHeader>
-
-                <CardContent>
-                  {loading ? (
-                    <div className="py-8 text-center text-sm text-muted-foreground">
-                      Loading problems…
-                    </div>
-                  ) : contest?.contestTochallegemapping?.length ? (
-                    <ul className="space-y-2">
-                      {contest!.contestTochallegemapping!.map((p, idx) => (
-                        <li
-                          key={p.id}
-                          className="flex items-center justify-between rounded px-3 py-2 hover:bg-gray-50"
-                        >
+                        <div className="flex flex-wrap items-center justify-between gap-3">
                           <div>
-                            <a
-                              href={`/problems/${p.id}`}
-                              className="text-sm font-medium text-blue-700 hover:underline"
-                            >
-                              {idx + 1}. {p.challenge.title}
-                            </a>
+                            <p className="font-medium">
+                              {problem.order}. {problem.challenge.title}
+                            </p>
+                            <p className="mt-1 text-sm text-muted-foreground">
+                              {problem.challenge.tags.join(", ")}
+                            </p>
                           </div>
                           <div className="flex items-center gap-2">
-                            <a
-                              href={`/problem/${p.challenge.slug}`}
-                              className="rounded border px-2 py-1 text-xs"
-                            >
-                              Open
-                            </a>
-                            <a
-                              href={`/contest/${contest?.id}/submit/${p.id}`}
-                              className="rounded border px-2 py-1 text-xs"
-                            >
-                              Submit
-                            </a>
+                            <Badge variant="outline">
+                              {problem.challenge.maxpoint} pts
+                            </Badge>
+                            <Badge variant="secondary">
+                              {problem.challenge.difficulty}
+                            </Badge>
                           </div>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <div className="py-8 text-center text-sm text-muted-foreground">
-                      No problems
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
+                        </div>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+              </div>
 
-            <aside className="space-y-4">
-              <Card className="border-border/40">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="rounded-full bg-primary/10 p-3">
-                      <Trophy className="h-5 w-5 text-primary" />
-                    </div>
+              <aside className="space-y-4">
+                <Card className="border-border/40">
+                  <CardContent className="space-y-4 p-5">
                     <div>
-                      <div className="text-xs text-muted-foreground">
-                        Participants
-                      </div>
-                      <div className="text-lg font-semibold">
-                        {contest?.participants?.toLocaleString() ?? 0}
-                      </div>
+                      <p className="text-sm text-muted-foreground">Your status</p>
+                      <p className="mt-1 text-lg font-semibold">
+                        {contest.participant?.status || "Not registered"}
+                      </p>
+                      {contest.participant?.currentRank ? (
+                        <p className="mt-1 text-sm text-muted-foreground">
+                          Current rank: #{contest.participant.currentRank}
+                        </p>
+                      ) : null}
                     </div>
-                  </div>
 
-                  <div className="mt-4">
                     <Button
-                      variant={
-                        contest?.status === "ongoing" ? "default" : "outline"
-                      }
                       className="w-full"
+                      disabled={
+                        joining ||
+                        (contest.status === "upcoming" && contest.isRegistered) ||
+                        (contest.status === "ongoing" && !contest.canEnter)
+                      }
                       onClick={() => {
-                        if (contest?.status === "upcoming") {
-                          toast({
-                            title: "Info",
-                            description: "Registration not implemented",
-                          });
-                        } else if (contest?.status === "ongoing") {
-                          window.location.href = `/contest/${contest?.id}/live`;
-                        } else {
-                          navigate(`/contest/${contest?.id}/results`);
+                        if (contest.status === "upcoming") {
+                          void handleJoinContest();
+                          return;
                         }
+
+                        navigate(`/contest/${contest.id}/live`);
                       }}
                     >
-                      {contest?.status?.toLowerCase() === "upcoming" &&
-                        "Register"}
-                      {contest?.status?.toLowerCase() === "ongoing" &&
-                        "Join Now"}
-                      {contest?.status?.toLowerCase() === "completed" &&
-                        "View Results"}
+                      {joining ? "Registering..." : actionLabel}
                     </Button>
-                  </div>
+                  </CardContent>
+                </Card>
 
-                  <div className="mt-3 text-xs text-muted-foreground">
-                    Type: {contest?.type?.toLowerCase() ?? "—"}
-                  </div>
-                </CardContent>
-              </Card>
-            </aside>
-          </div>
+                <Card className="border-border/40">
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-sm font-medium">Leaderboard</h4>
+                      <span className="text-xs text-muted-foreground">
+                        Top {contest.leaderboard.length}
+                      </span>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {contest.leaderboard.length === 0 ? (
+                      <p className="text-sm text-muted-foreground">
+                        Leaderboard will populate once submissions start.
+                      </p>
+                    ) : (
+                      contest.leaderboard.map((entry) => (
+                        <div
+                          key={entry.userId}
+                          className="flex items-center justify-between rounded-xl border border-border/50 px-3 py-2"
+                        >
+                          <div>
+                            <p className="text-sm font-medium">
+                              {entry.user.fullname ||
+                                entry.user.username ||
+                                "Anonymous"}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {entry.solvedCount} solved
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm font-semibold">#{entry.rank}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {entry.score} pts
+                            </p>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </CardContent>
+                </Card>
+              </aside>
+            </div>
+          )}
         </div>
       </main>
     </div>

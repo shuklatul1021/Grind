@@ -18,6 +18,7 @@ import { VerifyOtp } from "./pages/VerifyOtp";
 import CompilerPage from "./pages/CompilerPage";
 import ContestsPage from "./pages/ContestsPage";
 import ContestPage from "./pages/ContestPage";
+import ContestWorkspacePage from "./pages/ContestWorkspacePage";
 import { useAuthentication } from "./hooks/useAuthentication";
 import AboutUs from "./pages/AboutUs";
 import TermsAndConditions from "./pages/TermsConditions";
@@ -155,6 +156,7 @@ function App() {
             <Route path="/compiler" element={<CompilerPage />} />
             <Route path="/contest" element={<ContestsPage />} />
             <Route path="/contest/:id" element={<ContestPage />} />
+            <Route path="/contest/:id/live" element={<ContestWorkspacePage />} />
             <Route path="/grind-ai" element={<GrindAI />} />
             {/* <Route path="/room" element={<RoomsPage />} />
             <Route path="/room/:roomId/arena" element={<UserCodeArenaPage />} />

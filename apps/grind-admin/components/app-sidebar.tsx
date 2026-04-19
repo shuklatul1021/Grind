@@ -16,6 +16,7 @@ import {
   IconReport,
   IconSearch,
   IconSettings,
+  IconTrophy,
   IconUsers,
 } from "@tabler/icons-react";
 
@@ -49,6 +50,11 @@ const data = {
       title: "Create Problem",
       url: "/dashboard/create-problem",
       icon: IconListDetails,
+    },
+    {
+      title: "Contests",
+      url: "/dashboard/contests",
+      icon: IconTrophy,
     },
     {
       title: "User Activity",

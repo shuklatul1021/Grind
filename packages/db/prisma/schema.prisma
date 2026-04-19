@@ -8,162 +8,235 @@ datasource db {
 }
 
 model User {
-  id                          String                      @id @default(uuid())
-  username                    String?                     @unique
-  fullname                    String?
-  email                       String                      @unique
-  aitoken                     Int?
-  maxaitoken                  Int?                        @default(3) 
-  bio                         String?
-  avatar                      String?
-  location                    String?
-  problemsSolved              Int?                        @default(0)   
-  rank                        Int?                        @default(0)         
-  contestsParticipated        Int?                        @default(0)         
-  currentStreak               Int?                        @default(0)   
-  social                      Social?
+  id                   String                @id @default(uuid())
+  username             String?               @unique
+  fullname             String?
+  email                String                @unique
+  aitoken              Int?
+  maxaitoken           Int?                  @default(3)
+  bio                  String?
+  avatar               String?
+  location             String?
+  problemsSolved       Int?                  @default(0)
+  rank                 Int?                  @default(0)
+  contestsParticipated Int?                  @default(0)
+  currentStreak        Int?                  @default(0)
+  social               Social?
 
-  leaderboard                 LeaderBoard[]
-  submittion                  Submittion[]
+  leaderboard          LeaderBoard[]
+  submittion           Submittion[]
+  contextsubmittion    ContestSubmittion[]
+  contestParticipations ContestParticipant[]
 
-  contextsubmittion           ContestSubmittion[] 
+  SolvedProblem        String[]
 
-  SolvedProblem               String[]              
-
-  AssistantMessage            ChatMessages[]
-  CompileCode                 CompilerCodeHistory[]
-  createdAt                   DateTime                    @default(now())
-  updatedAt                   DateTime                    @updatedAt()
+  AssistantMessage     ChatMessages[]
+  CompileCode          CompilerCodeHistory[]
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt()
 }
 
 model ChatMessages {
-  id                          String                     @id @default(uuid())
-  message                     String
-  userId                      String
-  user                        User                        @relation(fields: [userId], references : [id])   
-  createdAt                   DateTime                    @default(now())
-  updatedAt                   DateTime                    @updatedAt()         
+  id        String   @id @default(uuid())
+  message   String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt()
 }
 
-model CompilerCodeHistory{
-  id                          String                      @id @default(uuid())
-  title                       String?
-  language                    String
-  code                        String
-  userId                      String
-  user                        User                        @relation(fields : [userId] , references : [id])
-  createdAt                   DateTime                    @default(now())
-  updatedAt                   DateTime                    @updatedAt()    
+model CompilerCodeHistory {
+  id        String   @id @default(uuid())
+  title     String?
+  language  String
+  code      String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt()
 }
-
 
 model Social {
-  id                          String                      @id @default(uuid()) 
-  github                      String?
-  linkedin                    String?
-  twitter                     String?
-  userId                      String                      @unique
-  user                        User                        @relation(fields: [userId], references : [id])   
+  id       String @id @default(uuid())
+  github   String?
+  linkedin String?
+  twitter  String?
+  userId   String @unique
+  user     User   @relation(fields: [userId], references: [id])
 }
 
 model Admin {
-  id                          String                      @id @default(uuid())
-  email                       String                      @unique
-  password                    String          
+  id       String @id @default(uuid())
+  email    String @unique
+  password String
+}
+
+model UserFeedback {
+  id        String   @id @default(uuid())
+  fullname  String
+  email     String
+  subject   String
+  messages  String
+  createdAt DateTime @default(now())
 }
 
 model Contest {
-  id                          String                       @id @default(uuid())
-  title                       String            
-  description                 String? 
-  participants                Int   
-  startTime                   DateTime
-  endTime                     DateTime
-  type                        ContestType                   @default(WEEKLY)
-  status                      ContestStatus                 @default(UPCOMING)
-  difficulty                  DifficultyLevel?              @default(EASY)
-  leaderBoard                 LeaderBoard[]
-  contestTochallegemapping    ContentToChallegesMapping[]
+  id                       String                      @id @default(uuid())
+  title                    String
+  description              String?
+  participants             Int                         @default(0)
+  startTime                DateTime
+  endTime                  DateTime
+  type                     ContestType                 @default(WEEKLY)
+  status                   ContestStatus               @default(UPCOMING)
+  difficulty               DifficultyLevel?            @default(EASY)
+  leaderBoard              LeaderBoard[]
+  contestTochallegemapping ContentToChallegesMapping[]
+  contestParticipants      ContestParticipant[]
+  createdAt                DateTime                    @default(now())
+  updatedAt                DateTime                    @updatedAt()
 }
 
 model LeaderBoard {
-  id                          String                        @id @default(uuid())
-  contestId                   String
-  userId                      String
-  rank                        Int
-  contest                     Contest                       @relation(fields: [contestId], references : [id])      
-  user                        User                          @relation(fields: [userId], references : [id]) 
+  id               String    @id @default(uuid())
+  contestId        String
+  userId           String
+  rank             Int
+  score            Int       @default(0)
+  solvedCount      Int       @default(0)
+  penalty          Int       @default(0)
+  lastSubmissionAt DateTime?
+  contest          Contest   @relation(fields: [contestId], references: [id])
+  user             User      @relation(fields: [userId], references: [id])
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt()
+
+  @@unique([contestId, userId])
 }
 
 model Challenges {
-  id                          String                        @id @default(uuid())
-  title                       String
-  description                 String
-  difficulty                  DifficultyLevel               @default(EASY)
-  slug                        String                        @unique
-  images                      String?
-  tags                        String[]
-  maxpoint                    Int
-  starterCode                 String
-  isSolved                    Boolean                       @default(false)
-  contestTochallegemapping    ContentToChallegesMapping[]
-  submittions                 Submittion[]
-  examples                    Example[]
-  testcase                    TestCase[]
-  createdAt                   DateTime                      @default(now())
-  updatedAt                   DateTime                      @updatedAt()
+  id                       String                      @id @default(uuid())
+  title                    String
+  description              String
+  difficulty               DifficultyLevel             @default(EASY)
+  slug                     String                      @unique
+  images                   String?
+  tags                     String[]
+  maxpoint                 Int
+  starterCode              String
+  isSolved                 Boolean                     @default(false)
+  contestTochallegemapping ContentToChallegesMapping[]
+  submittions              Submittion[]
+  examples                 Example[]
+  testcase                 TestCase[]
+  createdAt                DateTime                    @default(now())
+  updatedAt                DateTime                    @updatedAt()
 }
 
 model Example {
-  id                          String                        @id @default(uuid())
-  input                       String
-  output                      String
-  explanation                 String?
-  challengeId                 String
-  challenges                  Challenges                    @relation(fields: [challengeId], references : [id]) 
+  id          String     @id @default(uuid())
+  input       String
+  output      String
+  explanation String?
+  challengeId String
+  challenges  Challenges @relation(fields: [challengeId], references: [id])
 }
 
 model TestCase {
-  id                          String                        @id @default(uuid())
-  input                       String
-  expectedOutput              String
-  challengeId                 String
-  testcasecode                String?
-  challenges                  Challenges                    @relation(fields: [challengeId], references : [id]) 
+  id             String     @id @default(uuid())
+  input          String
+  expectedOutput String
+  challengeId    String
+  testcasecode   String?
+  challenges     Challenges @relation(fields: [challengeId], references: [id])
 }
 
 model ContentToChallegesMapping {
-  id                          String                         @id @default(uuid())
-  contestId                   String
-  challengeId                 String
-  index                       Int
-  contestsubmission           ContestSubmittion[]       
-  contest                     Contest                        @relation(fields: [contestId], references : [id])
-  challenge                   Challenges                     @relation(fields: [challengeId], references : [id])
+  id                       String               @id @default(uuid())
+  contestId                String
+  challengeId              String
+  index                    Int
+  contestsubmission        ContestSubmittion[]
+  contestProblemStates     ContestProblemState[]
+  contest                  Contest              @relation(fields: [contestId], references: [id])
+  challenge                Challenges           @relation(fields: [challengeId], references: [id])
+  createdAt                DateTime             @default(now())
+  updatedAt                DateTime             @updatedAt()
+
+  @@unique([contestId, challengeId])
 }
 
 model Submittion {
-  id                          String                         @id @default(uuid())
-  submittion                  String
-  challengeId                 String
-  userId                      String
-  points                      Int
-  challenge                   Challenges                      @relation(fields: [challengeId], references : [id])
-  user                        User                            @relation(fields: [userId], references : [id]) 
-  createdAt                   DateTime                        @default(now())
+  id          String     @id @default(uuid())
+  submittion  String
+  challengeId String
+  userId      String
+  points      Int
+  challenge   Challenges @relation(fields: [challengeId], references: [id])
+  user        User       @relation(fields: [userId], references: [id])
+  createdAt   DateTime   @default(now())
+}
+
+model ContestParticipant {
+  id           String                   @id @default(uuid())
+  contestId    String
+  userId       String
+  status       ContestParticipantStatus @default(REGISTERED)
+  lastSocketId String?
+  lastSeenAt   DateTime                 @default(now())
+  joinedAt     DateTime                 @default(now())
+  startedAt    DateTime?
+  completedAt  DateTime?
+  currentScore Int                      @default(0)
+  currentRank  Int?
+  contest      Contest                  @relation(fields: [contestId], references: [id])
+  user         User                     @relation(fields: [userId], references: [id])
+  problemStates ContestProblemState[]
+  submissions  ContestSubmittion[]
+  createdAt    DateTime                 @default(now())
+  updatedAt    DateTime                 @updatedAt()
+
+  @@unique([contestId, userId])
+}
+
+model ContestProblemState {
+  id                          String                    @id @default(uuid())
+  contestParticipantId        String
+  contestTochallegemappingId  String
+  code                        String?
+  language                    String?
+  bestPoints                  Int                       @default(0)
+  isSolved                    Boolean                   @default(false)
+  startedAt                   DateTime?
+  lastRunAt                   DateTime?
+  lastSubmittedAt             DateTime?
+  createdAt                   DateTime                  @default(now())
+  updatedAt                   DateTime                  @updatedAt()
+  contestParticipant          ContestParticipant        @relation(fields: [contestParticipantId], references: [id])
+  contestTochallegemapping    ContentToChallegesMapping @relation(fields: [contestTochallegemappingId], references: [id])
+
+  @@unique([contestParticipantId, contestTochallegemappingId])
 }
 
 model ContestSubmittion {
-  id                          String                          @id @default(uuid())
+  id                          String                    @id @default(uuid())
   submission                  String
   contestTochallegemappingid  String
+  contestParticipantId        String
   points                      Int
   userId                      String
-  user                        User                            @relation(fields: [userId], references : [id]) 
-  contestTochallegemapping    ContentToChallegesMapping       @relation(fields: [contestTochallegemappingid], references : [id]) 
-  createdAt                   DateTime                        @default(now())
+  language                    String
+  verdict                     SubmissionVerdict         @default(PENDING)
+  passedTestCases             Int                       @default(0)
+  totalTestCases              Int                       @default(0)
+  executionTime               Int?
+  isBest                      Boolean                   @default(false)
+  user                        User                      @relation(fields: [userId], references: [id])
+  contestParticipant          ContestParticipant        @relation(fields: [contestParticipantId], references: [id])
+  contestTochallegemapping    ContentToChallegesMapping @relation(fields: [contestTochallegemappingid], references: [id])
+  createdAt                   DateTime                  @default(now())
+  updatedAt                   DateTime                  @updatedAt()
 }
-
 
 enum DifficultyLevel {
   HARD
@@ -171,7 +244,7 @@ enum DifficultyLevel {
   MEDIUM
 }
 
-enum ContestType{
+enum ContestType {
   WEEKLY
   MONTHLY
 }
@@ -180,4 +253,19 @@ enum ContestStatus {
   UPCOMING
   ONGOING
   COMPLETED
+}
+
+enum ContestParticipantStatus {
+  REGISTERED
+  ACTIVE
+  DISCONNECTED
+  COMPLETED
+}
+
+enum SubmissionVerdict {
+  PENDING
+  ACCEPTED
+  WRONG_ANSWER
+  RUNTIME_ERROR
+  COMPILATION_ERROR
 }

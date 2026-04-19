@@ -6,6 +6,12 @@ import bcrypt from "bcrypt";
 import { AdminAuthMiddleware } from "../middleware/admin.js";
 import { randomInt, randomUUID } from "crypto";
 import z from "zod";
+import {
+  contestDurationMinutes,
+  getContestLifecycleStatus,
+  toClientContestStatus,
+  toClientDifficulty,
+} from "../utils/contest.js";
 const adminAuthRouter = Router();
 
 interface TestCase {
@@ -28,6 +34,16 @@ const adminOtpChallenges = new Map<string, AdminOtpChallenge>();
 const VerifyOtpSchema = z.object({
   challengeId: z.string().min(10),
   otp: z.string().regex(/^\d{6}$/),
+});
+
+const AdminContestSchema = z.object({
+  title: z.string().min(3),
+  description: z.string().min(10),
+  starttime: z.coerce.date(),
+  endtime: z.coerce.date(),
+  challengeids: z.array(z.string().min(1)).min(1),
+  type: z.enum(["WEEKLY", "MONTHLY"]),
+  difficulty: z.enum(["EASY", "MEDIUM", "HARD"]).optional(),
 });
 
 function issueAdminToken(adminId: string) {
@@ -433,6 +449,430 @@ adminAuthRouter.get(
   },
 );
 
+adminAuthRouter.get(
+  "/dashboard/activity-feed",
+  AdminAuthMiddleware,
+  async (_req, res) => {
+    try {
+      const [recentUsers, recentProblemSubmissions, recentContestSubmissions] =
+        await Promise.all([
+          prisma.user.findMany({
+            take: 10,
+            orderBy: {
+              createdAt: "desc",
+            },
+            select: {
+              id: true,
+              username: true,
+              fullname: true,
+              email: true,
+              createdAt: true,
+            },
+          }),
+          prisma.submittion.findMany({
+            take: 15,
+            orderBy: {
+              createdAt: "desc",
+            },
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  username: true,
+                  fullname: true,
+                  email: true,
+                },
+              },
+              challenge: {
+                select: {
+                  id: true,
+                  title: true,
+                },
+              },
+            },
+          }),
+          prisma.contestSubmittion.findMany({
+            take: 15,
+            orderBy: {
+              createdAt: "desc",
+            },
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  username: true,
+                  fullname: true,
+                  email: true,
+                },
+              },
+              contestTochallegemapping: {
+                include: {
+                  contest: {
+                    select: {
+                      id: true,
+                      title: true,
+                    },
+                  },
+                  challenge: {
+                    select: {
+                      id: true,
+                      title: true,
+                    },
+                  },
+                },
+              },
+            },
+          }),
+        ]);
+
+      const activity = [
+        ...recentUsers.map((user) => ({
+          id: `user-${user.id}`,
+          type: "new_user",
+          title: "New user registered",
+          actor:
+            user.fullname?.trim() ||
+            user.username?.trim() ||
+            user.email,
+          detail: user.email,
+          status: "completed",
+          createdAt: user.createdAt,
+        })),
+        ...recentProblemSubmissions.map((submission) => ({
+          id: `problem-submission-${submission.id}`,
+          type: "problem_submission",
+          title: `Problem submission: ${submission.challenge.title}`,
+          actor:
+            submission.user.fullname?.trim() ||
+            submission.user.username?.trim() ||
+            submission.user.email,
+          detail: `${submission.points} points`,
+          status: submission.points > 0 ? "accepted" : "attempted",
+          createdAt: submission.createdAt,
+        })),
+        ...recentContestSubmissions.map((submission) => ({
+          id: `contest-submission-${submission.id}`,
+          type: "contest_submission",
+          title: `${submission.contestTochallegemapping.contest.title} / ${submission.contestTochallegemapping.challenge.title}`,
+          actor:
+            submission.user.fullname?.trim() ||
+            submission.user.username?.trim() ||
+            submission.user.email,
+          detail: `${submission.verdict.toLowerCase()} • ${submission.points} pts`,
+          status: submission.verdict.toLowerCase(),
+          createdAt: submission.createdAt,
+        })),
+      ]
+        .sort((left, right) => right.createdAt.getTime() - left.createdAt.getTime())
+        .slice(0, 30);
+
+      return res.status(200).json({
+        success: true,
+        activity,
+      });
+    } catch (e) {
+      console.log(e);
+      return res.status(500).json({
+        message: "Internal Server Error",
+        success: false,
+      });
+    }
+  },
+);
+
+adminAuthRouter.get(
+  "/challenges/summary",
+  AdminAuthMiddleware,
+  async (_req, res) => {
+    try {
+      const challenges = await prisma.challenges.findMany({
+        orderBy: {
+          createdAt: "desc",
+        },
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          difficulty: true,
+          maxpoint: true,
+          tags: true,
+          createdAt: true,
+        },
+      });
+
+      return res.status(200).json({
+        success: true,
+        challenges: challenges.map((challenge) => ({
+          ...challenge,
+          difficulty: challenge.difficulty.toLowerCase(),
+        })),
+      });
+    } catch (e) {
+      console.log(e);
+      return res.status(500).json({
+        message: "Internal Server Error",
+        success: false,
+      });
+    }
+  },
+);
+
+adminAuthRouter.get("/contests", AdminAuthMiddleware, async (_req, res) => {
+  try {
+    const contests = await prisma.contest.findMany({
+      orderBy: {
+        startTime: "desc",
+      },
+      include: {
+        contestTochallegemapping: {
+          select: {
+            id: true,
+          },
+        },
+        leaderBoard: {
+          take: 1,
+          orderBy: {
+            rank: "asc",
+          },
+          include: {
+            user: {
+              select: {
+                fullname: true,
+                username: true,
+                email: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return res.status(200).json({
+      success: true,
+      contests: contests.map((contest) => {
+        const lifecycleStatus = getContestLifecycleStatus(
+          contest.startTime,
+          contest.endTime,
+        );
+        const winner = contest.leaderBoard[0];
+
+        return {
+          id: contest.id,
+          title: contest.title,
+          description: contest.description,
+          startTime: contest.startTime,
+          endTime: contest.endTime,
+          participants: contest.participants,
+          durationMinutes: contestDurationMinutes(contest),
+          problemsCount: contest.contestTochallegemapping.length,
+          status: toClientContestStatus(lifecycleStatus),
+          difficulty: toClientDifficulty(contest.difficulty),
+          type: contest.type.toLowerCase(),
+          winner: winner
+            ? winner.user.fullname ||
+              winner.user.username ||
+              winner.user.email
+            : null,
+        };
+      }),
+    });
+  } catch (e) {
+    console.log(e);
+    return res.status(500).json({
+      message: "Internal Server Error",
+      success: false,
+    });
+  }
+});
+
+adminAuthRouter.get(
+  "/contests/:id",
+  AdminAuthMiddleware,
+  async (req, res) => {
+    const contestId = req.params.id;
+
+    if (!contestId) {
+      return res.status(400).json({
+        message: "Contest id is required",
+        success: false,
+      });
+    }
+
+    try {
+      const contest = await prisma.contest.findUnique({
+        where: {
+          id: contestId,
+        },
+        include: {
+          contestTochallegemapping: {
+            orderBy: {
+              index: "asc",
+            },
+            include: {
+              challenge: {
+                select: {
+                  id: true,
+                  title: true,
+                  slug: true,
+                  difficulty: true,
+                  maxpoint: true,
+                  tags: true,
+                },
+              },
+            },
+          },
+          contestParticipants: {
+            orderBy: {
+              joinedAt: "asc",
+            },
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  username: true,
+                  fullname: true,
+                  email: true,
+                  avatar: true,
+                },
+              },
+              problemStates: {
+                select: {
+                  contestTochallegemappingId: true,
+                  bestPoints: true,
+                  isSolved: true,
+                  lastSubmittedAt: true,
+                },
+              },
+            },
+          },
+          leaderBoard: {
+            orderBy: {
+              rank: "asc",
+            },
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  username: true,
+                  fullname: true,
+                  email: true,
+                  avatar: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (!contest) {
+        return res.status(404).json({
+          message: "Contest not found",
+          success: false,
+        });
+      }
+
+      const recentSubmissions = await prisma.contestSubmittion.findMany({
+        where: {
+          contestTochallegemapping: {
+            contestId,
+          },
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+        take: 20,
+        include: {
+          user: {
+            select: {
+              id: true,
+              username: true,
+              fullname: true,
+              email: true,
+            },
+          },
+          contestTochallegemapping: {
+            include: {
+              challenge: {
+                select: {
+                  id: true,
+                  title: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      const lifecycleStatus = getContestLifecycleStatus(
+        contest.startTime,
+        contest.endTime,
+      );
+
+      return res.status(200).json({
+        success: true,
+        contest: {
+          id: contest.id,
+          title: contest.title,
+          description: contest.description,
+          startTime: contest.startTime,
+          endTime: contest.endTime,
+          participants: contest.participants,
+          durationMinutes: contestDurationMinutes(contest),
+          status: toClientContestStatus(lifecycleStatus),
+          difficulty: toClientDifficulty(contest.difficulty),
+          type: contest.type.toLowerCase(),
+          problems: contest.contestTochallegemapping.map((mapping) => ({
+            id: mapping.id,
+            order: mapping.index,
+            challengeId: mapping.challengeId,
+            title: mapping.challenge.title,
+            slug: mapping.challenge.slug,
+            difficulty: mapping.challenge.difficulty.toLowerCase(),
+            maxpoint: mapping.challenge.maxpoint,
+            tags: mapping.challenge.tags,
+          })),
+          participantsList: contest.contestParticipants.map((participant) => ({
+            id: participant.id,
+            status: participant.status.toLowerCase(),
+            joinedAt: participant.joinedAt,
+            startedAt: participant.startedAt,
+            completedAt: participant.completedAt,
+            lastSeenAt: participant.lastSeenAt,
+            currentScore: participant.currentScore,
+            currentRank: participant.currentRank,
+            solvedCount: participant.problemStates.filter((state) => state.isSolved)
+              .length,
+            user: participant.user,
+          })),
+          leaderboard: contest.leaderBoard.map((entry) => ({
+            rank: entry.rank,
+            score: entry.score,
+            solvedCount: entry.solvedCount,
+            penalty: entry.penalty,
+            lastSubmissionAt: entry.lastSubmissionAt,
+            user: entry.user,
+          })),
+          recentSubmissions: recentSubmissions.map((submission) => ({
+            id: submission.id,
+            verdict: submission.verdict.toLowerCase(),
+            points: submission.points,
+            language: submission.language,
+            createdAt: submission.createdAt,
+            challengeTitle: submission.contestTochallegemapping.challenge.title,
+            user: submission.user,
+          })),
+        },
+      });
+    } catch (e) {
+      console.log(e);
+      return res.status(500).json({
+        message: "Internal Server Error",
+        success: false,
+      });
+    }
+  },
+);
+
 /**@ADMIN_CHALLENGE_ROUTE
  * The route to create a new challenge.
  * It expects the challenge details in the request body, parse and example/test case data and stores them in the database.
@@ -659,6 +1099,16 @@ adminAuthRouter.delete(
 
 adminAuthRouter.post("/set-contest", AdminAuthMiddleware, async (req, res) => {
   try {
+    const parsedContest = AdminContestSchema.safeParse(req.body);
+    console.log("Parsed Contest:", parsedContest.error);
+
+    if (!parsedContest.success) {
+      return res.status(411).json({
+        message: "Please provide a valid contest payload",
+        success: false,
+      });
+    }
+
     const {
       title,
       description,
@@ -666,58 +1116,55 @@ adminAuthRouter.post("/set-contest", AdminAuthMiddleware, async (req, res) => {
       endtime,
       challengeids,
       type,
-      status,
       difficulty,
-    } = req.body;
-    if (
-      !title ||
-      !description ||
-      !starttime ||
-      !endtime ||
-      !challengeids ||
-      !type ||
-      !status
-    ) {
-      return res.status(411).json({
-        message: "Please Provide All Fields",
+    } = parsedContest.data;
+
+    if (endtime <= starttime) {
+      return res.status(400).json({
+        message: "Contest end time must be after start time",
         success: false,
       });
     }
 
-    const CreateContext = await prisma.contest.create({
-      data: {
-        title: title,
-        description: description,
-        startTime: starttime,
-        endTime: endtime,
-        participants: 0,
-        type: type,
-        status: status,
-        difficulty: difficulty,
+    const uniqueChallengeIds = Array.from(new Set(challengeids));
+    const challengeCount = await prisma.challenges.count({
+      where: {
+        id: {
+          in: uniqueChallengeIds,
+        },
       },
     });
 
-    const ChallengeArray = challengeids.map((id: string) => id);
-    for (const challengeId of ChallengeArray) {
-      await prisma.contentToChallegesMapping.create({
-        data: {
-          contestId: CreateContext.id,
-          challengeId: challengeId,
-          index: Math.floor(Math.random() * 1000),
+    if (challengeCount !== uniqueChallengeIds.length) {
+      return res.status(400).json({
+        message: "One or more selected problems were not found",
+        success: false,
+      });
+    }
+
+    const createdContest = await prisma.contest.create({
+      data: {
+        title,
+        description,
+        startTime: starttime,
+        endTime: endtime,
+        participants: 0,
+        type,
+        difficulty: difficulty ?? "MEDIUM",
+        status: getContestLifecycleStatus(starttime, endtime),
+        contestTochallegemapping: {
+          create: uniqueChallengeIds.map((challengeId, index) => ({
+            challengeId,
+            index: index + 1,
+          })),
         },
-      });
-    }
+      },
+    });
 
-    if (CreateContext && ChallengeArray) {
-      return res.status(200).json({
-        message: "Contest Created Successfully",
-        success: true,
-      });
-    }
-
-    return res.status(403).json({
-      message: "Error While Creating Contest",
-      success: false,
+    return res.status(200).json({
+      message: "Contest Created Successfully",
+      success: true,
+      contestId: createdContest.id,
     });
   } catch (e) {
     console.log(e);
@@ -734,67 +1181,71 @@ adminAuthRouter.put(
   async (req, res) => {
     try {
       const contestId = req.params.id;
+      const parsedContest = AdminContestSchema.safeParse({
+        ...req.body,
+        challengeids: req.body.newChallengeIds ?? req.body.challengeids,
+      });
+
+      if (!parsedContest.success) {
+        return res.status(411).json({
+          message: "Please provide a valid contest payload",
+          success: false,
+        });
+      }
+
       const {
         title,
         description,
         starttime,
         endtime,
-        newChallengeIds,
-        contestToChallegesMappingId,
-      } = req.body;
+        challengeids,
+        type,
+        difficulty,
+      } = parsedContest.data;
 
-      if (
-        !title ||
-        !description ||
-        !starttime ||
-        !endtime ||
-        !newChallengeIds
-      ) {
-        return res.status(411).json({
-          message: "Please Provide All Fields",
+      if (endtime <= starttime) {
+        return res.status(400).json({
+          message: "Contest end time must be after start time",
           success: false,
         });
       }
 
-      const UpdateContest = await prisma.contest.update({
-        where: {
-          id: contestId as string,
-        },
-        data: {
-          title: title,
-          description: description,
-          startTime: new Date(starttime),
-          endTime: new Date(endtime),
-        },
+      const uniqueChallengeIds = Array.from(new Set(challengeids));
+
+      await prisma.$transaction(async (tx) => {
+        await tx.contest.update({
+          where: {
+            id: contestId as string,
+          },
+          data: {
+            title,
+            description,
+            startTime: starttime,
+            endTime: endtime,
+            type,
+            difficulty: difficulty ?? "MEDIUM",
+            status: getContestLifecycleStatus(starttime, endtime),
+          },
+        });
+
+        await tx.contentToChallegesMapping.deleteMany({
+          where: {
+            contestId: contestId as string,
+          },
+        });
+
+        await tx.contentToChallegesMapping.createMany({
+          data: uniqueChallengeIds.map((challengeId, index) => ({
+            contestId: contestId as string,
+            challengeId,
+            index: index + 1,
+          })),
+        });
       });
 
-      const ChallengeArray = newChallengeIds.map((id: string) => id);
-      for (const challengeId of ChallengeArray) {
-        await prisma.contentToChallegesMapping.upsert({
-          where: {
-            id: contestToChallegesMappingId,
-          },
-          update: {
-            index: Math.floor(Math.random() * 1000),
-          },
-          create: {
-            contestId: contestId as string,
-            challengeId: challengeId,
-            index: Math.floor(Math.random() * 1000),
-          },
-        });
-      }
-
-      if (UpdateContest) {
-        return res.status(200).json({
-          message: "Contest Updated Successfully",
-          success: true,
-        });
-      }
-
-      return res.status(403).json({
-        message: "Error While Updating Contest",
-        success: false,
+      return res.status(200).json({
+        message: "Contest Updated Successfully",
+        success: true,
       });
     } catch (e) {
       console.log(e);
@@ -813,22 +1264,46 @@ adminAuthRouter.delete(
     try {
       const contestId = req.params.id;
 
-      const DeleteContest = await prisma.contest.delete({
-        where: {
-          id: contestId as string,
-        },
+      await prisma.$transaction(async (tx) => {
+        await tx.contestSubmittion.deleteMany({
+          where: {
+            contestTochallegemapping: {
+              contestId: contestId as string,
+            },
+          },
+        });
+        await tx.contestProblemState.deleteMany({
+          where: {
+            contestTochallegemapping: {
+              contestId: contestId as string,
+            },
+          },
+        });
+        await tx.leaderBoard.deleteMany({
+          where: {
+            contestId: contestId as string,
+          },
+        });
+        await tx.contestParticipant.deleteMany({
+          where: {
+            contestId: contestId as string,
+          },
+        });
+        await tx.contentToChallegesMapping.deleteMany({
+          where: {
+            contestId: contestId as string,
+          },
+        });
+        await tx.contest.delete({
+          where: {
+            id: contestId as string,
+          },
+        });
       });
 
-      if (DeleteContest) {
-        return res.status(200).json({
-          message: "Contest Deleted Successfully",
-          success: true,
-        });
-      }
-
-      return res.status(403).json({
-        message: "Error While Deleting Contest",
-        success: false,
+      return res.status(200).json({
+        message: "Contest Deleted Successfully",
+        success: true,
       });
     } catch (e) {
       console.log(e);

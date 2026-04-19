@@ -1,0 +1,22 @@
+{
+  "name": "contest-websocket-server",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -b",
+    "dev": "npm run build && node ./dist/server.js",
+    "start": "node ./dist/server.js"
+  },
+  "dependencies": {
+    "@repo/db": "*",
+    "jsonwebtoken": "^9.0.2",
+    "ws": "^8.18.3"
+  },
+  "devDependencies": {
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^24.6.0",
+    "@types/ws": "^8.5.0",
+    "typescript": "^5.9.3"
+  }
+}

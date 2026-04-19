@@ -3,6 +3,7 @@
   "private": true,
   "scripts": {
     "backend:start": "npm run start --workspace apps/backend",
+    "contest-ws:start": "npm run start --workspace apps/contest-websocket-server",
     "publisher:start": "npm run start --workspace apps/publisher",
     "worker:start": "npm run start --workspace apps/worker",
     "build": "turbo run build",

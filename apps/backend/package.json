@@ -19,6 +19,7 @@
     "@google/genai": "^1.30.0",
     "@google/generative-ai": "^0.24.1",
     "@radix-ui/react-alert-dialog": "^1.1.15",
+    "@repo/compiler": "*",
     "@repo/db": "*",
     "@types/bcrypt": "^6.0.0",
     "@types/cors": "^2.8.19",

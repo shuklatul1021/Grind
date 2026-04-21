@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@repo/ui/button";
 import { Card, CardContent, CardHeader } from "@repo/ui/card";
@@ -11,13 +11,10 @@ import {
   Users,
 } from "lucide-react";
 
-import type { RootState } from "../state/ReduxStateProvider";
-import { useSelector } from "react-redux";
-import { toast } from "../../../../packages/ui/src/hooks/use-toast";
 import MainSideNav from "../components/MainSideNav";
 import { useTheme } from "../contexts/ThemeContext";
 import type { ContestSummary } from "../types/contest";
-import { BACKENDURL } from "../utils/urls";
+import { useDashboardData } from "../hooks/useDashboardData";
 
 function formatDate(value: string) {
   const date = new Date(value);
@@ -65,45 +62,17 @@ function getDifficultyClass(difficulty: ContestSummary["difficulty"]) {
 export default function ContestsPage() {
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
-  const userProfile = useSelector((state: RootState) => state.userDetails);
 
-  const [contests, setContests] = useState<ContestSummary[]>([]);
-  const [loading, setLoading] = useState(true);
+  const {
+    contests,
+    contestsLoaded,
+    userDetails: userProfileUser,
+  } = useDashboardData(["contests", "userDetails"]);
+
+  const loading = !contestsLoaded;
   const [activeTab, setActiveTab] = useState<"all" | "weekly" | "monthly">(
     "all",
   );
-
-  const loadContests = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch(`${BACKENDURL}/contest/getcontests`, {
-        headers: {
-          "Content-Type": "application/json",
-          token: localStorage.getItem("token") || "",
-        },
-      });
-
-      const data = await response.json();
-      if (!response.ok || !data?.success) {
-        throw new Error(data?.message || "Failed to fetch contests.");
-      }
-
-      setContests(data.contests ?? []);
-    } catch (error) {
-      toast({
-        title: "Error",
-        description:
-          error instanceof Error ? error.message : "Failed to fetch contests.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    void loadContests();
-  }, []);
 
   const filteredContests = useMemo(() => {
     if (activeTab === "all") {
@@ -126,8 +95,8 @@ export default function ContestsPage() {
         active="contest"
         theme={theme}
         toggleTheme={toggleTheme}
-        avatarUrl={userProfile?.user?.avatar || ""}
-        avatarFallback={userProfile?.user?.fullname?.[0] || "G"}
+        avatarUrl={userProfileUser?.avatar || ""}
+        avatarFallback={userProfileUser?.fullname?.[0] || "G"}
         onProfile={() => navigate("/you")}
         onSignOut={() => {
           localStorage.removeItem("token");

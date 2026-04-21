@@ -33,14 +33,22 @@ import { Avatar, AvatarFallback, AvatarImage } from "@repo/ui/avatar";
 import { BACKENDURL } from "../utils/urls";
 import { toast } from "../../../../packages/ui/src/hooks/use-toast";
 import type { UserInterface } from "../types/problem";
+import { useDashboardData } from "../hooks/useDashboardData";
 
 export default function ProfilePage() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<"view" | "edit">("view");
-  const [isLoading, setIsLoading] = useState(true);
   const [avatarPreview, setAvatarPreview] = useState<string>("");
   const [isUploading, setIsUploading] = useState<boolean>(false);
   const [handleSaveLoading, setHandleSaveLoading] = useState<boolean>(false);
+
+  const {
+    userDetails: cachedUser,
+    userDetailsLoaded, 
+  } = useDashboardData(["userDetails"]);
+
+  // Use cached data to avoid loading spinner if we already have data
+  const [isLoading, setIsLoading] = useState(!userDetailsLoaded);
 
   const [profile, setProfile] = useState<UserInterface>({
     id: "",
@@ -191,7 +199,13 @@ export default function ProfilePage() {
   };
 
   useEffect(() => {
-    getUserInfo();
+    // If we already have cached user data, use it immediately
+    if (userDetailsLoaded && cachedUser?.id) {
+      setProfile(cachedUser);
+      setIsLoading(false);
+    } else {
+      getUserInfo();
+    }
   }, []);
 
   return (

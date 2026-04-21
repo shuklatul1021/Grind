@@ -81,6 +81,8 @@ export interface UserInterface {
   social?: Social;
   createdAt?: Date;
   propr?: string;
+  aitoken?: number;
+  maxaitoken?: number;
 }
 
 export interface Message {

@@ -31,11 +31,8 @@ import {
 } from "lucide-react";
 import { useTheme } from "../contexts/ThemeContext";
 import type { Problem } from "../types/problem";
-import { BACKENDURL } from "../utils/urls";
-import { toast } from "../../../../packages/ui/src/hooks/use-toast";
-import { useDispatch, useSelector } from "react-redux";
-import { setUserDetails, type RootState } from "../state/ReduxStateProvider";
 import MainSideNav from "../components/MainSideNav";
+import { useDashboardData } from "../hooks/useDashboardData";
 
 function Skeleton({ className }: { className?: string }) {
   return (
@@ -48,70 +45,29 @@ function Skeleton({ className }: { className?: string }) {
 export default function ProblemsPage() {
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
-  const [problems, setProblems] = useState<Problem[]>([]);
-  const [solvedProblems, setSolvedProblems] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
+
+  const {
+    problems,
+    solvedProblems,
+    problemsLoaded,
+    userDetails: UserProfileUser,
+  } = useDashboardData(["problems", "userDetails"]);
+
+  const loading = !problemsLoaded;
   const [searchQuery, setSearchQuery] = useState("");
   const [difficultyFilter, setDifficultyFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [tagFilter, setTagFilter] = useState<string>("all");
-  const setReduxUserDetails = useDispatch();
-  const UserProfile = useSelector((state: RootState) => state.userDetails);
-  console.log("UserProfile:", UserProfile);
+
   const uniqueTags = Array.from(
-    new Set(problems.flatMap((p) => p.tags)),
+    new Set((problems as Problem[]).flatMap((p) => p.tags)),
   ).sort();
 
   useEffect(() => {
     updateSEO(seoConfigs.problems);
-    getuserDetails();
-    fetchProblems();
-  }, [navigate]);
+  }, []);
 
-  const getuserDetails = async () => {
-    const response = await fetch(`${BACKENDURL}/user/details`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        token: localStorage.getItem("token") || "",
-      },
-    });
-    if (response.ok) {
-      const json = await response.json();
-      setReduxUserDetails(setUserDetails(json.user));
-    } else {
-      toast({
-        title: "Error",
-        description: "Failed to fetch user details. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
 
-  const fetchProblems = async () => {
-    setLoading(true);
-    const response = await fetch(`${BACKENDURL}/problems/getproblems`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        token: localStorage.getItem("token") || "",
-      },
-    });
-    if (response.ok) {
-      const json = await response.json();
-      setProblems(json.problems);
-      setSolvedProblems(json.solvedProblems || []);
-      // setReduxProblems(setReduxProblems(json.problems));
-    } else {
-      toast({
-        title: "Error",
-        description: "Failed to fetch problems. Please try again.",
-        variant: "destructive",
-        action: <button onClick={fetchProblems}>Retry</button>,
-      });
-    }
-    setLoading(false);
-  };
 
   const handleSignOut = async () => {
     localStorage.removeItem("token");
@@ -119,14 +75,15 @@ export default function ProblemsPage() {
   };
 
   const handleRandomPick = () => {
-    if (problems.length > 0) {
-      const randomIndex = Math.floor(Math.random() * problems.length);
-      const randomProblem = problems[randomIndex];
+    const typedProblems = problems as Problem[];
+    if (typedProblems.length > 0) {
+      const randomIndex = Math.floor(Math.random() * typedProblems.length);
+      const randomProblem = typedProblems[randomIndex];
       navigate(`/problem/${randomProblem.slug}`);
     }
   };
 
-  const filteredProblems = problems.filter((problem) => {
+  const filteredProblems = (problems as Problem[]).filter((problem) => {
     const matchesSearch =
       problem.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       problem.tags.some((tag) =>
@@ -136,19 +93,18 @@ export default function ProblemsPage() {
       difficultyFilter === "all" ||
       problem.difficulty.toLowerCase() === difficultyFilter;
 
-    const status = problems.find((p) => p.id === problem.id)?.isSolved;
     const matchesStatus =
       statusFilter === "all" ||
-      (statusFilter === "solved" && status === true) ||
-      (statusFilter === "unsolved" && status !== true);
+      (statusFilter === "solved" && problem.isSolved === true) ||
+      (statusFilter === "unsolved" && problem.isSolved !== true);
 
     const matchesTag = tagFilter === "all" || problem.tags.includes(tagFilter);
 
     return matchesSearch && matchesDifficulty && matchesStatus && matchesTag;
   });
 
-  const totalProblems = problems.length;
-  const solvedCount = solvedProblems.length;
+  const totalProblems = (problems as Problem[]).length;
+  const solvedCount = (solvedProblems as string[]).length;
   const unsolvedCount = Math.max(totalProblems - solvedCount, 0);
   const completionRate =
     totalProblems > 0 ? Math.round((solvedCount / totalProblems) * 100) : 0;
@@ -179,8 +135,8 @@ export default function ProblemsPage() {
         active="problems"
         theme={theme}
         toggleTheme={toggleTheme}
-        avatarUrl={UserProfile?.user?.avatar || ""}
-        avatarFallback={UserProfile?.user?.fullname?.[0] || "G"}
+        avatarUrl={UserProfileUser?.avatar || ""}
+        avatarFallback={UserProfileUser?.fullname?.[0] || "G"}
         onProfile={() => navigate("/you")}
         onSignOut={handleSignOut}
       />

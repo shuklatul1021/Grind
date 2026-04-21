@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@repo/ui/button";
 import { Badge } from "@repo/ui/badge";
@@ -35,18 +35,18 @@ import { toast } from "../../../../packages/ui/src/hooks/use-toast";
 import { BACKENDURL } from "../utils/urls";
 import type { ChatSession, Message } from "../types/problem";
 import {
-  setUserAllChats,
   setUserCreditDetails,
   setUserPrompt,
 } from "../state/ReduxStateProvider";
 import MainSideNav from "../components/MainSideNav";
+import { useDashboardData } from "../hooks/useDashboardData";
 
-const FormattedMessage = ({ content }: { content: string }) => {
+const FormattedMessage = React.memo(({ content, isStreaming = false }: { content: string; isStreaming?: boolean }) => {
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
-  const copyToClipboard = (text: string, id: string) => {
+  const copyToClipboard = (text: string, codeId: string) => {
     navigator.clipboard.writeText(text);
-    setCopiedCode(id);
+    setCopiedCode(codeId);
     setTimeout(() => setCopiedCode(null), 2000);
   };
 
@@ -59,113 +59,65 @@ const FormattedMessage = ({ content }: { content: string }) => {
     while (i < lines.length) {
       const line = lines[i];
 
+      // --- Headings ---
       if (line.trim().startsWith("### ")) {
         elements.push(
-          <h3
-            key={key++}
-            className="text-lg font-semibold mt-8 mb-4 text-foreground text-left tracking-tight"
-          >
+          <h3 key={key++} className="text-base font-semibold mt-6 mb-3 text-foreground text-left tracking-tight">
             {line.replace("### ", "").trim()}
           </h3>,
         );
         i++;
       } else if (line.trim().startsWith("## ")) {
         elements.push(
-          <h2
-            key={key++}
-            className="text-xl font-semibold mt-10 mb-4 text-foreground text-left tracking-tight"
-          >
+          <h2 key={key++} className="text-lg font-semibold mt-8 mb-3 text-foreground text-left tracking-tight">
             {line.replace("## ", "").trim()}
           </h2>,
         );
         i++;
       } else if (line.trim().startsWith("# ")) {
         elements.push(
-          <h1
-            key={key++}
-            className="text-2xl font-semibold mt-12 mb-5 text-foreground text-left tracking-tight"
-          >
+          <h1 key={key++} className="text-xl font-semibold mt-10 mb-4 text-foreground text-left tracking-tight">
             {line.replace("# ", "").trim()}
           </h1>,
         );
         i++;
-      } else if (line.trim().match(/^[*-]\s/)) {
+      }
+      // --- Unordered lists ---
+      else if (line.trim().match(/^[*-]\s/)) {
         const listItems: React.JSX.Element[] = [];
         while (i < lines.length && lines[i].trim().match(/^[*-]\s/)) {
-          let itemText = lines[i].replace(/^[*-]\s/, "").trim();
-
-          itemText = itemText.replace(/^\*\s*/, "");
-
-          itemText = itemText.replace(
-            /^\*\*([^*:]+):\*\*\s*/,
-            '<strong class="font-medium text-foreground">$1:</strong> ',
-          );
-
-          itemText = itemText.replace(
-            /\*\*([^*]+)\*\*/g,
-            '<strong class="font-medium text-foreground">$1</strong>',
-          );
-
-          itemText = itemText.replace(
-            /`([^`]+)`/g,
-            '<code class="inline-flex items-center bg-zinc-950 dark:bg-black text-emerald-400 px-3 py-1.5 rounded-lg text-[13px] font-mono border border-zinc-700 dark:border-zinc-800 shadow-lg font-semibold">$1</code>',
-          );
-
+          let itemText = lines[i].replace(/^\s*[*-]\s*/, "").trim();
+          itemText = applyInlineFormatting(itemText);
           listItems.push(
-            <li
-              key={`li-${key++}`}
-              className="flex gap-3 mb-2.5 text-left group"
-            >
-              <span className="text-foreground/50 mt-[0.35rem] flex-shrink-0 text-sm font-medium">
-                •
-              </span>
-              <span
-                className="flex-1 text-foreground/85 leading-relaxed"
-                dangerouslySetInnerHTML={{ __html: itemText }}
-              />
+            <li key={`li-${key++}`} className="flex gap-2.5 mb-1.5 text-left">
+              <span className="text-foreground/40 mt-[0.35rem] flex-shrink-0 text-xs">•</span>
+              <span className="flex-1 text-foreground/85 leading-relaxed" dangerouslySetInnerHTML={{ __html: itemText }} />
             </li>,
           );
           i++;
         }
-        elements.push(
-          <ul key={key++} className="my-5 space-y-0 text-left pl-1">
-            {listItems}
-          </ul>,
-        );
-      } else if (line.trim().match(/^\d+\./)) {
+        elements.push(<ul key={key++} className="my-3 space-y-0 text-left pl-1">{listItems}</ul>);
+      }
+      // --- Ordered lists ---
+      else if (line.trim().match(/^\d+\./)) {
         const listItems: React.JSX.Element[] = [];
         let num = 1;
         while (i < lines.length && lines[i].trim().match(/^\d+\./)) {
           let content = lines[i].replace(/^\s*\d+\.\s*/, "").trim();
-          content = content.replace(
-            /\*\*([^*]+)\*\*/g,
-            '<strong class="font-medium text-foreground">$1</strong>',
-          );
-          content = content.replace(
-            /`([^`]+)`/g,
-            '<code class="inline-flex items-center bg-zinc-950 dark:bg-black text-emerald-400 px-3 py-1.5 rounded-lg text-[13px] font-mono border border-zinc-700 dark:border-zinc-800 shadow-lg font-semibold">$1</code>',
-          );
-
+          content = applyInlineFormatting(content);
           listItems.push(
-            <li key={`oli-${key++}`} className="flex gap-3 mb-2.5 text-left">
-              <span className="text-foreground/50 font-semibold flex-shrink-0 min-w-[20px] text-sm">
-                {num}.
-              </span>
-              <span
-                className="flex-1 text-foreground/85 leading-relaxed"
-                dangerouslySetInnerHTML={{ __html: content }}
-              />
+            <li key={`oli-${key++}`} className="flex gap-2.5 mb-1.5 text-left">
+              <span className="text-foreground/40 font-semibold flex-shrink-0 min-w-[20px] text-sm">{num}.</span>
+              <span className="flex-1 text-foreground/85 leading-relaxed" dangerouslySetInnerHTML={{ __html: content }} />
             </li>,
           );
           num++;
           i++;
         }
-        elements.push(
-          <ol key={key++} className="my-5 space-y-0 text-left pl-1">
-            {listItems}
-          </ol>,
-        );
-      } else if (line.trim().startsWith("```")) {
+        elements.push(<ol key={key++} className="my-3 space-y-0 text-left pl-1">{listItems}</ol>);
+      }
+      // --- Code blocks ---
+      else if (line.trim().startsWith("```")) {
         let codeBlock = "";
         const lang = line.replace("```", "").trim() || "code";
         const codeId = `code-${key}`;
@@ -174,86 +126,50 @@ const FormattedMessage = ({ content }: { content: string }) => {
           codeBlock += lines[i] + "\n";
           i++;
         }
-        i++;
+        i++; // skip closing ```
 
         elements.push(
-          <div
-            key={key++}
-            className="my-6 rounded-xl overflow-hidden border border-zinc-700/50 dark:border-zinc-600/30 bg-zinc-900/40 dark:bg-zinc-900/30 shadow-lg"
-          >
-            <div className="bg-zinc-800/60 dark:bg-zinc-800/50 px-4 py-2.5 flex items-center justify-between border-b border-zinc-700/40 dark:border-zinc-600/30">
-              <span className="text-xs font-semibold text-zinc-300 dark:text-zinc-400 capitalize tracking-wider text-left">
-                {lang}
-              </span>
+          <div key={key++} className="my-4 rounded-xl overflow-hidden border border-zinc-700/50 dark:border-zinc-600/30 bg-zinc-900/40 dark:bg-zinc-900/30 shadow-md">
+            <div className="bg-zinc-800/60 dark:bg-zinc-800/50 px-4 py-2 flex items-center justify-between border-b border-zinc-700/40">
+              <span className="text-xs font-semibold text-zinc-400 capitalize tracking-wider">{lang}</span>
               <button
                 onClick={() => copyToClipboard(codeBlock.trim(), codeId)}
-                className="flex items-center gap-1.5 text-xs font-medium text-zinc-300 hover:text-white dark:text-zinc-400 dark:hover:text-zinc-200 transition-all duration-200 px-3 py-1.5 rounded-md hover:bg-zinc-700/60 dark:hover:bg-zinc-700/40 border border-transparent hover:border-zinc-600/40"
+                className="flex items-center gap-1.5 text-xs font-medium text-zinc-400 hover:text-white transition-colors px-2.5 py-1 rounded-md hover:bg-zinc-700/60"
               >
                 {copiedCode === codeId ? (
-                  <>
-                    <Check className="h-3.5 w-3.5" />
-                    <span>Copied!</span>
-                  </>
+                  <><Check className="h-3.5 w-3.5" /><span>Copied!</span></>
                 ) : (
-                  <>
-                    <Copy className="h-3.5 w-3.5" />
-                    <span>Copy code</span>
-                  </>
+                  <><Copy className="h-3.5 w-3.5" /><span>Copy</span></>
                 )}
               </button>
             </div>
-            <pre className="p-4 overflow-x-auto bg-zinc-950/50 dark:bg-zinc-900/30 text-left scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent">
-              <code className="text-[13.5px] leading-relaxed font-mono text-zinc-50 dark:text-zinc-100">
-                {codeBlock.trim()}
-              </code>
+            <pre className="p-4 overflow-x-auto bg-zinc-950/50 dark:bg-zinc-900/30 text-left">
+              <code className="text-[13px] leading-relaxed font-mono text-zinc-100">{codeBlock.trim()}</code>
             </pre>
           </div>,
         );
-      } else if (line.trim().length > 0) {
+      }
+      // --- Non-empty text lines ---
+      else if (line.trim().length > 0) {
         let formattedLine = line;
-        const isTreeStructure =
-          /^[\s\/\\|]+$/.test(line) || /^[\s\d\/\\|]+$/.test(line);
-
+        // Tree-structure detection (filesystem trees, etc.)
+        const isTreeStructure = /^[\s\/\\|]+$/.test(line) || /^[\s\d\/\\|]+$/.test(line);
         if (isTreeStructure) {
           elements.push(
-            <pre
-              key={key++}
-              className="font-mono text-[13px] text-foreground/70 leading-tight my-1"
-            >
-              {line}
-            </pre>,
+            <pre key={key++} className="font-mono text-[13px] text-foreground/70 leading-tight my-1">{line}</pre>,
           );
         } else {
           formattedLine = formattedLine.replace(/^-\s*/, "");
-
-          formattedLine = formattedLine.replace(
-            /\*\*([^*:]+):\*\*/g,
-            '<strong class="font-medium text-foreground">$1:</strong>',
-          );
-          formattedLine = formattedLine.replace(
-            /\*\*([^*]+)\*\*/g,
-            '<strong class="font-medium text-foreground">$1</strong>',
-          );
-          formattedLine = formattedLine.replace(
-            /\*([^*]+)\*/g,
-            '<em class="italic text-foreground/80">$1</em>',
-          );
-          formattedLine = formattedLine.replace(
-            /`([^`]+)`/g,
-            '<code class="inline-flex items-center bg-zinc-950 dark:bg-black text-emerald-400 px-3 py-1.5 rounded-lg text-[13px] font-mono border border-zinc-700 dark:border-zinc-800 shadow-lg font-semibold">$1</code>',
-          );
-
+          formattedLine = applyInlineFormatting(formattedLine);
           elements.push(
-            <p
-              key={key++}
-              className="mb-4 leading-7 text-foreground/85 text-left text-[15px]"
-              dangerouslySetInnerHTML={{ __html: formattedLine }}
-            />,
+            <p key={key++} className="mb-3 leading-7 text-foreground/85 text-left text-[15px]" dangerouslySetInnerHTML={{ __html: formattedLine }} />,
           );
         }
         i++;
-      } else {
-        elements.push(<div key={key++} className="h-2" />);
+      }
+      // --- Empty lines ---
+      else {
+        elements.push(<div key={key++} className="h-1.5" />);
         i++;
       }
     }
@@ -264,9 +180,37 @@ const FormattedMessage = ({ content }: { content: string }) => {
   return (
     <div className="space-y-0 text-left w-full max-w-none">
       {formatContent(content)}
+      {isStreaming && (
+        <span className="inline-block w-[3px] h-[18px] bg-blue-500 rounded-sm ml-0.5 align-text-bottom animate-[blink_1s_ease-in-out_infinite]" />
+      )}
     </div>
   );
-};
+});
+
+/** Apply bold, italic, and inline code formatting */
+function applyInlineFormatting(text: string): string {
+  // Bold with colon: **word:**
+  text = text.replace(
+    /\*\*([^*:]+):\*\*/g,
+    '<strong class="font-medium text-foreground">$1:</strong>',
+  );
+  // Bold: **word**
+  text = text.replace(
+    /\*\*([^*]+)\*\*/g,
+    '<strong class="font-medium text-foreground">$1</strong>',
+  );
+  // Italic: *word*
+  text = text.replace(
+    /\*([^*]+)\*/g,
+    '<em class="italic text-foreground/80">$1</em>',
+  );
+  // Inline code: `code`
+  text = text.replace(
+    /`([^`]+)`/g,
+    '<code class="inline bg-zinc-900 dark:bg-black text-emerald-400 px-2 py-0.5 rounded-md text-[13px] font-mono border border-zinc-700/50 font-medium">$1</code>',
+  );
+  return text;
+}
 
 const cleanXMLResponse = (xmlText: string): string => {
   if (!xmlText) return "";
@@ -356,20 +300,16 @@ export default function GrindAIChat() {
   const inputRef = useRef<HTMLInputElement>(null);
   const hasProcessedPrompt = useRef(false);
 
-  const UserProfile = useSelector((state: RootState) => state.userDetails);
+  const {
+    userCredits: GetUserCreditDetails,
+    userCreditsLoaded,
+    userChats: userAllChats,
+    refresh,
+  } = useDashboardData(["userDetails", "userCredits", "userChats"]);
 
-  const [gettingUserLatestCreditLoading, setGettingUserLatestCreditLoading] =
-    useState(false);
+  const UserProfile = useSelector((state: RootState) => state.userDetails);
   const userFirstPrompt = useSelector(
     (state: RootState) => state.userPrompts.prompt,
-  );
-
-  const userAllChats = useSelector(
-    (state: RootState) => state.userAllChats.allchats,
-  );
-
-  const GetUserCreditDetails = useSelector(
-    (state: RootState) => state.userCreditDetails,
   );
 
   const currentSession = sessions.find((s) => s.id === id);
@@ -406,6 +346,24 @@ export default function GrindAIChat() {
       });
     }
   };
+
+  // Throttle streaming updates to ~30fps for smooth rendering
+  const streamingBufferRef = useRef<string>("");
+  const rafIdRef = useRef<number | null>(null);
+
+  const flushStreamingBuffer = useCallback(() => {
+    if (streamingBufferRef.current) {
+      setStreamingMessage(streamingBufferRef.current);
+    }
+    rafIdRef.current = null;
+  }, []);
+
+  const scheduleStreamingUpdate = useCallback((text: string) => {
+    streamingBufferRef.current = text;
+    if (rafIdRef.current === null) {
+      rafIdRef.current = requestAnimationFrame(flushStreamingBuffer);
+    }
+  }, [flushStreamingBuffer]);
 
   const GetAIResponse = useCallback(
     async (userPrompt: string) => {
@@ -512,7 +470,7 @@ export default function GrindAIChat() {
                   const cleaned = cleanXMLResponse(fullXMLText);
                   // Only update if new content
                   if (cleaned !== lastCleaned) {
-                    setStreamingMessage(cleaned);
+                    scheduleStreamingUpdate(cleaned);
                     lastCleaned = cleaned;
                   }
                   setSessions((prev) =>
@@ -565,41 +523,11 @@ export default function GrindAIChat() {
         setIsLoading(false);
       }
     },
-    [id, sessions, setSessions],
+    [id, sessions, scheduleStreamingUpdate],
   );
 
-  async function getUserDetails() {
-    try {
-      const response = await fetch(`${BACKENDURL}/user/details`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          token: localStorage.getItem("token") || "",
-        },
-      });
-      if (response.ok) {
-        const data = await response.json();
-        dispatch(
-          setUserCreditDetails({
-            aicredit: data.user.aitoken,
-            maxcredit: data.user.maxaitoken,
-          }),
-        );
-      } else {
-        toast({
-          title: "Error",
-          description: "Failed to fetch user details. Please try again.",
-          variant: "destructive",
-        });
-      }
-    } catch (e) {
-      toast({
-        title: "Error",
-        description: "Failed to fetch user details. Please try again.",
-        variant: "destructive",
-      });
-    }
-  }
+
+
 
   const CreateUserChat = useCallback(
     async (userPrompt: string) => {
@@ -609,7 +537,7 @@ export default function GrindAIChat() {
       if (!sessionExists) {
         await new Promise((resolve) => setTimeout(resolve, 0));
       }
-      getUserDetails();
+      refresh.userDetails();
 
       try {
         const userMessage: Message = {
@@ -643,6 +571,8 @@ export default function GrindAIChat() {
           ),
         );
 
+        setStreamingMessage("");
+        setStreamingMessageId(aiMessageId);
         setIsLoading(true);
 
         const response = await fetch(`${BACKENDURL}/grindai/chat`, {
@@ -718,12 +648,15 @@ export default function GrindAIChat() {
 
                     return updatedSessions;
                   });
+                  setStreamingMessage("");
+                  setStreamingMessageId(null);
                   break;
                 }
 
                 if (data.text) {
                   fullXMLText += data.text;
                   const displayText = cleanXMLResponse(fullXMLText);
+                  scheduleStreamingUpdate(displayText);
 
                   setSessions((prev) =>
                     prev.map((session) =>
@@ -775,37 +708,17 @@ export default function GrindAIChat() {
         });
       } finally {
         setIsLoading(false);
+        setStreamingMessage("");
+        setStreamingMessageId(null);
       }
     },
-    [id, sessions, setSessions],
+    [id, sessions, scheduleStreamingUpdate],
   );
 
   const getUserChats = async () => {
     try {
       setPageLoading(true);
-      const response = await fetch(`${BACKENDURL}/grindai/get-chats`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          token: localStorage.getItem("token") || "",
-        },
-      });
-      if (response.ok) {
-        const data = await response.json();
-        dispatch(setUserAllChats(data.chats));
-      } else {
-        toast({
-          title: "Error",
-          description: "Failed to fetch chat sessions. Please try again.",
-          variant: "destructive",
-        });
-      }
-    } catch (e) {
-      toast({
-        title: "Error",
-        description: "Failed to fetch chat sessions. Please try again.",
-        variant: "destructive",
-      });
+      await refresh.userChats();
     } finally {
       setPageLoading(false);
     }
@@ -829,8 +742,8 @@ export default function GrindAIChat() {
       );
       if (response.ok) {
         const data = await response.json();
-        await getUserChats();
-        getUserDetails();
+        await refresh.userChats();
+        refresh.userDetails();
         navigate(`/grind-ai/c/${data.chat.id}`);
       } else {
         toast({
@@ -862,11 +775,9 @@ export default function GrindAIChat() {
       getUserChats();
     }
 
-    if (GetUserCreditDetails.maxcredit === 0) {
+    if (!userCreditsLoaded) {
       const fetchUserDetails = async () => {
-        setGettingUserLatestCreditLoading(true);
-        await getUserDetails();
-        setGettingUserLatestCreditLoading(false);
+        await refresh.userDetails();
       };
       fetchUserDetails();
     }
@@ -905,7 +816,7 @@ export default function GrindAIChat() {
     GetAIResponse,
     dispatch,
     getUserChats,
-    getUserDetails,
+    refresh,
   ]);
 
   useEffect(() => {
@@ -1006,7 +917,7 @@ export default function GrindAIChat() {
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [currentSession?.messages]);
+  }, [currentSession?.messages, streamingMessage]);
 
   const handleSignOut = () => {
     localStorage.removeItem("token");
@@ -1165,7 +1076,7 @@ export default function GrindAIChat() {
             </ScrollArea>
 
             <div className="p-4 border-t border-border/40 mb-8">
-              {gettingUserLatestCreditLoading ? (
+              {!userCreditsLoaded ? (
                 <Button
                   variant="outline"
                   className="w-full p-4 h-auto flex flex-col items-stretch gap-2 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border-blue-500/20 opacity-50"
@@ -1302,16 +1213,12 @@ export default function GrindAIChat() {
                           </div>
                           <div className="prose prose-sm dark:prose-invert max-w-none">
                             {isStreaming ? (
-                              <>
-                                <FormattedMessage
-                                  content={
-                                    streamingMessage || mess.content || ""
-                                  }
-                                />
-                                <span className="ml-1 animate-pulse text-blue-500">
-                                  |
-                                </span>
-                              </>
+                              <FormattedMessage
+                                content={
+                                  streamingMessage || mess.content || ""
+                                }
+                                isStreaming={true}
+                              />
                             ) : mess.content ? (
                               <FormattedMessage content={mess.content} />
                             ) : (

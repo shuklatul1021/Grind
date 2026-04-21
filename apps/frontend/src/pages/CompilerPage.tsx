@@ -34,6 +34,7 @@ import { COMPILER_URL, COMPILER_WS_URL } from "../utils/urls";
 import { Terminal as XTerm } from "xterm";
 import { FitAddon } from "xterm-addon-fit";
 import "xterm/css/xterm.css";
+import { useDashboardData } from "../hooks/useDashboardData";
 
 const LANGUAGES = [
   { value: "javascript", label: "JavaScript", version: "Node.js 18.x" },
@@ -221,9 +222,18 @@ export default function CompilerPage() {
   const [copied, setCopied] = useState(false);
   const [layout, ] = useState<"bottom" | "right">("right");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isFocusMode, setIsFocusMode] = useState(false);
-  const [codeHistory, setCodeHistory] = useState<CodeHistory[]>([]);
+  const [isFocusMode, setIsFocusMode] = useState(false); 
   const UserProfile = useSelector((state: RootState) => state.userDetails);
+
+  const {
+    codeHistory: cachedCodeHistory,
+    codeHistoryLoaded,
+    refresh,
+  } = useDashboardData(["codeHistory", "userDetails"]);
+
+  const [codeHistory, setCodeHistory] = useState<CodeHistory[]>(
+    codeHistoryLoaded ? (cachedCodeHistory as CodeHistory[]) : [],
+  );
   const [filterLanguage, setFilterLanguage] = useState("all");
   const [filterTime, setFilterTime] = useState("all");
   const terminalContainerRef = useRef<HTMLDivElement | null>(null);
@@ -830,38 +840,21 @@ export default function CompilerPage() {
   ).length;
 
   const getUserCodeHistory = async () => {
-    try {
-      const response = await fetch(
-        `${COMPILER_URL}/compiler/get-code-history`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            token: localStorage.getItem("token") || "",
-          },
-        },
-      );
-      if (response.ok) {
-        const data = await response.json();
-        setCodeHistory(data.history);
-      } else {
-        toast({
-          title: "Error",
-          description: "Could not fetch code history.",
-          variant: "destructive",
-        });
-      }
-    } catch {
-      toast({
-        title: "Error",
-        description: "An error occurred while fetching code history.",
-        variant: "destructive",
-      });
-    }
+    await refresh.codeHistory();
+    // Also sync local state from the latest Redux data
   };
 
+  // Keep local codeHistory in sync with Redux cache
   useEffect(() => {
-    getUserCodeHistory();
+    if (codeHistoryLoaded) {
+      setCodeHistory(cachedCodeHistory as CodeHistory[]);
+    }
+  }, [cachedCodeHistory, codeHistoryLoaded]);
+
+  useEffect(() => {
+    if (!codeHistoryLoaded) {
+      getUserCodeHistory();
+    }
   }, []);
 
   useEffect(() => {

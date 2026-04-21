@@ -102,3 +102,9 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+/* Streaming cursor blink animation for Grind AI Chat */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}

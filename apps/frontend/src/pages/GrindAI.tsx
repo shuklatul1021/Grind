@@ -33,13 +33,11 @@ import { useDispatch } from "react-redux";
 import { toast } from "../../../../packages/ui/src/hooks/use-toast";
 import {
   setUserAllChats,
-  setUserCreditDetails,
   setUserPrompt,
-  type RootState,
 } from "../state/ReduxStateProvider";
 import { BACKENDURL } from "../utils/urls";
-import { useSelector } from "react-redux";
 import MainSideNav from "../components/MainSideNav";
+import { useDashboardData } from "../hooks/useDashboardData";
 
 interface ChatSessionData {
   id: string;
@@ -73,11 +71,21 @@ export default function GrindAI() {
   const [createChatLoading, setcreateChatLoading] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const [userDetails, setUserDetails] = useState<any>(null);
-  const [userCreditLoading, setUserCreditLoading] = useState(true);
   const inputRef = useRef<HTMLInputElement>(null);
   const dispatch = useDispatch();
-  const UserProfile = useSelector((state: RootState) => state.userDetails);
+
+  const {
+    userDetails: userDetailsData,
+    userCreditsLoaded,
+    userChats,
+    userChatsLoaded,
+    refresh,
+  } = useDashboardData(["userDetails", "userCredits", "userChats"]);
+
+  const userCreditLoading = !userCreditsLoaded;
+  const userChatLoading = !userChatsLoaded;
+  const userChatMessage = userChats as ChatSessionData[];
+
   const [, setResponseMessage] = useState<Message[]>([
     {
       id: "0",
@@ -87,87 +95,11 @@ export default function GrindAI() {
     },
   ]);
 
-  const [userChatMessage, setUserChatMessage] = useState<ChatSessionData[]>([]);
-
-  const [userChatLoading, setUserChatLoading] = useState(true);
-
-  async function getUserDetails() {
-    try {
-      const response = await fetch(`${BACKENDURL}/user/details`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          token: localStorage.getItem("token") || "",
-        },
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setUserDetails(data.user);
-        dispatch(
-          setUserCreditDetails({
-            aicredit: data.user.aitoken,
-            maxcredit: data.user.maxaitoken,
-          }),
-        );
-        setUserCreditLoading(false);
-      } else {
-        toast({
-          title: "Error",
-          description: "Failed to fetch user details. Please try again.",
-          variant: "destructive",
-        });
-        setUserCreditLoading(false);
-      }
-    } catch (e) {
-      toast({
-        title: "Error",
-        description: "Failed to fetch user details. Please try again.",
-        variant: "destructive",
-      });
-    }
-    setUserCreditLoading(false);
-  }
-
-  const getUserChats = async () => {
-    setUserChatLoading(true);
-    try {
-      const response = await fetch(`${BACKENDURL}/grindai/get-chats`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          token: localStorage.getItem("token") || "",
-        },
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setUserChatMessage(data.chats);
-        dispatch(setUserAllChats(data.chats));
-        setUserChatLoading(false);
-      } else {
-        toast({
-          title: "Error",
-          description: "Failed to fetch chat sessions. Please try again.",
-          variant: "destructive",
-        });
-        setUserChatLoading(false);
-      }
-    } catch (e) {
-      toast({
-        title: "Error",
-        description: "Failed to fetch chat sessions. Please try again.",
-        variant: "destructive",
-      });
-      setUserChatLoading(false);
-    }
-  };
-
   const currentSession = sessions.find((s) => s.id === currentSessionId);
   const hasMessages = currentSession && currentSession.messages.length > 0;
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    getUserChats();
-    getUserDetails();
   }, [currentSession?.messages]);
 
   const handleSignOut = () => {
@@ -194,7 +126,7 @@ export default function GrindAI() {
           "Your Message Is Successfully Deleted For Server Permanently",
         variant: "default",
       });
-      getUserChats();
+      refresh.userChats();
     } else {
       toast({
         title: "Error While Deleting Chat",
@@ -206,7 +138,7 @@ export default function GrindAI() {
 
   const handleSendMessage = async () => {
     if (!input.trim()) return;
-    if (userDetails?.aitoken === 0) {
+    if (userDetailsData?.aitoken === 0) {
       navigate("/premium/pricing");
       return;
     }
@@ -248,7 +180,7 @@ export default function GrindAI() {
           createdAt: data.chat.createdAt,
         };
         dispatch(setUserAllChats([newChat, ...userChatMessage]));
-        getUserDetails();
+        refresh.userDetails();
         navigate(`c/${data.chat.id}`);
         setcreateChatLoading(false);
       } else {
@@ -284,8 +216,8 @@ export default function GrindAI() {
         active="ai"
         theme={theme}
         toggleTheme={toggleTheme}
-        avatarUrl={UserProfile?.user?.avatar || ""}
-        avatarFallback={UserProfile?.user?.fullname?.[0] || "G"}
+        avatarUrl={userDetailsData?.avatar || ""}
+        avatarFallback={userDetailsData?.fullname?.[0] || "G"}
         onProfile={() => navigate("/you")}
         onSignOut={handleSignOut}
       />
@@ -303,7 +235,7 @@ export default function GrindAI() {
               <h1 className="text-base font-semibold sm:text-lg">Grind AI</h1>
             </div>
           </div>
-          <Badge variant="outline">{userDetails?.aitoken ?? 0} credits</Badge>
+          <Badge variant="outline">{userDetailsData?.aitoken ?? 0} credits</Badge>
         </section>
 
         <div className="relative min-h-0 flex flex-1 overflow-hidden rounded-2xl border border-border/50 bg-card/60">
@@ -437,22 +369,22 @@ export default function GrindAI() {
                       AI Credits
                     </span>
                     <span className="text-sm font-bold text-blue-500">
-                      {userDetails?.aitoken}
+                      {userDetailsData?.aitoken}
                     </span>
                   </div>
                   <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
                     <div
                       className="h-full bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full"
                       style={{
-                        width: `${(userDetails?.aitoken / userDetails?.maxaitoken) * 100}%`,
+                        width: `${((userDetailsData?.aitoken ?? 0) / (userDetailsData?.maxaitoken ?? 1)) * 100}%`,
                       }}
                     ></div>
                   </div>
                   <p className="text-xs text-muted-foreground text-left">
-                    {userDetails?.aitoken} of {userDetails?.maxaitoken} credits
+                    {userDetailsData?.aitoken} of {userDetailsData?.maxaitoken} credits
                     remaining
                   </p>
-                  {userDetails?.aitoken === 0 ? (
+                  {userDetailsData?.aitoken === 0 ? (
                     <div className="mt-3 pt-3 border-t border-border/40">
                       <div className="text-center space-y-2">
                         <p className="text-xs text-red-500 font-medium">

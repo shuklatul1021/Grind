@@ -1,5 +1,6 @@
 import { createSlice, configureStore } from "@reduxjs/toolkit";
 import type { UserInterface } from "../types/problem";
+import type { ContestSummary } from "../types/contest";
 
 interface AuthState {
   isAuthenticated: boolean;
@@ -26,11 +27,13 @@ const userCreditDetailsSlice = createSlice({
   initialState: {
     aicredit: 0,
     maxcredit: 0,
+    loaded: false,
   },
   reducers: {
     setUserCreditDetails: (state, action) => {
       state.aicredit = action.payload.aicredit;
       state.maxcredit = action.payload.maxcredit;
+      state.loaded = true;
     },
   },
 });
@@ -54,6 +57,7 @@ const UserDetailsSlice = createSlice({
       createdAt: undefined,
       propr: "",
     } as UserInterface,
+    loaded: false,
   },
   reducers: {
     setUserDetails: (state, action) => {
@@ -65,6 +69,7 @@ const UserDetailsSlice = createSlice({
           ...(action.payload.social ?? {}),
         },
       };
+      state.loaded = true;
     },
   },
 });
@@ -88,11 +93,17 @@ const UserAuthSlice = createSlice({
 const ProblemsSlice = createSlice({
   name: "problems",
   initialState: {
-    problems: [],
+    problems: [] as any[],
+    solvedProblems: [] as string[],
+    loaded: false,
   },
   reducers: {
     setReduxProblems: (state, action) => {
       state.problems = action.payload;
+      state.loaded = true;
+    },
+    setReduxSolvedProblems: (state, action) => {
+      state.solvedProblems = action.payload;
     },
   },
 });
@@ -100,11 +111,13 @@ const ProblemsSlice = createSlice({
 const ContestSlice = createSlice({
   name: "contests",
   initialState: {
-    contest: [],
+    contest: [] as ContestSummary[],
+    loaded: false,
   },
   reducers: {
     setReduxContests: (state, action) => {
       state.contest = action.payload;
+      state.loaded = true;
     },
   },
 });
@@ -125,10 +138,12 @@ const UserAllChatSlice = createSlice({
   name: "userAllChats",
   initialState: {
     allchats: [] as any[],
+    loaded: false,
   },
   reducers: {
     setUserAllChats: (state, action) => {
       state.allchats = action.payload;
+      state.loaded = true;
     },
   },
 });
@@ -145,15 +160,30 @@ const IsUserFirstChatSlice = createSlice({
   },
 });
 
+const CodeHistorySlice = createSlice({
+  name: "codeHistory",
+  initialState: {
+    history: [] as any[],
+    loaded: false,
+  },
+  reducers: {
+    setReduxCodeHistory: (state, action) => {
+      state.history = action.payload;
+      state.loaded = true;
+    },
+  },
+});
+
 export const { setUserDetails } = UserDetailsSlice.actions;
 export const { setUserAuthState } = UserAuthSlice.actions;
-export const { setReduxProblems } = ProblemsSlice.actions;
+export const { setReduxProblems, setReduxSolvedProblems } = ProblemsSlice.actions;
 export const { setReduxContests } = ContestSlice.actions;
 export const { setAuthData } = User2FAAuthanticationSlice.actions;
 export const { setUserPrompt } = UserPromptSlice.actions;
 export const { setUserCreditDetails } = userCreditDetailsSlice.actions;
 export const { setUserAllChats } = UserAllChatSlice.actions;
 export const { setIsUserFirstChat } = IsUserFirstChatSlice.actions;
+export const { setReduxCodeHistory } = CodeHistorySlice.actions;
 
 export const store = configureStore({
   reducer: {
@@ -166,6 +196,7 @@ export const store = configureStore({
     userCreditDetails: userCreditDetailsSlice.reducer,
     userAllChats: UserAllChatSlice.reducer,
     isUserFirstChat: IsUserFirstChatSlice.reducer,
+    codeHistory: CodeHistorySlice.reducer,
   },
 });
 

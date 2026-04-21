@@ -5,7 +5,11 @@ import { ComilerRateLimiter } from "../limiter/RateLimiter.js";
 import { prisma } from "@repo/db/DatabaseClient";
 const poblemsubmitRouter = Router();
 
-poblemsubmitRouter.post("/submitcode/:problemId", ComilerRateLimiter, UserAuthMiddleware ,  async (req, res) => {
+poblemsubmitRouter.post(
+  "/submitcode/:problemId",
+  ComilerRateLimiter,
+  UserAuthMiddleware,
+  async (req, res) => {
     try {
       const { code, language } = req.body;
       const problemId = req.params.problemId;
@@ -60,231 +64,85 @@ poblemsubmitRouter.post("/submitcode/:problemId", ComilerRateLimiter, UserAuthMi
           success: false,
         });
       }
-      /**@CHECK FIRST CODE BEFORE RUNNING ALL TEST CASES
-       * This section checks the syntax and runs the code against the first test case to ensure correctness before proceeding with all test cases.
-       * It Reduces unnecessary executions if the code has syntax errors or fails the initial test case.
+      /**
+       * Run hidden judge harness only once.
+       * `code` contains only user function from frontend, and `testcasecode`
+       * contains language-specific harness that validates all test cases.
        */
+      if (getTestCase.testcase.length === 0) {
+        return res.status(400).json({
+          message: "No Test Cases Configured For This Problem",
+          success: false,
+        });
+      }
+
       const test = getTestCase.testcase[0]?.testcasecode;
-      const FirstTestCaseExprectation = getTestCase.testcase[0]?.expectedOutput;
-      const syntexCheck = JSON.parse(test || "[]");
-      const isLanguagePresent = syntexCheck.filter(
-        (item: { language: string; code: string }) => item.language === language
+      const firstTestCaseExpectation =
+        getTestCase.testcase[0]?.expectedOutput ?? "";
+
+      let syntaxCheck: Array<{ language: string; code: string }> = [];
+      try {
+        syntaxCheck = JSON.parse(test || "[]");
+      } catch {
+        return res.status(500).json({
+          message: "Invalid Test Case Configuration",
+          success: false,
+        });
+      }
+
+      const testFirstCodeFormat = syntaxCheck.find(
+        (item) => item.language === language,
       );
-      if (isLanguagePresent.length === 0) {
+
+      if (!testFirstCodeFormat?.code) {
         return res.status(400).json({
           message: `Code For Language '${language}' Not Found In Test Case`,
           success: false,
         });
       }
 
-      const TestFirstCodeFormat = isLanguagePresent[0];
-      console.log("TestFirstCodeFormat:", `${code}${TestFirstCodeFormat.code}`);
-      console.log(typeof `${code}${TestFirstCodeFormat.code}`);
-      let Syntexoutput = "";
-      let Syntexerror = "";
-      let SyntexexecutionTime = 0;
-      switch (TestFirstCodeFormat.language) {
-        case "python":
-          ({
-            output: Syntexoutput,
-            error: Syntexerror,
-            executionTime: SyntexexecutionTime,
-          } = await runPython(sandbox, `${code}\n${TestFirstCodeFormat.code}`));
-          break;
-        case "javascript":
-          ({
-            output: Syntexoutput,
-            error: Syntexerror,
-            executionTime: SyntexexecutionTime,
-          } = await runJavaScript(
-            sandbox,
-            `${code}\n${TestFirstCodeFormat.code}`
-          ));
-          break;
-        case "typescript":
-          ({
-            output: Syntexoutput,
-            error: Syntexerror,
-            executionTime: SyntexexecutionTime,
-          } = await runTypeScript(
-            sandbox,
-            `${code}\n${TestFirstCodeFormat.code}`
-          ));
-          break;
-        case "java":
-          ({
-            output: Syntexoutput,
-            error: Syntexerror,
-            executionTime: SyntexexecutionTime,
-          } = await runJava(sandbox, `${TestFirstCodeFormat.code}${code}`));
-          break;
-        case "cpp":
-          ({
-            output: Syntexoutput,
-            error: Syntexerror,
-            executionTime: SyntexexecutionTime,
-          } = await runCpp(sandbox, `${TestFirstCodeFormat.code}${code}`));
-          break;
-        case "c":
-          ({
-            output: Syntexoutput,
-            error: Syntexerror,
-            executionTime: SyntexexecutionTime,
-          } = await runC(sandbox, `${TestFirstCodeFormat.code}${code}`));
-          break;
-        case "go":
-          ({
-            output: Syntexoutput,
-            error: Syntexerror,
-            executionTime: SyntexexecutionTime,
-          } = await runGo(sandbox, `${TestFirstCodeFormat.code}${code}`));
-          break;
-        case "rust":
-          ({
-            output: Syntexoutput,
-            error: Syntexerror,
-            executionTime: SyntexexecutionTime,
-          } = await runRust(sandbox, `${TestFirstCodeFormat.code}${code}`));
-          break;
-      }
-
-      console.log("Syntexoutput:", Syntexoutput);
-      console.log("Syntexerror:", Syntexerror);
-      if (Syntexerror) {
-        return res.status(400).json({
-          message: "Syntax Error In Code",
-          error: Syntexerror,
-          success: false,
-        });
-      }
-
-      console.log("FirstTestCaseExprectation:", FirstTestCaseExprectation);
-      console.log("Syntexoutput.trim():", Syntexoutput);
-
-      console.log(
-        "Type of FirstTestCaseExprectation:",
-        typeof FirstTestCaseExprectation
+      const combinedSourceCode = buildSubmissionSource(
+        code,
+        testFirstCodeFormat.code,
+        language,
       );
-      
 
-      if (FirstTestCaseExprectation !== Syntexoutput.trim()) {
+      let syntexoutput = "";
+      let syntexerror = "";
+      let syntexexecutionTime = 0;
+
+      ({
+        output: syntexoutput,
+        error: syntexerror,
+        executionTime: syntexexecutionTime,
+      } = await runByLanguage(sandbox, language, combinedSourceCode));
+
+      console.log("Execution Time:", syntexexecutionTime);
+      console.log("Output:", syntexoutput);
+      console.log("Error:", syntexerror);
+
+      if (syntexerror.trim()) {
+        const errorMessage = isCompilationOrSyntaxError(syntexerror)
+          ? "Syntax Error In Code"
+          : "Test Cases Failed";
+
         return res.status(400).json({
-          message: "Test Case 1 Failed",
-          expectedOutput: FirstTestCaseExprectation,
-          yourOutput: `${Syntexoutput.trim() || ""}`,
+          message: errorMessage,
+          error: syntexerror,
           success: false,
         });
       }
 
-      /**@RUN ALL TEST CASES
-       * This section runs the user's code against all provided test cases for the problem.
-       * It ensures that the code meets all requirements and produces the expected outputs.
-       * Thus It Make sure the code is correct and robust.
-       */
-
-      for (
-        let testCase = 0;
-        testCase < getTestCase.testcase.length;
-        testCase++
+      if (
+        firstTestCaseExpectation.trim() &&
+        firstTestCaseExpectation.trim() !== syntexoutput.trim()
       ) {
-        console.log(`Running Test Case ${testCase + 1}`);
-
-        const test = getTestCase.testcase[testCase]?.testcasecode;
-        const TestCaseExprectation =
-          getTestCase.testcase[testCase]?.expectedOutput;
-        const ActualCodeFormat = JSON.parse(test || "[]");
-
-        for (const codeFormat of ActualCodeFormat) {
-          let output = "";
-          let error = "";
-          let executionTime = 0;
-          if (codeFormat.language === language) {
-            switch (language) {
-              case "python":
-                ({ output, error, executionTime } = await runPython(
-                  sandbox,
-                  `${code}\n${codeFormat.code}`,
-                  getTestCase.testcase[testCase]?.input
-                ));
-                break;
-
-              case "javascript":
-                ({ output, error, executionTime } = await runJavaScript(
-                  sandbox,
-                  `${code} \n${codeFormat.code}`,
-                  getTestCase.testcase[testCase]?.input
-                ));
-                break;
-
-              case "typescript":
-                ({ output, error, executionTime } = await runTypeScript(
-                  sandbox,
-                  `${code} \n${codeFormat.code} `,
-                  getTestCase.testcase[testCase]?.input
-                ));
-                break;
-
-              case "java":
-                ({ output, error, executionTime } = await runJava(
-                  sandbox,
-                  `${codeFormat.code} \n${code}`,
-                  getTestCase.testcase[testCase]?.input
-                ));
-                break;
-
-              case "cpp":
-                ({ output, error, executionTime } = await runCpp(
-                  sandbox,
-                  `${codeFormat.code} \n${code}`,
-                  getTestCase.testcase[testCase]?.input
-                ));
-                break;
-
-              case "c":
-                ({ output, error, executionTime } = await runC(
-                  sandbox,
-                  `${codeFormat.code} \n${code}`,
-                  getTestCase.testcase[testCase]?.input
-                ));
-                break;
-
-              case "go":
-                ({ output, error, executionTime } = await runGo(
-                  sandbox,
-                  `${code} ${codeFormat.code}`,
-                  getTestCase.testcase[testCase]?.input
-                ));
-                break;
-
-              case "rust":
-                ({ output, error, executionTime } = await runRust(
-                  sandbox,
-                  `${code} ${codeFormat.code}`,
-                  getTestCase.testcase[testCase]?.input
-                ));
-                break;
-            }
-            console.log("Error : ", error);
-            console.log("Output : ", output);
-            console.log("Expected Output : ", TestCaseExprectation);
-            if (error) {
-              return res.status(400).json({
-                message: `Error In Test Case ${testCase + 1}`,
-                error: error,
-                success: false,
-              });
-            }
-
-            if (output.trim() !== TestCaseExprectation) {
-              return res.status(400).json({
-                message: `Test Case ${testCase + 1} Failed`,
-                expectedOutput: TestCaseExprectation,
-                yourOutput: output.trim(),
-                success: false,
-              });
-            }
-          }
-        }
+        return res.status(400).json({
+          message: "Test Cases Failed",
+          expectedOutput: firstTestCaseExpectation,
+          yourOutput: syntexoutput.trim(),
+          success: false,
+        });
       }
 
       const GetUserSolvedProblems = await prisma.user.findFirst({
@@ -292,20 +150,19 @@ poblemsubmitRouter.post("/submitcode/:problemId", ComilerRateLimiter, UserAuthMi
         select: { SolvedProblem: true },
       });
 
-      const IsProblemAlreadySolved = GetUserSolvedProblems?.SolvedProblem.includes(
-        problemId
-      );
+      const IsProblemAlreadySolved =
+        GetUserSolvedProblems?.SolvedProblem.includes(problemId);
 
-      if(!IsProblemAlreadySolved){
-         await prisma.user.update({
+      if (!IsProblemAlreadySolved) {
+        await prisma.user.update({
           where: { id: req.userId },
           data: {
-            problemsSolved : { increment : 1},
-            SolvedProblem : {
-              push : problemId
-            }
-          }
-        })
+            problemsSolved: { increment: 1 },
+            SolvedProblem: {
+              push: problemId,
+            },
+          },
+        });
       }
 
       return res.status(200).json({
@@ -320,15 +177,83 @@ poblemsubmitRouter.post("/submitcode/:problemId", ComilerRateLimiter, UserAuthMi
         success: false,
       });
     }
-  }
+  },
 );
+
+function buildSubmissionSource(
+  userCode: string,
+  executableCode: string,
+  language: string,
+) {
+  const placeholderTokens = ["{{USER_CODE}}", "__USER_CODE__"];
+
+  for (const token of placeholderTokens) {
+    if (executableCode.includes(token)) {
+      return executableCode.split(token).join(userCode);
+    }
+  }
+
+  switch (language) {
+    case "java":
+    case "cpp":
+    case "c":
+      return `${executableCode}\n${userCode}`;
+    default:
+      return `${userCode}\n${executableCode}`;
+  }
+}
+
+function isCompilationOrSyntaxError(error: string) {
+  const normalizedError = error.toLowerCase();
+  return (
+    normalizedError.includes("syntax") ||
+    normalizedError.includes("compile") ||
+    normalizedError.includes("javac") ||
+    normalizedError.includes("gcc") ||
+    normalizedError.includes("g++") ||
+    normalizedError.includes("rustc") ||
+    normalizedError.includes("typescript")
+  );
+}
+
+async function runByLanguage(
+  sandbox: any,
+  language: string,
+  sourceCode: string,
+  input?: string,
+) {
+  switch (language) {
+    case "python":
+      return runPython(sandbox, sourceCode, input);
+    case "javascript":
+      return runJavaScript(sandbox, sourceCode, input);
+    case "typescript":
+      return runTypeScript(sandbox, sourceCode, input);
+    case "java":
+      return runJava(sandbox, sourceCode, input);
+    case "cpp":
+      return runCpp(sandbox, sourceCode, input);
+    case "c":
+      return runC(sandbox, sourceCode, input);
+    case "go":
+      return runGo(sandbox, sourceCode, input);
+    case "rust":
+      return runRust(sandbox, sourceCode, input);
+    default:
+      return {
+        output: "",
+        error: `Language '${language}' is not supported.`,
+        executionTime: 0,
+      };
+  }
+}
 
 async function runPython(sandbox: any, code: string, input?: string) {
   const startTime = Date.now();
   try {
     await sandbox.files.write("/tmp/main.py", code);
     const execution = await sandbox.commands.run(
-      input ? `echo "${input}" | python3 /tmp/main.py` : "python3 /tmp/main.py"
+      input ? `echo "${input}" | python3 /tmp/main.py` : "python3 /tmp/main.py",
     );
     return {
       output: execution.stdout,
@@ -349,7 +274,7 @@ async function runJavaScript(sandbox: any, code: string, input?: string) {
   try {
     await sandbox.files.write("/tmp/main.js", code);
     const execution = await sandbox.commands.run(
-      input ? `echo "${input}" | node /tmp/main.js` : "node /tmp/main.js"
+      input ? `echo "${input}" | node /tmp/main.js` : "node /tmp/main.js",
     );
     console.log("JavaScript execution result:", execution);
     return {
@@ -371,10 +296,10 @@ async function runTypeScript(sandbox: any, code: string, input?: string) {
   try {
     await sandbox.files.write("/tmp/main.ts", code);
     await sandbox.commands.run(
-      "npm install -g typescript ts-node 2>/dev/null || true"
+      "npm install -g typescript ts-node 2>/dev/null || true",
     );
     const execution = await sandbox.commands.run(
-      input ? `echo "${input}" | ts-node /tmp/main.ts` : "ts-node /tmp/main.ts"
+      input ? `echo "${input}" | ts-node /tmp/main.ts` : "ts-node /tmp/main.ts",
     );
     return {
       output: execution.stdout,
@@ -399,7 +324,7 @@ async function runJava(sandbox: any, code: string, input?: string) {
 
     try {
       const compile = await sandbox.commands.run(
-        `javac /tmp/${className}.java`
+        `javac /tmp/${className}.java`,
       );
       if (compile.stderr && compile.exitCode !== 0) {
         return {
@@ -423,7 +348,7 @@ async function runJava(sandbox: any, code: string, input?: string) {
       const execution = await sandbox.commands.run(
         input
           ? `cd /tmp && echo "${input}" | java ${className}`
-          : `cd /tmp && java ${className}`
+          : `cd /tmp && java ${className}`,
       );
       return {
         output: execution.stdout,
@@ -454,7 +379,7 @@ async function runCpp(sandbox: any, code: string, input?: string) {
 
     try {
       const compile = await sandbox.commands.run(
-        "g++ /tmp/main.cpp -o /tmp/main"
+        "g++ /tmp/main.cpp -o /tmp/main",
       );
       if (compile.stderr && compile.exitCode !== 0) {
         return {
@@ -477,7 +402,7 @@ async function runCpp(sandbox: any, code: string, input?: string) {
 
     try {
       const execution = await sandbox.commands.run(
-        input ? `echo "${input}" | /tmp/main` : "/tmp/main"
+        input ? `echo "${input}" | /tmp/main` : "/tmp/main",
       );
       console.log("C++ execution result:", execution);
       return {
@@ -509,7 +434,7 @@ async function runC(sandbox: any, code: string, input?: string) {
 
     try {
       const compile = await sandbox.commands.run(
-        "gcc /tmp/main.c -o /tmp/main"
+        "gcc /tmp/main.c -o /tmp/main",
       );
       if (compile.stderr && compile.exitCode !== 0) {
         return {
@@ -531,7 +456,7 @@ async function runC(sandbox: any, code: string, input?: string) {
 
     try {
       const execution = await sandbox.commands.run(
-        input ? `echo "${input}" | /tmp/main` : "/tmp/main"
+        input ? `echo "${input}" | /tmp/main` : "/tmp/main",
       );
       return {
         output: execution.stdout,
@@ -562,7 +487,7 @@ async function runGo(sandbox: any, code: string, input?: string) {
     const execution = await sandbox.commands.run(
       input
         ? `cd /tmp && echo "${input}" | go run main.go`
-        : "cd /tmp && go run main.go"
+        : "cd /tmp && go run main.go",
     );
     return {
       output: execution.stdout,
@@ -585,7 +510,7 @@ async function runRust(sandbox: any, code: string, input?: string) {
 
     try {
       const compile = await sandbox.commands.run(
-        "rustc /tmp/main.rs -o /tmp/main"
+        "rustc /tmp/main.rs -o /tmp/main",
       );
       if (compile.stderr && compile.exitCode !== 0) {
         return {
@@ -607,7 +532,7 @@ async function runRust(sandbox: any, code: string, input?: string) {
 
     try {
       const execution = await sandbox.commands.run(
-        input ? `echo "${input}" | /tmp/main` : "/tmp/main"
+        input ? `echo "${input}" | /tmp/main` : "/tmp/main",
       );
       return {
         output: execution.stdout,

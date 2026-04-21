@@ -18,7 +18,7 @@ http {
 	}
 	server {
         listen 80;
-        server_name contest-websocket.grind.org.in;
+        server_name compiler.grind.org.in;
 
         location / {
             proxy_pass http://localhost:5001;
@@ -44,10 +44,10 @@ http {
 	}
 	server {
         listen 80;
-        server_name contest.grind.org.in;
+        server_name contest-websocket.grind.org.in;
 
         location / {
-            proxy_pass http://localhost:8080;
+            proxy_pass http://localhost:5051;
             proxy_http_version 1.1;
             proxy_set_header Upgrade $http_upgrade;
             proxy_set_header Connection 'upgrade';

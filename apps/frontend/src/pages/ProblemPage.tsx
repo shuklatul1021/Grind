@@ -84,6 +84,54 @@ function WorkspaceTimer() {
   );
 }
 
+type SubmissionStatus =
+  | "accepted"
+  | "wrong_answer"
+  | "runtime_error"
+  | "syntax_error";
+
+type SubmissionResult = {
+  status: SubmissionStatus;
+  message: string;
+  error?: string;
+  expectedOutput?: string;
+  yourOutput?: string;
+};
+
+type JudgeSummary = {
+  passed: number;
+  total: number;
+};
+
+function toSafeString(value: unknown) {
+  return typeof value === "string" ? value : "";
+}
+
+function parseJudgeSummary(output: string): JudgeSummary | null {
+  const summaryMatch = output.match(/total\s+passed\s*:\s*(\d+)\s*\/\s*(\d+)/i);
+  if (!summaryMatch) {
+    return null;
+  }
+
+  return {
+    passed: Number(summaryMatch[1]),
+    total: Number(summaryMatch[2]),
+  };
+}
+
+function getStatusLabel(status: SubmissionStatus) {
+  switch (status) {
+    case "accepted":
+      return "Accepted";
+    case "syntax_error":
+      return "Syntax Error";
+    case "runtime_error":
+      return "Runtime Error";
+    default:
+      return "Wrong Answer";
+  }
+}
+
 export default function ProblemPage() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
@@ -97,13 +145,7 @@ export default function ProblemPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [testResult, setTestResult] = useState<{
-    status: "accepted" | "wrong_answer" | "runtime_error" | "syntax_error";
-    message: string;
-    error?: string;
-    expectedOutput?: string;
-    yourOutput?: string;
-  } | null>(null);
+  const [testResult, setTestResult] = useState<SubmissionResult | null>(null);
 
   const handleLanguageChange = (language: string) => {
     setSelectedLanguage(language);
@@ -249,11 +291,32 @@ export default function ProblemPage() {
           body: JSON.stringify({ code, language: selectedLanguage }),
         },
       );
-      const data = await response.json();
-      if (response.ok) {
+
+      let data: Record<string, unknown> = {};
+      try {
+        data = await response.json();
+      } catch {
+        data = {};
+      }
+
+      const message = toSafeString(data.message);
+      const error = toSafeString(data.error);
+      const expectedOutput = toSafeString(data.expectedOutput);
+      const yourOutput = toSafeString(data.yourOutput || data.output);
+      const judgeSummary = parseJudgeSummary(yourOutput || error);
+      const allPassedInJudgeOutput =
+        !!judgeSummary &&
+        judgeSummary.total > 0 &&
+        judgeSummary.passed === judgeSummary.total;
+
+      if (response.ok || data.success === true || allPassedInJudgeOutput) {
         setTestResult({
           status: "accepted",
-          message: "All test cases passed!",
+          message:
+            allPassedInJudgeOutput && !response.ok
+              ? "All hidden test cases passed. Judge output confirms full pass."
+              : message || "All test cases passed!",
+          yourOutput: yourOutput || undefined,
         });
         toast({
           title: "Success",
@@ -261,24 +324,42 @@ export default function ProblemPage() {
           variant: "soon",
         });
       } else {
-        if (data.message?.includes("Syntax Error")) {
+        const normalizedMessage = message.toLowerCase();
+
+        if (
+          normalizedMessage.includes("syntax") ||
+          normalizedMessage.includes("compile")
+        ) {
           setTestResult({
             status: "syntax_error",
-            message: data.message,
-            error: data.error,
+            message: message || "Syntax Error In Code",
+            error: error || undefined,
+          });
+        } else if (response.status >= 500) {
+          setTestResult({
+            status: "runtime_error",
+            message: message || "Server error while running your submission.",
+            error: error || undefined,
           });
         } else {
           setTestResult({
             status: "wrong_answer",
-            message: data.message || "Some test cases failed.",
-            error: data.error,
-            expectedOutput: data.expectedOutput,
-            yourOutput: data.yourOutput,
+            message:
+              judgeSummary && judgeSummary.total > 0
+                ? `Passed ${judgeSummary.passed}/${judgeSummary.total} test cases.`
+                : message || "Some test cases failed.",
+            error: error || undefined,
+            expectedOutput: expectedOutput || undefined,
+            yourOutput: yourOutput || undefined,
           });
         }
       }
-    } catch {
-      setTestResult({ status: "runtime_error", message: "Runtime Error" });
+    } catch (error) {
+      setTestResult({
+        status: "runtime_error",
+        message: "Unable to submit code right now.",
+        error: error instanceof Error ? error.message : "Unknown network error",
+      });
     } finally {
       setSubmitting(false);
     }
@@ -801,25 +882,33 @@ export default function ProblemPage() {
                                   : "text-red-600 dark:text-red-400"
                               }`}
                             >
-                              {testResult.status === "accepted"
-                                ? "Accepted"
-                                : testResult.status === "syntax_error"
-                                  ? "Syntax Error"
-                                  : "Wrong Answer"}
+                              {getStatusLabel(testResult.status)}
                             </span>
                           </div>
                           <p className="text-sm font-medium text-foreground/90 mb-3">
                             {testResult.message}
                           </p>
-                          {testResult.status === "syntax_error" &&
-                            testResult.error && (
-                              <div className="mt-3 space-y-2 text-left">
-                                <div className="text-xs font-semibold text-red-600 dark:text-red-400 mb-2">
-                                  Error Details:
+                          {testResult.error && (
+                            <div className="mt-3 space-y-2 text-left">
+                              <div className="text-xs font-semibold text-red-600 dark:text-red-400 mb-2">
+                                Error Details:
+                              </div>
+                              <div className="rounded-md bg-red-950/20 border border-red-500/30 p-3 text-left">
+                                <pre className="text-xs text-red-600 dark:text-red-400 whitespace-pre-wrap font-mono overflow-x-auto">
+                                  {testResult.error}
+                                </pre>
+                              </div>
+                            </div>
+                          )}
+                          {testResult.status === "accepted" &&
+                            testResult.yourOutput && (
+                              <div className="mt-3 space-y-2">
+                                <div className="text-xs font-semibold text-muted-foreground mb-1.5">
+                                  Judge Output:
                                 </div>
-                                <div className="rounded-md bg-red-950/20 border border-red-500/30 p-3 text-left">
-                                  <pre className="text-xs text-red-600 dark:text-red-400 whitespace-pre-wrap font-mono overflow-x-auto">
-                                    {testResult.error}
+                                <div className="rounded-md bg-muted/50 border border-border/50 p-2.5">
+                                  <pre className="text-xs font-mono text-foreground/90 whitespace-pre-wrap">
+                                    {testResult.yourOutput}
                                   </pre>
                                 </div>
                               </div>

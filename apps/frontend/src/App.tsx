@@ -114,9 +114,9 @@ function RouteSEOManager() {
 }
 
 function App() {
-  useEffect(() => {
-    document.addEventListener("contextmenu", (e) => e.preventDefault());
-  }, []);
+  // useEffect(() => {
+  //   document.addEventListener("contextmenu", (e) => e.preventDefault());
+  // }, []);
 
   console.log(
     "%c⚠️ SECURITY WARNING ⚠️\n" +

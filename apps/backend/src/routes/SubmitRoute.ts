@@ -216,6 +216,10 @@ function isCompilationOrSyntaxError(error: string) {
   );
 }
 
+function shellEscape(value: string) {
+  return `'${value.replace(/'/g, `'"'"'`)}'`;
+}
+
 async function runByLanguage(
   sandbox: any,
   language: string,
@@ -427,40 +431,34 @@ async function runCpp(sandbox: any, code: string, input?: string) {
   }
 }
 
-async function runC(sandbox: any, code: string, input?: string) {
+async function runC(sandbox: Sandbox, code: string, input?: string) {
   const startTime = Date.now();
   try {
     await sandbox.files.write("/tmp/main.c", code);
 
-    try {
-      const compile = await sandbox.commands.run(
-        "gcc /tmp/main.c -o /tmp/main",
-      );
-      if (compile.stderr && compile.exitCode !== 0) {
-        return {
-          output: "",
-          error: compile.stderr,
-          executionTime: Date.now() - startTime,
-        };
-      }
-    } catch (compileError: any) {
+    await sandbox.commands.run(
+      "if ! command -v gcc >/dev/null 2>&1; then sudo apt-get update && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y gcc; fi",
+    );
+
+    const compile = await sandbox.commands
+      .run("gcc /tmp/main.c -o /tmp/main")
+      .catch((e: any) => e.result ?? { stderr: e.message, exitCode: 1 });
+
+    if (compile.exitCode !== 0) {
       return {
         output: "",
-        error:
-          compileError.result?.stderr ||
-          compileError.message ||
-          "Compilation failed",
+        error: compile.stderr || "Compilation failed",
         executionTime: Date.now() - startTime,
       };
     }
 
     try {
       const execution = await sandbox.commands.run(
-        input ? `echo "${input}" | /tmp/main` : "/tmp/main",
+        input ? `printf '%s' ${shellEscape(input)} | /tmp/main` : "/tmp/main",
       );
       return {
-        output: execution.stdout,
-        error: execution.stderr,
+        output: execution.stdout ?? "",
+        error: execution.stderr ?? "",
         executionTime: Date.now() - startTime,
       };
     } catch (execError: any) {
@@ -480,77 +478,80 @@ async function runC(sandbox: any, code: string, input?: string) {
   }
 }
 
-async function runGo(sandbox: any, code: string, input?: string) {
+async function runGo(sandbox: Sandbox, code: string, input?: string) {
   const startTime = Date.now();
   try {
     await sandbox.files.write("/tmp/main.go", code);
+
+    await sandbox.commands.run(
+      "if ! command -v go >/dev/null 2>&1; then sudo apt-get update && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y golang-go; fi",
+    );
+
     const execution = await sandbox.commands.run(
       input
-        ? `cd /tmp && echo "${input}" | go run main.go`
+        ? `cd /tmp && printf '%s' ${shellEscape(input)} | go run main.go`
         : "cd /tmp && go run main.go",
     );
     return {
-      output: execution.stdout,
-      error: execution.stderr,
+      output: execution.stdout ?? "",
+      error: execution.stderr ?? "",
       executionTime: Date.now() - startTime,
     };
-  } catch (error: any) {
+  } catch (err: any) {
     return {
-      output: error.result?.stdout || "",
-      error: error.result?.stderr || error.message || "Execution failed",
+      output: err.result?.stdout ?? "",
+      error: err.result?.stderr ?? err.message ?? "Execution failed",
       executionTime: Date.now() - startTime,
     };
   }
 }
 
-async function runRust(sandbox: any, code: string, input?: string) {
+async function runRust(sandbox: Sandbox, code: string, input?: string) {
   const startTime = Date.now();
   try {
     await sandbox.files.write("/tmp/main.rs", code);
 
-    try {
-      const compile = await sandbox.commands.run(
-        "rustc /tmp/main.rs -o /tmp/main",
-      );
-      if (compile.stderr && compile.exitCode !== 0) {
-        return {
-          output: "",
-          error: compile.stderr,
-          executionTime: Date.now() - startTime,
-        };
-      }
-    } catch (compileError: any) {
+    await sandbox.commands.run(
+      "if ! command -v rustc >/dev/null 2>&1; then sudo apt-get update && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y rustc; fi",
+    );
+
+    const compile = await sandbox.commands
+      .run("rustc /tmp/main.rs -o /tmp/main_rust")
+      .catch((e: any) => e.result ?? { stderr: e.message, exitCode: 1 });
+
+    if (compile.exitCode !== 0) {
       return {
         output: "",
-        error:
-          compileError.result?.stderr ||
-          compileError.message ||
-          "Compilation failed",
+        error: compile.stderr || "Compilation failed",
         executionTime: Date.now() - startTime,
       };
     }
 
     try {
-      const execution = await sandbox.commands.run(
-        input ? `echo "${input}" | /tmp/main` : "/tmp/main",
-      );
+      const execution = await sandbox.commands
+        .run(
+          input
+            ? `printf '%s' ${shellEscape(input)} | /tmp/main_rust`
+            : "/tmp/main_rust",
+        )
+        .catch((e: any) => e.result ?? { stdout: "", stderr: e.message });
+
       return {
-        output: execution.stdout,
-        error: execution.stderr,
+        output: execution.stdout ?? "",
+        error: execution.stderr ?? "",
         executionTime: Date.now() - startTime,
       };
-    } catch (execError: any) {
+    } catch (err: any) {
       return {
-        output: execError.result?.stdout || "",
-        error:
-          execError.result?.stderr || execError.message || "Execution failed",
+        output: err.result?.stdout ?? "",
+        error: err.result?.stderr ?? err.message ?? "Execution failed",
         executionTime: Date.now() - startTime,
       };
     }
-  } catch (error: any) {
+  } catch (err: any) {
     return {
       output: "",
-      error: error.message || "Rust execution failed",
+      error: err.message ?? "Rust execution failed",
       executionTime: Date.now() - startTime,
     };
   }

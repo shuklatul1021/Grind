@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import { Button } from '@repo/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@repo/ui/card';
 import {
@@ -11,23 +13,186 @@ import {
   Shield,
   Sparkles,
   TrendingUp,
-  ArrowLeft
+  ArrowLeft,
+  Loader2
 } from 'lucide-react';
-import { toast } from '../../../../packages/ui/src/hooks/use-toast';
+// import { toast } from '../../../../packages/ui/src/hooks/use-toast';
+// import { BACKENDURL } from '../utils/urls';
+import type { RootState } from '../state/ReduxStateProvider';
+// import { setUserDetails } from '../state/ReduxStateProvider';
+
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
+
+// const loadRazorpayScript = (): Promise<boolean> => {
+//   return new Promise((resolve) => {
+//     if (window.Razorpay) {
+//       resolve(true);
+//       return;
+//     }
+//     const script = document.createElement("script");
+//     script.src = "https://checkout.razorpay.com/v1/checkout.js";
+//     script.onload = () => resolve(true);
+//     script.onerror = () => resolve(false);
+//     document.body.appendChild(script);
+//   });
+// };
 
 export default function PricingPage() {
   const navigate = useNavigate();
+  // const dispatch = useDispatch<AppDispatch>();
+  const userDetails = useSelector((state: RootState) => state.userDetails);
+  // const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+  const [loadingPlan, ] = useState<string | null>(null);
 
-  const HandleOnBuyClick = () => {
-    toast({
-      title: "Coming Soon",
-      description: "Premium Feature Coming Soon. Stay tuned!",
-      variant: "soon",
-    });
-  }
+  const isSubscriber = userDetails?.user?.isSubscriber;
+  const currentPlan = userDetails?.user?.subscriptionPlan;
+
+  // const handleSubscribe = async (planKey: string, planName: string) => {
+  //   const token = localStorage.getItem("token");
+  //   if (!token) {
+  //     toast({
+  //       title: "Authentication Required",
+  //       description: "Please sign in to subscribe",
+  //       variant: "destructive",
+  //     });
+  //     navigate("/auth");
+  //     return;
+  //   }
+
+  //   setLoadingPlan(planKey);
+
+  //   try {
+  //     // Load Razorpay checkout script
+  //     const scriptLoaded = await loadRazorpayScript();
+  //     if (!scriptLoaded) {
+  //       toast({
+  //         title: "Error",
+  //         description: "Failed to load payment gateway. Please try again.",
+  //         variant: "destructive",
+  //       });
+  //       setLoadingPlan(null);
+  //       return;
+  //     }
+
+  //     // Create subscription on backend
+  //     const createRes = await fetch(`${BACKENDURL}/subscription/create`, {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //         token: token,
+  //       },
+  //       body: JSON.stringify({ planKey }),
+  //     });
+
+  //     const createData = await createRes.json();
+
+  //     if (!createRes.ok || !createData.success) {
+  //       toast({
+  //         title: "Error",
+  //         description: createData.message || "Failed to create subscription",
+  //         variant: "destructive",
+  //       });
+  //       setLoadingPlan(null);
+  //       return;
+  //     }
+
+  //     const { subscription } = createData;
+
+  //     // Open Razorpay Checkout
+  //     const options = {
+  //       key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+  //       subscription_id: subscription.razorpaySubscriptionId,
+  //       name: "Grind",
+  //       description: `${planName} Plan — Monthly Subscription`,
+  //       image: "/new_logo.jpg",
+  //       handler: async (response: any) => {
+  //         try {
+  //           // Verify payment on backend
+  //           const verifyRes = await fetch(`${BACKENDURL}/subscription/verify`, {
+  //             method: "POST",
+  //             headers: {
+  //               "Content-Type": "application/json",
+  //               token: token,
+  //             },
+  //             body: JSON.stringify({
+  //               razorpay_payment_id: response.razorpay_payment_id,
+  //               razorpay_subscription_id: response.razorpay_subscription_id,
+  //               razorpay_signature: response.razorpay_signature,
+  //             }),
+  //           });
+
+  //           const verifyData = await verifyRes.json();
+
+  //           if (verifyRes.ok && verifyData.success) {
+  //             // Update Redux state
+  //             dispatch(
+  //               setUserDetails({
+  //                 isSubscriber: true,
+  //                 subscriptionPlan: verifyData.planName,
+  //               })
+  //             );
+
+  //             toast({
+  //               title: "🎉 Welcome to Premium!",
+  //               description: `Your ${verifyData.planName} plan is now active. Enjoy all premium features!`,
+  //             });
+
+  //             navigate("/premium");
+  //           } else {
+  //             toast({
+  //               title: "Verification Failed",
+  //               description: verifyData.message || "Payment verification failed. Contact support.",
+  //               variant: "destructive",
+  //             });
+  //           }
+  //         } catch {
+  //           toast({
+  //             title: "Error",
+  //             description: "Payment was received but verification failed. Contact support.",
+  //             variant: "destructive",
+  //           });
+  //         }
+  //         setLoadingPlan(null);
+  //       },
+  //       modal: {
+  //         ondismiss: () => {
+  //           setLoadingPlan(null);
+  //         },
+  //       },
+  //       theme: {
+  //         color: "#6366f1",
+  //       },
+  //     };
+
+  //     const rzpInstance = new window.Razorpay(options);
+  //     rzpInstance.on("payment.failed", (response: any) => {
+  //       console.error("Payment failed:", response.error);
+  //       toast({
+  //         title: "Payment Failed",
+  //         description: response.error?.description || "Payment could not be processed. Please try again.",
+  //         variant: "destructive",
+  //       });
+  //       setLoadingPlan(null);
+  //     });
+  //     rzpInstance.open();
+  //   } catch (err) {
+  //     console.error("Subscription error:", err);
+  //     toast({
+  //       title: "Error",
+  //       description: "Something went wrong. Please try again.",
+  //       variant: "destructive",
+  //     });
+  //     setLoadingPlan(null);
+  //   }
+  // };
 
   const plans = [
     {
+      key: 'basic',
       name: 'Basic',
       price: '199',
       description: 'Perfect for individual developers',
@@ -44,6 +209,7 @@ export default function PricingPage() {
       popular: false
     },
     {
+      key: 'pro',
       name: 'Pro',
       price: '499',
       description: 'For serious competitive programmers',
@@ -102,11 +268,21 @@ export default function PricingPage() {
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               Unlock your full potential with our premium features. Start grinding today!
             </p>
+
+            {isSubscriber && (
+              <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-500/10 text-green-500 text-sm font-semibold">
+                <Check className="h-4 w-4" />
+                You're on the {currentPlan} plan
+              </div>
+            )}
           </div>
 
           <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto mb-16">
             {plans.map((plan) => {
               const IconComponent = plan.icon;
+              const isCurrentPlan = isSubscriber && currentPlan === plan.name;
+              const isLoading = loadingPlan === plan.key;
+
               return (
                 <Card 
                   key={plan.name}
@@ -173,9 +349,20 @@ export default function PricingPage() {
                       }`}
                       size="lg"
                       variant={plan.popular ? 'default' : 'outline'}
-                      onClick={HandleOnBuyClick}
+                      // onClick={() => handleSubscribe(plan.key, plan.name)}
+                      disabled={isCurrentPlan || isLoading || !!loadingPlan}
                     >
-                      {plan.popular ? (
+                      {isCurrentPlan ? (
+                        <>
+                          <Check className="mr-2 h-4 w-4" />
+                          Current Plan
+                        </>
+                      ) : isLoading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Processing...
+                        </>
+                      ) : plan.popular ? (
                         <>
                           <Zap className="mr-2 h-4 w-4" />
                           Get Started

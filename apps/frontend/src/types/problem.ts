@@ -83,6 +83,8 @@ export interface UserInterface {
   propr?: string;
   aitoken?: number;
   maxaitoken?: number;
+  isSubscriber?: boolean;
+  subscriptionPlan?: string | null;
 }
 
 export interface Message {

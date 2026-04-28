@@ -1,8 +1,9 @@
-import { useState, createContext, useContext } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@repo/ui/avatar";
 import { Button } from "@repo/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@repo/ui/sheet";
+import { useAuthentication } from "../hooks/useAuthentication";
 import {
   BrainCircuit,
   Code2,
@@ -18,12 +19,7 @@ import {
   PanelLeft,
 } from "lucide-react";
 
-type ActiveSection =
-  | "problems"
-  | "compiler"
-  | "ai"
-  | "contest"
-  | "premium";
+type ActiveSection = "problems" | "compiler" | "ai" | "contest" | "premium";
 type NavItemKey = ActiveSection;
 
 interface NavItem {
@@ -76,10 +72,6 @@ const navItems: NavItem[] = [
   },
 ];
 
-// Context to share sidebar state with consuming pages
-const SidebarContext = createContext<{ collapsed: boolean }>({ collapsed: false });
-export const useSidebarState = () => useContext(SidebarContext);
-
 export default function MainSideNav({
   active,
   theme,
@@ -94,12 +86,15 @@ export default function MainSideNav({
   const activeItem = navItems.find((item) => item.key === active);
   const avatarLetter = (avatarFallback || "G").charAt(0).toUpperCase();
   const navigate = useNavigate();
+  const { setAuthState } = useAuthentication();
 
-  const handleSignOut = () => {
-    navigate("/auth")
-    setSheetOpen(false); 
-    onSignOut(); 
-  }
+  const handleSignOut = async () => {
+    setSheetOpen(false);
+    await Promise.resolve(onSignOut());
+    localStorage.removeItem("token");
+    setAuthState({ isAuthenticated: false, user: null, loading: false });
+    navigate("/auth", { replace: true });
+  };
 
   return (
     <>
@@ -141,7 +136,7 @@ export default function MainSideNav({
               </button>
             )}
           </div>
-          
+
           {collapsed && (
             <div className="flex justify-center py-2 border-b border-border/40">
               <button
@@ -228,7 +223,7 @@ export default function MainSideNav({
                   )}
                 </button>
                 <button
-                  onClick={onSignOut}
+                  onClick={handleSignOut}
                   title="Sign out"
                   className="w-full flex items-center justify-center py-2.5 rounded-lg text-red-500 hover:bg-red-500/10 transition-colors"
                 >
@@ -256,7 +251,7 @@ export default function MainSideNav({
                   <span>Appearance</span>
                 </button>
                 <button
-                  onClick={onSignOut}
+                  onClick={handleSignOut}
                   className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-red-500 hover:bg-red-500/10 transition-colors"
                 >
                   <LogOut className="h-[18px] w-[18px] flex-shrink-0" />
@@ -280,7 +275,9 @@ export default function MainSideNav({
               </Avatar>
               {!collapsed && (
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium text-foreground">Workspace</p>
+                  <p className="truncate text-sm font-medium text-foreground">
+                    Workspace
+                  </p>
                   <p className="truncate text-[11px] text-muted-foreground">
                     {activeItem?.label || "Dashboard"}
                   </p>
@@ -310,7 +307,11 @@ export default function MainSideNav({
 
           <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="rounded-lg hover:bg-muted">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="rounded-lg hover:bg-muted"
+              >
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
@@ -329,7 +330,9 @@ export default function MainSideNav({
                     <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-foreground text-background">
                       <SquareChevronRight className="h-4 w-4" />
                     </div>
-                    <span className="font-bold text-sm tracking-wide">GRIND</span>
+                    <span className="font-bold text-sm tracking-wide">
+                      GRIND
+                    </span>
                   </Link>
                 </div>
 
@@ -354,7 +357,9 @@ export default function MainSideNav({
                           <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-foreground rounded-r-full" />
                         )}
                         <Icon className="h-[18px] w-[18px] flex-shrink-0" />
-                        <span className="text-sm font-medium">{item.label}</span>
+                        <span className="text-sm font-medium">
+                          {item.label}
+                        </span>
                       </Link>
                     );
                   })}
@@ -364,7 +369,9 @@ export default function MainSideNav({
                 <div className="border-t border-border/40 p-3 space-y-1">
                   <Link
                     to="/settings"
-                    onClick={() => { setSheetOpen(false); }}
+                    onClick={() => {
+                      setSheetOpen(false);
+                    }}
                     className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
                   >
                     <Settings className="h-[18px] w-[18px]" />
@@ -391,7 +398,10 @@ export default function MainSideNav({
 
                   <div
                     className="flex items-center gap-2.5 rounded-lg border border-border/40 bg-muted/20 p-2.5 mt-2 cursor-pointer hover:bg-muted/40 transition-colors"
-                    onClick={() => { setSheetOpen(false); onProfile(); }}
+                    onClick={() => {
+                      setSheetOpen(false);
+                      onProfile();
+                    }}
                   >
                     <Avatar className="h-8 w-8">
                       <AvatarImage src={avatarUrl || ""} alt="@user" />

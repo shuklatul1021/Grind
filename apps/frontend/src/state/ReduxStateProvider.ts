@@ -56,6 +56,8 @@ const UserDetailsSlice = createSlice({
       social: { id: "", github: "", linkedin: "", twitter: "" },
       createdAt: undefined,
       propr: "",
+      isSubscriber: false,
+      subscriptionPlan: null,
     } as UserInterface,
     loaded: false,
   },

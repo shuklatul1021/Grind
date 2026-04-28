@@ -37,6 +37,9 @@ export default function PremiumPage() {
   const { theme, toggleTheme } = useTheme();
   const UserProfile = useSelector((state: RootState) => state.userDetails);
 
+  const isSubscriber = UserProfile?.user?.isSubscriber ?? false;
+  const subscriptionPlan = UserProfile?.user?.subscriptionPlan;
+
   const premiumFeatures = [
     {
       icon: <Brain className="h-8 w-8" />,
@@ -167,6 +170,11 @@ export default function PremiumPage() {
               </div>
             </div>
             <Badge variant="outline">Exclusive Access</Badge>
+            {isSubscriber && (
+              <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white border-0">
+                ✓ {subscriptionPlan} Plan Active
+              </Badge>
+            )}
           </div>
 
           {/* Hero Section */}
@@ -193,26 +201,28 @@ export default function PremiumPage() {
                   key={index}
                   className="border-border/40 shadow-sm hover:shadow-lg transition-all relative overflow-hidden group cursor-pointer"
                 >
-                  {/* Lock Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-background/95 to-background/90 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center z-10">
-                    <div className="text-center transform scale-95 group-hover:scale-100 transition-transform duration-300">
-                      <Lock className="h-10 w-10 text-yellow-500 mx-auto mb-2" />
-                      <p className="text-sm font-semibold text-foreground mb-1">
-                        Premium Feature
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        Upgrade to unlock
-                      </p>
-                      <Button
-                        size="sm"
-                        className="mt-3 h-8 text-xs bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600"
-                        onClick={() => navigate("/premium/pricing")}
-                      >
-                        <Crown className="h-3 w-3 mr-1" />
-                        Upgrade Now
-                      </Button>
+                  {/* Lock Overlay — only for non-subscribers */}
+                  {!isSubscriber && (
+                    <div className="absolute inset-0 bg-gradient-to-br from-background/95 to-background/90 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center z-10">
+                      <div className="text-center transform scale-95 group-hover:scale-100 transition-transform duration-300">
+                        <Lock className="h-10 w-10 text-yellow-500 mx-auto mb-2" />
+                        <p className="text-sm font-semibold text-foreground mb-1">
+                          Premium Feature
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Upgrade to unlock
+                        </p>
+                        <Button
+                          size="sm"
+                          className="mt-3 h-8 text-xs bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600"
+                          onClick={() => navigate("/premium/pricing")}
+                        >
+                          <Crown className="h-3 w-3 mr-1" />
+                          Upgrade Now
+                        </Button>
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between mb-3">
@@ -222,12 +232,17 @@ export default function PremiumPage() {
                         <div className="text-white">{feature.icon}</div>
                       </div>
                       <Badge
-                        variant="secondary"
-                        className="text-xs font-medium bg-yellow-500/10 text-yellow-600 border-yellow-500/20"
-                      >
-                        <Lock className="h-3 w-3 mr-1" />
-                        {feature.badge}
-                      </Badge>
+                      variant="secondary"
+                      className={`text-xs font-medium ${
+                        isSubscriber
+                          ? 'bg-green-500/10 text-green-600 border-green-500/20'
+                          : 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20'
+                      }`}
+                    >
+                      {!isSubscriber && <Lock className="h-3 w-3 mr-1" />}
+                      {isSubscriber && <CheckCircle2 className="h-3 w-3 mr-1" />}
+                      {feature.badge}
+                    </Badge>
                     </div>
                     <CardTitle className="text-lg">{feature.title}</CardTitle>
                   </CardHeader>
@@ -243,45 +258,71 @@ export default function PremiumPage() {
             {/* CTA Section */}
             <Card className="max-w-4xl mx-auto border-border/40 bg-gradient-to-br from-blue-500/10 via-purple-500/10 to-pink-500/10 shadow-lg">
               <CardContent className="p-8 text-center">
-                <div className="flex items-center justify-center gap-2 mb-4">
-                  <Crown className="h-12 w-12 text-yellow-500" />
-                  <Star className="h-6 w-6 text-yellow-400" />
-                </div>
-                <h3 className="text-2xl font-bold mb-3">
-                  Ready to Unlock All Features?
-                </h3>
-                <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
-                  Join thousands of developers who upgraded to premium. Get
-                  instant access to all features and accelerate your learning
-                  journey today.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
-                  <Button
-                    size="lg"
-                    className="gap-2 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white shadow-lg"
-                    onClick={() => navigate("/premium/pricing")}
-                  >
-                    <Crown className="h-5 w-5" />
-                    Upgrade to Premium
-                  </Button>
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    onClick={() => navigate("/problems")}
-                  >
-                    Continue with Free Plan
-                  </Button>
-                </div>
-                <div className="flex items-center justify-center gap-6 mt-6 text-sm text-muted-foreground">
-                  <div className="flex items-center gap-1">
-                    <CheckCircle2 className="h-4 w-4 text-green-500" />
-                    <span>Cancel Anytime</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <CheckCircle2 className="h-4 w-4 text-green-500" />
-                    <span>Instant Access</span>
-                  </div>
-                </div>
+                {isSubscriber ? (
+                  <>
+                    <div className="flex items-center justify-center gap-2 mb-4">
+                      <CheckCircle2 className="h-12 w-12 text-green-500" />
+                    </div>
+                    <h3 className="text-2xl font-bold mb-3">
+                      You're a {subscriptionPlan} Subscriber!
+                    </h3>
+                    <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
+                      Enjoy all premium features. Your subscription is active and you have full access to everything.
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+                      <Button
+                        size="lg"
+                        className="gap-2 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white shadow-lg"
+                        onClick={() => navigate("/problems")}
+                      >
+                        <Crown className="h-5 w-5" />
+                        Start Grinding
+                      </Button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex items-center justify-center gap-2 mb-4">
+                      <Crown className="h-12 w-12 text-yellow-500" />
+                      <Star className="h-6 w-6 text-yellow-400" />
+                    </div>
+                    <h3 className="text-2xl font-bold mb-3">
+                      Ready to Unlock All Features?
+                    </h3>
+                    <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
+                      Join thousands of developers who upgraded to premium. Get
+                      instant access to all features and accelerate your learning
+                      journey today.
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+                      <Button
+                        size="lg"
+                        className="gap-2 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white shadow-lg"
+                        onClick={() => navigate("/premium/pricing")}
+                      >
+                        <Crown className="h-5 w-5" />
+                        Upgrade to Premium
+                      </Button>
+                      <Button
+                        size="lg"
+                        variant="outline"
+                        onClick={() => navigate("/problems")}
+                      >
+                        Continue with Free Plan
+                      </Button>
+                    </div>
+                    <div className="flex items-center justify-center gap-6 mt-6 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-1">
+                        <CheckCircle2 className="h-4 w-4 text-green-500" />
+                        <span>Cancel Anytime</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <CheckCircle2 className="h-4 w-4 text-green-500" />
+                        <span>Instant Access</span>
+                      </div>
+                    </div>
+                  </>
+                )}
               </CardContent>
             </Card>
           </div>
